@@ -2,30 +2,30 @@ FlexPRET
 ================================================================================
 __FlexPRET__ is a 5-stage, fine-grained multithreaded [RISC-V*](http://riscv.org) processor designed specifically for _mixed-criticality (real-time embedded) systems_ and written in [Chisel**](https://chisel.eecs.berkeley.edu/). A hardware thread scheduler decides which hardware thread to start executing each cycle, regulated by configuration and status registers. Each hardware thread is either classified as a _hard real-time thread (HRTT)_ or _soft real-time thread (SRTT)_: HRTTs are only scheduled at a constant rate for _hardware-based isolation and predictability_ (enabling independent formal verification), and SRTTs share remaining cycles (including when a HRTT doesn't need prescribed cycles) for _efficient processor utilization_. For comparison purposes, both single-threaded and round-robin multithreaded 5-stage RISC-V processors can also be generated. FlexPRET is developed at UC Berkeley as part of the [PRET](http://chess.eecs.berkeley.edu/pret/) project.
 
-For more information on the processor architecture:
+For more information on the processor architecture:  
 Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Processor Platform for Mixed-Criticality Systems](http://chess.eecs.berkeley.edu/pubs/1048.html)". Proceedings of the 20th IEEE Real-Time and Embedded Technology and Application Symposium (RTAS), April, 2014.
 
-__Team:__
-Michael Zimmer (mzimmer@eecs.berkeley.edu)
-Chris Shaver (shaver@eecs.berkeley.edu)
-Hokeun Kim (hokeunkim@eecs.berkeley.edu)
-David Broman (broman@eecs.berkeley.edu)
+__Team:__  
+Michael Zimmer (mzimmer@eecs.berkeley.edu)  
+Chris Shaver (shaver@eecs.berkeley.edu)  
+Hokeun Kim (hokeunkim@eecs.berkeley.edu)  
+David Broman (broman@eecs.berkeley.edu)  
 
 
 *[RISC-V](http://riscv.org) is an ISA developed at UC Berkeley for computer architecture research and education.
 
 **[Chisel](https://chisel.eecs.berkeley.edu/) is an open-source hardware construction language developed at UC Berkeley that generates both Verilog and a C++ emulator.
 
-Table of Contents:
-[Quickstart](#quickstart)
-[Directory Structure](#directory-structure)
-[Makefile Configuration](#makefile-configuration)
-[Tests](#tests)
-[RISC-V Compiler](#risc-v-compiler)
-[Program Compilation](#program-compilation)
-[Chisel](#chisel)
-[C++ Emulator](#c-emulator)
-[FPGA](#fpga)
+Table of Contents:  
+[Quickstart](#quickstart)  
+[Directory Structure](#directory-structure)  
+[Makefile Configuration](#makefile-configuration)  
+[Tests](#tests)  
+[RISC-V Compiler](#risc-v-compiler)  
+[Program Compilation](#program-compilation)  
+[Chisel](#chisel)  
+[C++ Emulator](#c-emulator)  
+[FPGA](#fpga)  
 
 Quickstart
 --------------------------------------------------------------------------------
@@ -89,9 +89,9 @@ To run a regression test for many processor configurations
 
 Tests
 --------------------------------------------------------------------------------
-`tests/simple-mc`: A simple mixed-criticality example with 4 periodic tasks to demonstrate differences between hard real-time threads (HRTTs) and soft real-time threads (SRTTs)
-`tests/complex-mc`: A complex mixed-criticality example with 21 periodic tasks on 8 hardware threads to demonstrate a methodology for task mapping and thread scheduling
-`tests/dev/*`: Programs that are out-of-date, unsupported, or under development
+`tests/simple-mc`: A simple mixed-criticality example with 4 periodic tasks to demonstrate differences between hard real-time threads (HRTTs) and soft real-time threads (SRTTs)  
+`tests/complex-mc`: A complex mixed-criticality example with 21 periodic tasks on 8 hardware threads to demonstrate a methodology for task mapping and thread scheduling  
+`tests/dev/*`: Programs that are out-of-date, unsupported, or under development  
 
 RISC-V Compiler
 --------------------------------------------------------------------------------
