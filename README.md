@@ -78,7 +78,7 @@ Not all combinations are valid.
 - `DEBUG=[true/false]` Generate waveform dump.
 
 ### Program Configuration
-- `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run
+- `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run. This is the test program that is executed when running command 'make run'. The default value 'asm-sodar' means that an assembler test suite is executed.
 - `PROG_CONFIG=[]` Program configuration, start with target name
 
 ### Regression Test
