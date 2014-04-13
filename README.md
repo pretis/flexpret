@@ -97,7 +97,7 @@ RISC-V Compiler
 --------------------------------------------------------------------------------
 We use the RISC-V GCC compiler, see [riscv.org](http://riscv.org/) for installation instructions.
 
-One installed, uncomment `#include $(TESTS_DIR)/tests.mk`. This line is commented out so the Makefile doesn't try to compile by default.
+Ones installed, uncomment `#include $(TESTS_DIR)/tests.mk`. This line is commented out so the Makefile doesn't try to compile by default.
 
 Coming soon: pre-compiled binaries of RISC-V GCC compiler for some platforms
 
