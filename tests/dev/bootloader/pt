@@ -1,0 +1,63 @@
+#! /usr/bin/env python
+# Bootloader for FlexPRET
+# David Broman (broman@eecs.berkeley.edu) (Bootloader for PTARM)
+# Michael Zimmer (mzimmer@eecs.berkeley.edu) (Port to FlexPRET)
+
+import serial
+import time
+import struct
+import sys
+
+sch=sys.argv[1]
+prog=sys.argv[2]
+# Run a program using the UART
+def run_program():
+    # Setup serial port
+    ser = serial.Serial()
+    ser.baudrate = 115200
+    ser.bytesize = 8
+    ser.stopbits = 1
+    ser.xonxoff = 0
+    ser.rtscts = 0
+    ser.timeout = 1
+    ser.port = '/dev/tty.usbserial'
+    ser.parity=serial.PARITY_NONE
+    ser.open()
+
+    # Send ready and check response.
+    # Need to do this in a loop because of
+    # a Mac OS 10.7 pyserial setup problem...
+    b = ''
+    timeout = 5 
+    while b != '\xfe' and timeout > 0:
+        time.sleep(1)
+        ser.write('\xff')        
+        b = ser.read(1) 
+        timeout -= 1
+
+    # Is the device working?
+    if b != '\xfe':
+        print "The FlexPRET bootloader is not responding."
+        sys.exit()
+
+
+    # Sends each instruction little-endian
+    for section in [prog + ".inst", prog + ".data"]:
+        with open(section, 'rb') as f:
+            data = f.read()
+            size = len(data)
+            ser.write(struct.pack('<I', size))
+            ser.write(data)
+    
+    ser.write(struct.pack('<I', int(sch)))
+
+    for _ in range(3):
+        word = struct.unpack('<I', ser.read(4))
+        print word[0]
+
+        
+
+#    # Close the serial connection
+    ser.close()
+
+run_program()

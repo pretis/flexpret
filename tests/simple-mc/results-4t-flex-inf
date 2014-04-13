@@ -1,0 +1,138 @@
+maxcycles: 20000000
+ispm: ../../tests/simple-mc/simple-mc.inst.mem
+dspm: ../../tests/simple-mc/simple-mc.data.mem
+Thread: 0 Id: 0 Thread: 2 Id: 2 Time (ms): 0.000270
+Time (ms): 0.000290
+Thread: 1 Id: 1 Thread: 3 Id: 3 Time (ms): 0.000550
+Time (ms): 0.000580
+Thread: 1 Id: 11 Time (ms): 2.595790
+Thread: 1 Id: 1 Time (ms): 6.000190
+Thread: 1 Id: 11 Time (ms): 8.595430
+Thread: 0 Id: 10 Time (ms): 10.418610
+Thread: 2 Id: 12 Time (ms): 11.680530
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 12.000100
+Time (ms): 12.000120
+Time (ms): 12.000190
+Thread: 1 Id: 11 Time (ms): 14.595430
+Thread: 1 Id: 1 Time (ms): 18.000190
+Thread: 1 Id: 11 Time (ms): 20.595430
+Thread: 0 Id: 10 Time (ms): 22.418700
+Thread: 2 Id: 12 Time (ms): 23.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 24.000100
+Time (ms): 24.000120
+Time (ms): 24.000190
+Thread: 1 Id: 11 Time (ms): 26.595430
+Thread: 1 Id: 1 Time (ms): 30.000190
+Thread: 1 Id: 11 Time (ms): 32.595430
+Thread: 0 Id: 10 Time (ms): 34.418700
+Thread: 2 Id: 12 Time (ms): 35.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 36.000100
+Time (ms): 36.000120
+Time (ms): 36.000190
+Thread: 1 Id: 11 Time (ms): 38.595430
+Thread: 1 Id: 1 Time (ms): 42.000190
+Thread: 1 Id: 11 Time (ms): 44.595430
+Thread: 0 Id: 10 Time (ms): 46.418700
+Thread: 2 Id: 12 Time (ms): 47.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 48.000100
+Time (ms): 48.000120
+Time (ms): 48.000190
+Thread: 1 Id: 11 Time (ms): 50.595430
+Thread: 1 Id: 1 Time (ms): 54.000190
+Thread: 1 Id: 11 Time (ms): 56.595430
+Thread: 0 Id: 10 Time (ms): 58.418700
+Thread: 2 Id: 12 Time (ms): 59.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 60.000100
+Time (ms): 60.000120
+Time (ms): 60.000190
+Thread: 1 Id: 11 Time (ms): 62.595430
+Thread: 1 Id: 1 Time (ms): 66.000190
+Thread: 1 Id: 11 Time (ms): 68.595430
+Thread: 0 Id: 10 Time (ms): 70.418700
+Thread: 2 Id: 12 Time (ms): 71.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 72.000100
+Time (ms): 72.000120
+Time (ms): 72.000190
+Thread: 1 Id: 11 Time (ms): 74.595430
+Thread: 1 Id: 1 Time (ms): 78.000190
+Thread: 1 Id: 11 Time (ms): 80.595430
+Thread: 0 Id: 10 Time (ms): 82.418700
+Thread: 2 Id: 12 Time (ms): 83.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 84.000100
+Time (ms): 84.000120
+Time (ms): 84.000190
+Thread: 1 Id: 11 Time (ms): 86.595430
+Thread: 1 Id: 1 Time (ms): 90.000190
+Thread: 1 Id: 11 Time (ms): 92.595430
+Thread: 0 Id: 10 Time (ms): 94.418700
+Thread: 2 Id: 12 Time (ms): 95.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 96.000100
+Time (ms): 96.000120
+Time (ms): 96.000190
+Thread: 1 Id: 11 Time (ms): 98.595430
+Thread: 1 Id: 1 Time (ms): 102.000190
+Thread: 1 Id: 11 Time (ms): 104.595430
+Thread: 0 Id: 10 Time (ms): 106.418700
+Thread: 2 Id: 12 Time (ms): 107.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 108.000100
+Time (ms): 108.000120
+Time (ms): 108.000190
+Thread: 1 Id: 11 Time (ms): 110.595430
+Thread: 1 Id: 1 Time (ms): 114.000190
+Thread: 1 Id: 11 Time (ms): 116.595430
+Thread: 0 Id: 10 Time (ms): 118.418700
+Thread: 2 Id: 12 Time (ms): 119.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 120.000100
+Time (ms): 120.000120
+Time (ms): 120.000190
+Thread: 1 Id: 11 Time (ms): 122.595430
+Thread: 1 Id: 1 Time (ms): 126.000190
+Thread: 1 Id: 11 Time (ms): 128.595430
+Thread: 0 Id: 10 Time (ms): 130.418700
+Thread: 2 Id: 12 Time (ms): 131.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 132.000100
+Time (ms): 132.000120
+Time (ms): 132.000190
+Thread: 1 Id: 11 Time (ms): 134.595430
+Thread: 1 Id: 1 Time (ms): 138.000190
+Thread: 1 Id: 11 Time (ms): 140.595430
+Thread: 0 Id: 10 Time (ms): 142.418700
+Thread: 2 Id: 12 Time (ms): 143.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 144.000100
+Time (ms): 144.000120
+Time (ms): 144.000190
+Thread: 1 Id: 11 Time (ms): 146.595430
+Thread: 1 Id: 1 Time (ms): 150.000190
+Thread: 1 Id: 11 Time (ms): 152.595430
+Thread: 0 Id: 10 Time (ms): 154.418700
+Thread: 2 Id: 12 Time (ms): 155.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 156.000100
+Time (ms): 156.000120
+Time (ms): 156.000190
+Thread: 1 Id: 11 Time (ms): 158.595430
+Thread: 1 Id: 1 Time (ms): 162.000190
+Thread: 1 Id: 11 Time (ms): 164.595430
+Thread: 0 Id: 10 Time (ms): 166.418700
+Thread: 2 Id: 12 Time (ms): 167.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 168.000100
+Time (ms): 168.000120
+Time (ms): 168.000190
+Thread: 1 Id: 11 Time (ms): 170.595430
+Thread: 1 Id: 1 Time (ms): 174.000190
+Thread: 1 Id: 11 Time (ms): 176.595430
+Thread: 0 Id: 10 Time (ms): 178.418700
+Thread: 2 Id: 12 Time (ms): 179.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 180.000100
+Time (ms): 180.000120
+Time (ms): 180.000190
+Thread: 1 Id: 11 Time (ms): 182.595430
+Thread: 1 Id: 1 Time (ms): 186.000190
+Thread: 1 Id: 11 Time (ms): 188.595430
+Thread: 0 Id: 10 Time (ms): 190.418700
+Thread: 2 Id: 12 Time (ms): 191.742470
+Thread: 2 Id: 2 Thread: 0 Id: 0 Thread: 1 Id: 1 Time (ms): 192.000100
+Time (ms): 192.000120
+Time (ms): 192.000190
+Thread: 1 Id: 11 Time (ms): 194.595430
+Thread: 1 Id: 1 Time (ms): 198.000190
+*** FAILED ***(Max cycles timeout)
