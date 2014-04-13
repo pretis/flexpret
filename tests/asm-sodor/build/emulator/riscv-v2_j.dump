@@ -1,0 +1,77 @@
+
+tests/asm-sodor/build/emulator/riscv-v2_j.bin:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+02000000 <_start>:
+ 2000000:	f0400013 	move	a12,ra
+ 2000004:	16c0017b 	mfpcr	s0,cr27
+
+02000008 <inf0>:
+ 2000008:	000400e3 	bne	zero,s0,2000008 <inf0>
+ 200000c:	d000017b 	mfpcr	a8,cr0
+ 2000010:	d6807e93 	srl	a8,a8,0x1f
+ 2000014:	d800017b 	mfpcr	a9,cr0
+ 2000018:	dec07293 	srl	a9,a9,0x1c
+ 200001c:	dec01f93 	and	a9,a9,7
+ 2000020:	dec00413 	add	a9,a9,1
+ 2000024:	003410e3 	bne	zero,a8,200002c <set_schedule>
+ 2000028:	d6c00013 	move	a8,a9
+
+0200002c <set_schedule>:
+ 200002c:	103ffc13 	li	s0,-1
+ 2000030:	1e800013 	move	s1,a8
+ 2000034:	18fffc13 	add	s1,s1,-1
+ 2000038:	10801093 	sll	s0,s0,0x4
+ 200003c:	00061863 	beq	zero,s1,2000048 <set_schedule+0x1c>
+ 2000040:	10803b13 	or	s0,s0,14
+ 2000044:	fffffc67 	j	2000034 <set_schedule+0x8>
+ 2000048:	058401fb 	mtpcr	zero,s0,cr22
+ 200004c:	10000013 	li	s0,0
+ 2000050:	05c401fb 	mtpcr	zero,s0,cr23
+ 2000054:	00000013 	nop
+ 2000058:	00000013 	nop
+ 200005c:	00000013 	nop
+ 2000060:	00000013 	nop
+ 2000064:	064001fb 	mtpcr	zero,zero,cr25
+ 2000068:	e0000813 	li	a10,2
+ 200006c:	00000267 	j	2000074 <test_2>
+ 2000070:	00001b67 	j	20000dc <fail>
+
+02000074 <test_2>:
+ 2000074:	08000413 	li	ra,1
+ 2000078:	00000567 	j	200008c <test_2+0x18>
+ 200007c:	08400413 	add	ra,ra,1
+ 2000080:	08400413 	add	ra,ra,1
+ 2000084:	08400413 	add	ra,ra,1
+ 2000088:	08400413 	add	ra,ra,1
+ 200008c:	08400413 	add	ra,ra,1
+ 2000090:	08400413 	add	ra,ra,1
+ 2000094:	e8000c13 	li	a11,3
+ 2000098:	e0000c13 	li	a10,3
+ 200009c:	007a80e3 	bne	ra,a11,20000dc <fail>
+ 20000a0:	1640017b 	mfpcr	s0,cr25
+ 20000a4:	1e80017b 	mfpcr	s1,cr26
+ 20000a8:	18fffc13 	add	s1,s1,-1
+ 20000ac:	22000037 	lui	s2,0x40000
+ 20000b0:	21340333 	or	s2,s2,a8
+ 20000b4:	078801fb 	mtpcr	zero,s2,cr30
+ 20000b8:	24000037 	lui	s2,0x80000
+ 20000bc:	21040333 	or	s2,s2,s0
+ 20000c0:	078801fb 	mtpcr	zero,s2,cr30
+ 20000c4:	26000037 	lui	s2,0xc0000
+ 20000c8:	21060333 	or	s2,s2,s1
+ 20000cc:	078801fb 	mtpcr	zero,s2,cr30
+ 20000d0:	d6800413 	add	a8,a8,1
+ 20000d4:	fef4b2e3 	ble	a8,a9,200002c <set_schedule>
+ 20000d8:	003810e3 	bne	zero,a10,20000e0 <pass>
+
+020000dc <fail>:
+ 20000dc:	07b801fb 	mtpcr	zero,a10,cr30
+
+020000e0 <pass>:
+ 20000e0:	08000413 	li	ra,1
+ 20000e4:	078201fb 	mtpcr	zero,ra,cr30
+ 20000e8:	1780017b 	mfpcr	s0,cr30
+ 20000ec:	0780016b 	jr	a12

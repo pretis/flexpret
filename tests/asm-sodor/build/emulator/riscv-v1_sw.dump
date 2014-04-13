@@ -1,0 +1,125 @@
+
+tests/asm-sodor/build/emulator/riscv-v1_sw.bin:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+02000000 <_start>:
+ 2000000:	f0400013 	move	a12,ra
+ 2000004:	16c0017b 	mfpcr	s0,cr27
+
+02000008 <inf0>:
+ 2000008:	000400e3 	bne	zero,s0,2000008 <inf0>
+ 200000c:	d000017b 	mfpcr	a8,cr0
+ 2000010:	d6807e93 	srl	a8,a8,0x1f
+ 2000014:	d800017b 	mfpcr	a9,cr0
+ 2000018:	dec07293 	srl	a9,a9,0x1c
+ 200001c:	dec01f93 	and	a9,a9,7
+ 2000020:	dec00413 	add	a9,a9,1
+ 2000024:	003410e3 	bne	zero,a8,200002c <set_schedule>
+ 2000028:	d6c00013 	move	a8,a9
+
+0200002c <set_schedule>:
+ 200002c:	103ffc13 	li	s0,-1
+ 2000030:	1e800013 	move	s1,a8
+ 2000034:	18fffc13 	add	s1,s1,-1
+ 2000038:	10801093 	sll	s0,s0,0x4
+ 200003c:	00061863 	beq	zero,s1,2000048 <set_schedule+0x1c>
+ 2000040:	10803b13 	or	s0,s0,14
+ 2000044:	fffffc67 	j	2000034 <set_schedule+0x8>
+ 2000048:	058401fb 	mtpcr	zero,s0,cr22
+ 200004c:	10000013 	li	s0,0
+ 2000050:	05c401fb 	mtpcr	zero,s0,cr23
+ 2000054:	00000013 	nop
+ 2000058:	00000013 	nop
+ 200005c:	00000013 	nop
+ 2000060:	00000013 	nop
+ 2000064:	064001fb 	mtpcr	zero,zero,cr25
+ 2000068:	08200037 	lui	ra,0x4000
+ 200006c:	08400013 	move	ra,ra
+ 2000070:	1003fc13 	li	s0,255
+ 2000074:	00440123 	sw	s0,0(ra)
+ 2000078:	18400103 	lw	s1,0(ra)
+ 200007c:	00c578e3 	bne	s1,s0,2000138 <fail>
+ 2000080:	101fc013 	li	s0,2032
+ 2000084:	00441123 	sw	s0,4(ra)
+ 2000088:	18401103 	lw	s1,4(ra)
+ 200008c:	00c558e3 	bne	s1,s0,2000138 <fail>
+ 2000090:	103fc013 	li	s0,-16
+ 2000094:	00442123 	sw	s0,8(ra)
+ 2000098:	18402103 	lw	s1,8(ra)
+ 200009c:	00c538e3 	bne	s1,s0,2000138 <fail>
+ 20000a0:	101c3c13 	li	s0,1807
+ 20000a4:	00443123 	sw	s0,12(ra)
+ 20000a8:	18403103 	lw	s1,12(ra)
+ 20000ac:	00c518e3 	bne	s1,s0,2000138 <fail>
+ 20000b0:	08200037 	lui	ra,0x4000
+ 20000b4:	08407013 	add	ra,ra,28
+ 20000b8:	1003fc13 	li	s0,255
+ 20000bc:	f845d123 	sw	s0,-12(ra)
+ 20000c0:	187fd103 	lw	s1,-12(ra)
+ 20000c4:	00c4e8e3 	bne	s1,s0,2000138 <fail>
+ 20000c8:	101fc013 	li	s0,2032
+ 20000cc:	f845e123 	sw	s0,-8(ra)
+ 20000d0:	187fe103 	lw	s1,-8(ra)
+ 20000d4:	00c4c8e3 	bne	s1,s0,2000138 <fail>
+ 20000d8:	103fc013 	li	s0,-16
+ 20000dc:	f845f123 	sw	s0,-4(ra)
+ 20000e0:	187ff103 	lw	s1,-4(ra)
+ 20000e4:	00c4a8e3 	bne	s1,s0,2000138 <fail>
+ 20000e8:	101c3c13 	li	s0,1807
+ 20000ec:	00440123 	sw	s0,0(ra)
+ 20000f0:	18400103 	lw	s1,0(ra)
+ 20000f4:	00c488e3 	bne	s1,s0,2000138 <fail>
+ 20000f8:	1640017b 	mfpcr	s0,cr25
+ 20000fc:	1e80017b 	mfpcr	s1,cr26
+ 2000100:	18fffc13 	add	s1,s1,-1
+ 2000104:	22000037 	lui	s2,0x40000
+ 2000108:	21340333 	or	s2,s2,a8
+ 200010c:	078801fb 	mtpcr	zero,s2,cr30
+ 2000110:	24000037 	lui	s2,0x80000
+ 2000114:	21040333 	or	s2,s2,s0
+ 2000118:	078801fb 	mtpcr	zero,s2,cr30
+ 200011c:	26000037 	lui	s2,0xc0000
+ 2000120:	21060333 	or	s2,s2,s1
+ 2000124:	078801fb 	mtpcr	zero,s2,cr30
+ 2000128:	d6800413 	add	a8,a8,1
+ 200012c:	fef402e3 	ble	a8,a9,200002c <set_schedule>
+ 2000130:	08000413 	li	ra,1
+ 2000134:	000220e3 	bne	zero,ra,2000144 <pass>
+
+02000138 <fail>:
+ 2000138:	08000813 	li	ra,2
+ 200013c:	078201fb 	mtpcr	zero,ra,cr30
+ 2000140:	00000063 	b	2000140 <fail+0x8>
+
+02000144 <pass>:
+ 2000144:	078201fb 	mtpcr	zero,ra,cr30
+ 2000148:	00000063 	b	2000148 <pass+0x4>
+ 200014c:	00000013 	nop
+
+Disassembly of section .data:
+
+04000000 <tdat>:
+ 4000000:	deadbeef 	jal	37ab6fa <pass+0x17ab5b6>
+
+04000004 <tdat2>:
+ 4000004:	deadbeef 	jal	37ab6fe <pass+0x17ab5ba>
+
+04000008 <tdat3>:
+ 4000008:	deadbeef 	jal	37ab702 <pass+0x17ab5be>
+
+0400000c <tdat4>:
+ 400000c:	deadbeef 	jal	37ab706 <pass+0x17ab5c2>
+
+04000010 <tdat5>:
+ 4000010:	deadbeef 	jal	37ab70a <pass+0x17ab5c6>
+
+04000014 <tdat6>:
+ 4000014:	deadbeef 	jal	37ab70e <pass+0x17ab5ca>
+
+04000018 <tdat7>:
+ 4000018:	deadbeef 	jal	37ab712 <pass+0x17ab5ce>
+
+0400001c <tdat8>:
+ 400001c:	deadbeef 	jal	37ab716 <pass+0x17ab5d2>
