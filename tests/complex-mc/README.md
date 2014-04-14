@@ -25,12 +25,12 @@ with `results.out` to verify correct operation)
 - All C and D level tasks are not isolated but efficiently use spare processor cycles to meet all deadlines.
 
 ### Files
-`test.mk`: Compilation rules 
+`test.mk`: Compilation rules  
 `init.S`: Executed initially by each active hardware thread. Will set up memory,
 thread scheduling, stack, etc. then call respective C main functions for each
-thread.
-`layout-8t.ld`: Linker script for memory locations of each hardware thread
-`t*.c`: Control execution and logging of each hardware thread
-`t*_task*.c`: Code to simulate task execution
-`build\`: Compiled code
-`results\`: Output files, and .vcd files (if `DEBUG=true`)
+thread.  
+`layout-8t.ld`: Linker script for memory locations of each hardware thread  
+`t*.c`: Control execution and logging of each hardware thread  
+`t*_task*.c`: Code to simulate task execution  
+`build\`: Compiled code  
+`results\`: Output files, and .vcd files (if `DEBUG=true`)  
