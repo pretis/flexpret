@@ -14,7 +14,7 @@ Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Process
 `PROG_CONFIG=emulator_end`: Injected error: Task D ends immediately
 `PROG_CONFIG=emulator_inf`: Injected error: Task D executes infinitely
 
-See `results/emulator_*/CORE_CONFIG/simple-mc.out` for execution timing
+See `results/emulator_*/CORE_CONFIG/simple-mc.out` for execution timing (and diff with `results-*.` to verify correct execution)
 
 In all 3 cases, task A and B will demonstrate identical behavior (isolated), whereas task C will not.
 

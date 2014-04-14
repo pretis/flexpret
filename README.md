@@ -33,12 +33,14 @@ We've tried to make it quick and easy to both simulate program execution on the 
 
 You will need to have `java` and `g++` installed.
 
-To simulate an assembly code test suite:
+To simulate an assembly code test suite (first run may take a few minutes to download dependencies):
 ```
 make run
 ```
 
 This will simulate the execution of the program directory `tests/asm-sodor` on FlexPRET configured with 4 hardware threads. The default configuration is set in `config.mk` and can be [changed](#flexpret-configuration). The makefile will (if needed) install [SBT](http://www.scala-sbt.org/), download Chisel, generate a C++ emulator for the FlexPRET processor, compile the C++ emulator, excute the C++ emulator on each program in the test suite, and finally display the results.
+
+See the [tests](#tests) section for information about running other programs.
 
 `make clean` will remove files associated with current configuration and `make cleanll` will remove files associated with all configurations.
 
@@ -78,7 +80,7 @@ Not all combinations are valid.
 - `DEBUG=[true/false]` Generate waveform dump.
 
 ### Program Configuration
-- `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run. This is the test program that is executed when running command 'make run'. The default value 'asm-sodar' means that an assembler test suite is executed.
+- `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run. This is the test program that is executed when running command 'make run'. The default value 'asm-sodor' means that an assembler test suite is executed.
 - `PROG_CONFIG=[]` Program configuration, start with target name
 
 ### Regression Test
@@ -89,15 +91,17 @@ To run a regression test for many processor configurations
 
 Tests
 --------------------------------------------------------------------------------
-`tests/simple-mc`: A simple mixed-criticality example with 4 periodic tasks to demonstrate differences between hard real-time threads (HRTTs) and soft real-time threads (SRTTs)  
-`tests/complex-mc`: A complex mixed-criticality example with 21 periodic tasks on 8 hardware threads to demonstrate a methodology for task mapping and thread scheduling  
+`PROG_DIR` needs to be modified to execute different programs on the emulator (e.g. `PROG_DIR=simple-mc`)
+
+`tests/simple-mc`: A simple mixed-criticality example with 4 periodic tasks to demonstrate differences between hard real-time threads (HRTTs) and soft real-time threads (SRTTs) ([More info](tests/simple-mc/README.md))  
+`tests/complex-mc`: A complex mixed-criticality example with 21 periodic tasks on 8 hardware threads to demonstrate a methodology for task mapping and thread scheduling ([More info](tests/complex-mc/README.md))  
 `tests/dev/*`: Programs that are out-of-date, unsupported, or under development  
 
 RISC-V Compiler
 --------------------------------------------------------------------------------
 We use the RISC-V GCC compiler, see [riscv.org](http://riscv.org/) for installation instructions.
 
-Ones installed, uncomment `#include $(TESTS_DIR)/tests.mk`. This line is commented out so the Makefile doesn't try to compile by default.
+Once installed, uncomment `#include $(TESTS_DIR)/tests.mk`. This line is commented out so the Makefile doesn't try to compile by default.
 
 Coming soon: pre-compiled binaries of RISC-V GCC compiler for some platforms
 

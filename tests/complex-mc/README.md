@@ -17,7 +17,8 @@ Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Process
 ### Operation
 `CORE_CONFIG=8th-128-128-2smul-stats-exc-gt-du-ee`
 
-See `results/emulator/CORE_CONFIG/complex-mc.out` for execution timing
+See `results/emulator/CORE_CONFIG/complex-mc.out` for execution timing (and diff
+with `results.out` to verify correct operation)
 
 - All A level (most critical) tasks are isolated from all other tasks. 
 - All B level tasks (critical) are HW-isolated from A, C, D level tasks and SW-isolated amongst themselves. 
