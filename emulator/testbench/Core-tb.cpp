@@ -178,7 +178,7 @@ int main (int argc, char* argv[])
     }
 
     if(cycle >= max_cycles) {
-        printf("*** FAILED ***(Max cycles timeout)\n");
+        printf("*** DONE ***(Max cycles timeout)\n");
         fail = true;
     }
 
