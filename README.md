@@ -100,6 +100,7 @@ Tests
 RISC-V Compiler
 --------------------------------------------------------------------------------
 We use the RISC-V GCC compiler, see [riscv.org](http://riscv.org/) for installation instructions.
+The latest version is not currently supported, use revision 4806a4a74e82fd393ce8b9f3ea49d7675204d090 of riscv-tools.
 
 Once installed, uncomment `#include $(TESTS_DIR)/tests.mk`. This line is commented out so the Makefile doesn't try to compile by default.
 
