@@ -100,7 +100,8 @@ PROG_BUILD_DIR = $(TESTS_DIR)/$(PROG_DIR)/build/$(PROG_CONFIG)
 PROG_RESULTS_DIR = $(TESTS_DIR)/$(PROG_DIR)/results/$(PROG_CONFIG)/$(CORE_CONFIG)
 
 # Default rules and templates for compilation of programs.
-#include $(TESTS_DIR)/tests.mk
+# Note: Comment out to not compile and use existing binaries.
+include $(TESTS_DIR)/tests.mk
 
 # Define what programs in selected directory will be compiled and their
 # configuration.

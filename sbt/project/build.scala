@@ -19,6 +19,5 @@ object BuildSettings {
 
 object ChiselBuild extends Build {
    import BuildSettings._
-   lazy val common = Project("common", file ("common"), settings = BuildSettings("../src/common"))
-   lazy val Core = Project("Core", file("Core"), settings = BuildSettings("../src/Core")) dependsOn(common)
+   lazy val Core = Project("Core", file("Core"), settings = BuildSettings("../src/Core"))
 }

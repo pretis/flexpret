@@ -108,10 +108,8 @@ int main (int argc, char* argv[])
     }
 
     // Initialize memories.
-    c->Core_ispm__mem.randomize();
-    c->Core_ispm__mem.read_hex(ispm_filename);
-    c->Core_dspm__mem.randomize();
-    c->Core_dspm__mem.read_hex(dspm_filename);
+    c->Core_imem__ispm.read_hex(ispm_filename);
+    c->Core_dmem__dspm.read_hex(dspm_filename);
 
     // Open VCD trace dump file (if enabled).
     if(vcd) {
@@ -130,12 +128,10 @@ int main (int argc, char* argv[])
         
         // FIXME: remove when possible
         // Hack to reset dspm for each test run.
-        if(c->Core_d__dec_reg_pc.lo_word() == 0x2000060 && c->Core_d__dec_reg_inst.lo_word() == 0x064001FB) {
-            //printf("reset dspm\n");
-            //c->Core_dspm__mem.randomize();
-            //c->Core_dspm__mem.read_hex(dspm_filename);
+        if(c->Core_datapath__dec_reg_pc.lo_word() == 0x2000048) {
+            c->Core_dmem__dspm.read_hex(dspm_filename);
         }
-        tohost = c->Core__io_host_tohost.lo_word();
+        tohost = c->Core__io_host_to_host.lo_word();
         if(tohost != tohost_prev) {
             switch(tohost >> 30) {
                 case 0:
@@ -144,27 +140,19 @@ int main (int argc, char* argv[])
                         done = true;
                     }
                     if(tohost > 1) {
-                        printf("*** FAILED ***(test #%d)\n", tohost);
+                        printf("*** FAILED ***(test #%d)\n", tohost >> 1);
                         fail = true;
                         done = true;
                     }
                     break;
                 case 1:
-                    //if((tohost_prev >> 30) != 1) {
-                        //printf("Scheduling Frequency = %d\n", (tohost & 0x3FFFFFFF));
                         printf("Thread: %d Id: %d ", ((tohost & 0x38000000) >> 27), tohost & 0x7FFFFFF);
-                    //}
                     break;
                 case 2:
-                    //if((tohost_prev >> 30) != 2) {
-                        //printf("Inst Count = %d\n", (tohost & 0x3FFFFFFF));
                         printf("Time (ms): %f\n", ((tohost & 0x3FFFFFFF)-100000)/1000000.0);
-                    //}
                     break;
                 case 3:
-                   // if((tohost_prev >> 30) != 3) {
                         //printf("Cycle Count = %d\n", (tohost & 0x3FFFFFFF));
-                    //}
                     break;
             }
         }
@@ -178,7 +166,7 @@ int main (int argc, char* argv[])
     }
 
     if(cycle >= max_cycles) {
-        printf("*** DONE ***(Max cycles timeout)\n");
+        printf("*** FAILED ***(Max cycles timeout)\n");
         fail = true;
     }
 
@@ -188,9 +176,4 @@ int main (int argc, char* argv[])
     }
 
     return 0;
-        //dat_t<1> reset = LIT<1>(0);
-        //if (!c->scan(stdin)) break;
-        //c->clock_lo(reset);
-        //c->print(stdout);
-        //c->clock_hi(reset);
 }
