@@ -57,7 +57,8 @@ include config.mk
 
 # Construct core configuration string (used for directory naming).
 # Note: '?=' not used so string is only constructed once.
-CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEX)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d-$(MUL_STAGES)smul$(if $(findstring true, $(STATS)),-stats)$(if $(findstring true, $(EXCEPTIONS)),-exc)$(if $(findstring true, $(GET_TIME)),-gt)$(if $(findstring true, $(DELAY_UNTIL)),-du)$(if $(findstring true, $(EXCEPTION_ON_EXPIRE)),-ee)
+CORE_CONFIG := $(THREADS)tf-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d
+#CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEX)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d-$(MUL_STAGES)smul$(if $(findstring true, $(STATS)),-stats)$(if $(findstring true, $(EXCEPTIONS)),-exc)$(if $(findstring true, $(GET_TIME)),-gt)$(if $(findstring true, $(DELAY_UNTIL)),-du)$(if $(findstring true, $(EXCEPTION_ON_EXPIRE)),-ee)
 
 # Default will build target and selected programs.
 all: $(TARGET)
