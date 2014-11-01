@@ -125,6 +125,16 @@ int main (int argc, char* argv[])
         c->clock_lo(LIT<1>(0));
         // Check outputs.
         // TODO: add stats
+
+        // Check for string print.
+        if(c->Core__io_bus_enable.to_bool() && c->Core__io_bus_write.to_bool() && c->Core__io_bus_addr.lo_word() == 0xFFFFFF00) {
+            printf("%c", c->Core__io_bus_data_in.lo_word());
+        }
+
+        // Monitor GPIO for thread 0.
+        if(c->Core__io_gpio_out_0 != c->Core__io_gpio_out_0__prev) {
+            printf("GPIO (tid = 0, cycle = %7d): 0x%08x\n", cycle, c->Core__io_gpio_out_0.lo_word());
+        }
         
         // FIXME: remove when possible
         // Hack to reset dspm for each test run.
@@ -140,7 +150,7 @@ int main (int argc, char* argv[])
                         done = true;
                     }
                     if(tohost > 1) {
-                        printf("*** FAILED ***(test #%d)\n", tohost >> 1);
+                        printf("*** FAILED ***(test #%d)\n", tohost);
                         fail = true;
                         done = true;
                     }

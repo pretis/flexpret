@@ -139,7 +139,7 @@ run: $(PROG:%=$(PROG_RESULTS_DIR)/%.out)
 	@echo; perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.{8})\*{3}(.*)/' \
 	$^; echo;
 
-CLEAN_TARGET = $(EMULATOR_SRC_DIR) $(EMULATOR_BUILD_DIR) $(PROG_RESULTS_DIR)
+CLEAN_TARGET = $(EMULATOR_SRC_DIR) $(EMULATOR_BUILD_DIR) $(PROG_RESULTS_DIR) $(PROG_BUILD_DIR)
 
 endif
 
