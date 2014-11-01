@@ -35,6 +35,7 @@ DEBUG ?= true
 # PROG_CONFIG=[]: Program configuration, start with target name
 #PROG_DIR ?= complex-mc
 #PROG_DIR ?= simple-mc
+#PROG_DIR = examples
 PROG_DIR ?= isa
 PROG_CONFIG ?= $(TARGET)
 

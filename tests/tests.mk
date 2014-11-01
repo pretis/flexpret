@@ -23,12 +23,13 @@ RISCV_S_OPTS ?= -I$(TESTS_DIR)/include
 RISCV_LD_OPTS ?= -nostdlib -I$(TESTS_DIR)/include -Xlinker -defsym -Xlinker TEXT_START_ADDR=0x2000000 -Xlinker -defsym -Xlinker DATA_START_ADDR=0x4000000 -T
 
 # TODO: support fpga target
+LINK_SCRIPT = layout.ld
 
 # Default rules for compiling executable.
 DEFAULT_RULES = $(eval $(call COMPILE_TEMPLATE,\
 				$(PROG),\
 				$(C_STARTUP),\
-				layout.ld,\
+				$(LINK_SCRIPT),\
 				$(RISCV_GCC) $(RISCV_S_OPTS),\
 				$(RISCV_GCC) $(RISCV_C_OPTS),\
 				$(RISCV_GCC) $(RISCV_LD_OPTS),\
@@ -50,9 +51,6 @@ DEFAULT_RULES = $(eval $(call COMPILE_TEMPLATE,\
 %.data.mem: %.data
 	$(RISCV_TO_MEM) $(@:.mem=) > $@
 
-ifdef C
-C_STARTUP ?= startup
-endif
 
 ## 1: Programs
 ## 2: Object dependencies (shared by all programs)
@@ -77,7 +75,7 @@ $(PROG_BUILD_DIR)/%.o: %.c | $(PROG_BUILD_DIR)
 	$(7)
 
 # Link all files. Generate additional files.
-$(1:%=$(PROG_BUILD_DIR)/%.bin): %.bin: $(3) %.o $(2:%=$(PROG_BUILD_DIR)/%.o)
+$(1:%=$(PROG_BUILD_DIR)/%.bin): %.bin: $(3) $(2:%=$(PROG_BUILD_DIR)/%.o) %.o
 	$(6) $$^ -o $$@
 	$(RISCV_OBJDUMP) $$@ > $$(@:.bin=.dump)
 

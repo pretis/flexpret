@@ -1,29 +1,27 @@
+#include "encoding.h"
 
-//#include <stdio.h>
+#define EMULATOR_ADDR 0xFFFFFF00
+#define debug_string(s) emulator_outputstr(s);
+//#define debug_string(s) printf("%s", s);
+//#define debug_string(s) uart_outputstr(s);
 
-#define UART_COUT 0xFFFF0008
-#define UART_DOUT 0xFFFF000C
+#define gpio_set(mask) (set_csr(uarch2, mask))
+#define gpio_clear(mask) (clear_csr(uarch2, mask))
+#define gpio_write(val) ({write_csr(uarch2, val);})
+#define gpio_read() (read_csr(uarch2))
 
-//char __printfstr[80*4];
-
-void uart_outputchar(char c)
-{
-  volatile char* uart_cout = (char*) UART_COUT;
-  volatile char* uart_dout = (char*) UART_DOUT;
-  while(*uart_cout != 0);
-  *uart_dout = c;
+// Write each character in the string to a pre-defined address.
+void emulator_outputstr(char* str) {
+    volatile char* addr = (char*) EMULATOR_ADDR;
+    while(*str != 0) {
+        *addr = *str;
+        str++;
+    }
 }
 
-void uart_outputstr(char* str)
-{
-  while(*str != 0){
-    uart_outputchar(*str);
-    str++;
-  }
-}
-
+// Convert number to string in hex format
 char qbuf[9];
-char* itoa(n)
+char* itoa_hex(n)
 unsigned int n;
 {
     register int i;
@@ -37,56 +35,3 @@ unsigned int n;
     qbuf[8] = '\0';
     return(qbuf);
 }
-//int next;
-//char qbuf[8];
-//
-//char* itoa(n)
-//int n;
-//{
-//register int r, k;
-//int flag = 0;
-//next = 0;
-//if (n < 0) {
-//        qbuf[next++] = '-';
-//         n = -n;
-//}
-//   if (n == 0) {
-//         qbuf[next++] = '0';
-//   } else {
-//         k = 10000;
-//         while (k > 0) {
-//                 r = n / k;
-//                 if (flag || r > 0) {
-//                         qbuf[next++] = '0' + r;
-//                         flag = 1;
-//                 }
-//                 n -= r * k;
-//                 k = k / 10;
-//         }
-//   }
-//   qbuf[next] = 0;
-//   return(qbuf);
-// }
-//
-
-char* hex(unsigned int n)
-{
-  int i,k;
-  for(i=32-4, k=0; i>=0; i -= 4, k++){
-    unsigned int a = (n >> i) & 0xf;
-    if(a <= 9) 
-      qbuf[k] = a + '0';
-    else 
-      qbuf[k] = a + 'a' - 10;
-  } 
-  qbuf[k] = 0;
-  return qbuf;
-}
-
-#ifdef PRET_PC_STDIO
-  #define debug_string(s) printf("%s", s);
-
-#else
-  #define debug_string(s) uart_outputstr(s);
-  #define printf(str) uart_outputstr(str);
-#endif
