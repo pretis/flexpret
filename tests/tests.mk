@@ -15,8 +15,11 @@ RISCV_TO_MEM = hexdump -v -e '1/4 "%08X" "\n"'
 
 # Default Options.
 RISCV_OLEVEL ?= 2
+# -ffast-math, -std=gnu99
 RISCV_C_OPTS ?= -Wall -O$(RISCV_OLEVEL) -I$(TESTS_DIR)/include
 RISCV_S_OPTS ?= -I$(TESTS_DIR)/include
+# -fpic: position independent code
+#  need to include -lc if -nostdlib used?
 RISCV_LD_OPTS ?= -nostdlib -I$(TESTS_DIR)/include -Xlinker -defsym -Xlinker TEXT_START_ADDR=0x2000000 -Xlinker -defsym -Xlinker DATA_START_ADDR=0x4000000 -T
 
 # TODO: support fpga target

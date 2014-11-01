@@ -1,144 +1,135 @@
 /******************************************************************************
-flexpret.scala:
-  Configurable precision-timed (PRET) 5-stage RISC-V processor.
-  - Single-thread
-  - Multi-threaded (4-8) with fixed round-robin thread scheduling
-  - Multi-threaded (2-8) with flexible round-robin thread scheduling
-Authors: 
-  Michael Zimmer (mzimmer@eecs.berkeley.edu)
-  Chris Shaver (shaver@eecs.berkeley.edu)
-  Hokeun Kim (hokeunkim@eecs.berkeley.edu)
-Acknowledgement:
-  Based on Sodor single-thread 5-stage RISC-V processor by Christopher Celio.
-  https://github.com/ucb-bar/riscv-sodor/
+File: core.scala
+Description: FlexPRET Processor (configurable 5-stage RISC-C processor)
+Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
+Contributors: 
+License: See LICENSE.txt
 ******************************************************************************/
-
 package Core
-{
 
 import Chisel._
-import Node._
-import Common._
-import CoreConstants._
-import collection.mutable.{ArrayBuffer}
+import FlexpretConstants._
 
-// TODO cleaner
-case class CoreConfig(threads: Int, flex: Boolean, 
-    iSpmKBytes: Int, dSpmKBytes: Int, mulStages: Int, 
-    stats: Boolean, exceptions: Boolean, 
-    getTime: Boolean, delayUntil: Boolean, 
-    exceptionOnExpire: Boolean)
+case class FlexpretConfiguration(threads: Int, iMemKB: Int, dMemKB: Int, exceptions: Boolean)
 {
+  
   val threadBits = log2Up(threads)
-  val iSpmAddrBits = log2Up(1024/4*iSpmKBytes)
-  val dSpmAddrBits = log2Up(1024/4*dSpmKBytes)
-  val dSpmPageIndex = 10
-  val dSpmPageBits = dSpmAddrBits-dSpmPageIndex
 
-  // Use require() to dependencies between configurations.
-  require(mulStages >= 1 && mulStages <= 2)
-  // If excectionOnExpire, then exceptions and getTime
-  require(!exceptionOnExpire || (exceptions && getTime))
-  // If delayUntil, then getTime
-  require(!delayUntil || getTime)
+  // RegisterFile
+  val regDepth = 32*threads
+
+  // ISpm
+  val iMemDepth = 256*iMemKB  // 32-bit entries
+  val iMemAddrBits = log2Up(iMemDepth) // word addressable
+
+  // DSpm
+  val dMemDepth = 256*dMemKB //32-bit entries
+  val dMemAddrBits = log2Up(4*dMemDepth) // byte addressable
+
+  // Bus
+  val busAddrBits = 32
+
+  // Scheduler
+  val initialSlots = List(
+    SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_T0
+  )
+  val initialTmodes = (0 until threads).map(i => if(i != 0) TMODE_HZ else TMODE_HA)
+
+
+  // functionality
+  // val systemCounters = true
+ 
+  // design exploration
+  val dedicatedBranchCheck = true
 
 }
 
-// TODO: add mechanism to write to I-SPM.
-class CoreIo(iSpmAddrBits: Int) extends Bundle
+class InstMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle
 {
-  //val ispm_write = Bool(INPUT)
-  //val ispm_waddr = UInt(INPUT, iSpmAddrBits)
-  //val ispm_wdata = Bits(INPUT, XPRLEN)
-  val host       = new HostIo()
-  val bus      = new MemIo(32).flip
-  val exe_ns_clock = Bits(OUTPUT, 64)
+  // write port
+  val addr = UInt(INPUT, conf.iMemAddrBits)
+  val write = Bool(INPUT)
+  val data_in = Bits(INPUT, 32)
+  val ready = Bool(OUTPUT)
+  // for read/write port
+  //val enable = Bool(INPUT)
+  //val data_out = Bits(OUTPUT, 32)
 }
 
-class Core(conf: CoreConfig) extends Module
+class DataMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle
 {
-  val io = new CoreIo(conf.iSpmAddrBits)
-  
-  val c  = Module(new Control(conf)) 
-  val d  = Module(new Datapath(conf))
-  val ispm = Module(new ISpm(conf))
-  val dspm = Module(new DSpm(conf))
+  // read/write port
+  val addr = UInt(INPUT, conf.dMemAddrBits-2) // assume word aligned
+  val enable = Bool(INPUT)
+  val data_out = Bits(OUTPUT, 32)
+  val byte_write = Vec.fill(4) { Bool(INPUT) }
+  val data_in = Bits(INPUT, 32)
+}
 
-  // Connect datapath and control unit.
-  c.io.ctl  <> d.io.ctl
-  c.io.dat  <> d.io.dat
-  
-  // Connect datapath to scratchpad memories.
-  d.io.ispm <> ispm.io
-  d.io.dspm <> dspm.io
+class BusIO(implicit conf: FlexpretConfiguration) extends Bundle
+{
+  val addr = UInt(INPUT, conf.busAddrBits) // assume word aligned
+  val enable = Bool(INPUT)
+  val data_out = Bits(OUTPUT, 32)
+  val write =  Bool(INPUT)
+  val data_in = Bits(INPUT, 32)
+}
 
-  // Connect datapath to external IO
-  d.io.top <> io
+class HostIO() extends Bundle 
+{
+  val to_host = Bits(OUTPUT, 32)
+}
+
+class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle
+{
+  val imem = new InstMemBusIO()
+  val dmem = new DataMemBusIO()
+  val bus  = new BusIO().flip
+  val host = new HostIO()
+}
+
+class Core(confIn: FlexpretConfiguration) extends Module
+{
+
+  implicit val conf = confIn
   
+  val io = new CoreIO()
+
+  val control = Module(new Control())
+  val datapath = Module(new Datapath())
+  val imem = Module(new ISpm())
+  val dmem = Module(new DSpm())
+ 
+  // internal
+  datapath.io.control <> control.io
+  datapath.io.imem <> imem.io.core
+  datapath.io.dmem <> dmem.io.core
+
+  // external
+  io.imem <> imem.io.bus
+  io.dmem <> dmem.io.bus
+  io.bus  <> datapath.io.bus
+  io.host <> datapath.io.host
+
 }
 
 object CoreMain {
-   def main(args: Array[String]): Unit = { 
+  def main(args: Array[String]): Unit = { 
+    
+    val confString = args(0)
+    val chiselArgs = args.slice(1, args.length)
+
+    val parsed = """(\d+)t(.*)-(\d+)i-(\d+)d""".r.findFirstMatchIn(confString)
+    // TODO: print error/warning message
+    val coreConfig = if(parsed.isEmpty) new FlexpretConfiguration(4, 16, 16, true)
+                     else new FlexpretConfiguration(parsed.get.group(1).toInt,
+                                                    parsed.get.group(3).toInt,
+                                                    parsed.get.group(4).toInt,
+                                                    true)
+    
       
-      // Processor configuration is passed in using args from sbt.
-      val confString = args(0)
-      val chiselArgs = args.slice(1, args.length)
+    // Pass configuration to FlexPRET processor.
+    chiselMain( chiselArgs, () => Module(new Core(coreConfig)) )
 
-      var threads = 4
-      var flex = true
-      var iSpmKBytes = 8
-      var dSpmKBytes = 8
-      var mulStages = 2
-      """(\d+)t(.*)-(\d+)i-(\d+)d-(\d+)smul""".r.findAllIn(confString).matchData foreach {
-        m => 
-          threads = m.group(1).toInt
-          flex = m.group(2) contains "f"
-          iSpmKBytes = m.group(3).toInt
-          dSpmKBytes = m.group(4).toInt
-          mulStages = m.group(5).toInt
-      }
-      val stats = confString contains "stats"
-      val exceptions = confString contains "exc"
-      val getTime = confString contains "gt"
-      val delayUntil = confString contains "du"
-      val exceptionOnExpire = confString contains "ee"
-
-      val coreConfig = CoreConfig(threads, flex, iSpmKBytes, dSpmKBytes, 
-        mulStages, stats, exceptions, getTime, delayUntil, exceptionOnExpire)
-
-
-//val coreConfig = CoreConfig(4, true, 8, 8, 1, true, true, true, true, false)
-      //val coreConfig = CoreConfig(args(0).toInt, 
-      //                            args(1).toBoolean, 
-      //                            args(2).toInt,
-      //                            args(3).toInt,
-      //                            args(4).toInt,
-      //                            args(5).toBoolean,
-      //                            false,
-      //                            false,
-      //                            false,
-      //                            false)
-                                  //true,
-                                  //true,
-                                  //true,
-                                  //true)
-
-      //// Pass configuration to FlexPRET processor.
-      chiselMain( chiselArgs, () => Module(new Core(coreConfig)) )
-
-      // Processor configuration is passed in using args from sbt.
-      //val chiselArgs = args.slice(6, args.length)
-
-      //val coreConfig = CoreConfig(args(0).toInt, 
-      //                            args(1).toBoolean, 
-      //                            args(2).toInt,
-      //                            args(3).toInt,
-      //                            args(4).toInt,
-      //                            args(5).toBoolean)
-
-      //// Pass configuration to FlexPRET processor.
-      //chiselMain( chiselArgs, () => new Core(coreConfig) )
    }
-}
-
 }
