@@ -274,6 +274,7 @@ object CSRs {
   //flexpret
   val slots = uarch0
   val tmodes = uarch1
+  val gpos = uarch2
   val all = {
     val res = collection.mutable.ArrayBuffer[Int]()
     res += fflags

@@ -26,6 +26,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
     val tmodes  = Vec.fill(conf.threads) { UInt(OUTPUT, TMODE_WI) }
     val evec   = UInt(OUTPUT, 32) //ifex 
     val host    = new HostIO()
+    val gpio    = new GPIO()
   }
  
  
@@ -33,7 +34,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
  val data_out = Bits()
  val data_in = MuxLookup(io.rw.csr_type, io.rw.data_in, Array(
     CSR_S -> (data_out | io.rw.data_in),
-    CSR_C -> (data_out & ~io.rw.data_out),
+    CSR_C -> (data_out & ~io.rw.data_in),
     CSR_W -> io.rw.data_in
   ))
 
@@ -42,6 +43,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   val reg_tmodes = Vec(conf.initialTmodes.map(i => Reg(init = i)))
   val reg_evecs = Vec.fill(conf.threads) { Reg(UInt()) } //ifex
   val reg_to_host = Reg(init = Bits(0, 32))
+  val reg_gpos = Vec.fill(conf.threads) { Reg(UInt(width = conf.gpoBits)) }
   
   def compare_addr(csr: Int): Bool = { io.rw.addr === UInt(csr) }
 
@@ -50,6 +52,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
     when(compare_addr(CSRs.tohost)) { reg_to_host := data_in }
     when(compare_addr(CSRs.slots)) { for((slot, i) <- reg_slots.view.zipWithIndex) { slot := data_in(4*i+3, 4*i) } }
     when(compare_addr(CSRs.tmodes)) { for((tmode, i) <- reg_tmodes.view.zipWithIndex) { tmode := data_in(2*i+1, 2*i) } }
+    when(compare_addr(CSRs.gpos)) { reg_gpos(io.rw.thread) := data_in(conf.gpoBits-1, 0) }
     if(conf.exceptions) {
     when(compare_addr(CSRs.evec)) { reg_evecs(io.rw.thread) := data_in } //ifex
     }
@@ -58,11 +61,12 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   val def_data_out = reg_to_host
   data_out :=
     Mux(compare_addr(CSRs.tohost), reg_to_host,
+    Mux(compare_addr(CSRs.gpos), (if(conf.gpoBits < 32) Cat(Bits(0, 32-conf.gpoBits), reg_gpos(io.rw.thread)) else reg_gpos(io.rw.thread)),
     Mux(compare_addr(CSRs.slots), reg_slots.toBits(),
     Mux(compare_addr(CSRs.tmodes), Cat(Bits(0, 32-2*conf.threads), reg_tmodes.toBits()),
     Mux(compare_addr(CSRs.hartid), Cat(Bits(0, 32-conf.threadBits), io.rw.thread),
     Mux(compare_addr(CSRs.evec), (if(conf.exceptions) reg_evecs(io.rw.thread) else def_data_out), //ifex
-        def_data_out))))) // default
+        def_data_out)))))) // default
 
   io.rw.data_out := data_out
   io.slots := reg_slots
@@ -71,6 +75,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
     io.evec := reg_evecs(io.rw.thread) //ifex
   }
   io.host.to_host := reg_to_host
+  io.gpio.out := reg_gpos
 
 
 }
