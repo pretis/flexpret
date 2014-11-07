@@ -40,6 +40,11 @@ case class FlexpretConfiguration(threads: Int, iMemKB: Int, dMemKB: Int, excepti
 
 
   // functionality
+  val timeBits = 31
+  val timeInc = 10
+  require(timeBits <= 31) // TODO: support up to 63 bits
+  val getTime = true
+  val delayUntil = true
   // val systemCounters = true
  
   // design exploration

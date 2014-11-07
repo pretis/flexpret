@@ -3,7 +3,9 @@
 
 #MAX_CYCLES = 2000000
 PROG ?=\
-gpio
+gpio \
+delay_until \
+sync_comm
 
 C_STARTUP = start
 RISCV_S_OPTS += -DT0_FREQ=1

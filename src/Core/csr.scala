@@ -44,6 +44,10 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   val reg_evecs = Vec.fill(conf.threads) { Reg(UInt()) } //ifex
   val reg_to_host = Reg(init = Bits(0, 32))
   val reg_gpos = Vec.fill(conf.threads) { Reg(UInt(width = conf.gpoBits)) }
+  val reg_time = Reg(init = UInt(0, conf.timeBits))
+  val reg_du_time = Vec.fill(conf.threads) { Reg(UInt(width = conf.timeBits+1)) }
+  val reg_du_en = Vec.fill(conf.threads) { Reg(init = Bool(false)) }
+
   
   def compare_addr(csr: Int): Bool = { io.rw.addr === UInt(csr) }
 
@@ -54,7 +58,14 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
     when(compare_addr(CSRs.tmodes)) { for((tmode, i) <- reg_tmodes.view.zipWithIndex) { tmode := data_in(2*i+1, 2*i) } }
     when(compare_addr(CSRs.gpos)) { reg_gpos(io.rw.thread) := data_in(conf.gpoBits-1, 0) }
     if(conf.exceptions) {
-    when(compare_addr(CSRs.evec)) { reg_evecs(io.rw.thread) := data_in } //ifex
+      when(compare_addr(CSRs.evec)) { reg_evecs(io.rw.thread) := data_in } //ifex
+    }
+    if(conf.delayUntil) {
+      when(compare_addr(CSRs.delay_until)) { 
+        reg_du_time(io.rw.thread) := data_in // Store time to compare against
+        reg_du_en(io.rw.thread) := Bool(true) // Start compare
+        reg_tmodes(io.rw.thread) := reg_tmodes(io.rw.thread) | TMODE_OR_Z // Sleep thread
+      } //ifdu
     }
   }
 
@@ -66,7 +77,30 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
     Mux(compare_addr(CSRs.tmodes), Cat(Bits(0, 32-2*conf.threads), reg_tmodes.toBits()),
     Mux(compare_addr(CSRs.hartid), Cat(Bits(0, 32-conf.threadBits), io.rw.thread),
     Mux(compare_addr(CSRs.evec), (if(conf.exceptions) reg_evecs(io.rw.thread) else def_data_out), //ifex
-        def_data_out)))))) // default
+    Mux(compare_addr(CSRs.time), (if(conf.getTime) Cat(Bits(0, 32-conf.timeBits), reg_time) else def_data_out),
+        def_data_out))))))) // default
+
+  // Update CSR (overwrite write)
+  if(conf.getTime) {
+    reg_time := reg_time + UInt(conf.timeInc)
+  }
+
+  // Delay until //ifdu
+  // TODO: could allow larger range if top bit cleared on roll-over
+  if(conf.delayUntil) {
+    for(tid <- 0 until conf.threads) {
+      // Compare count
+      when(reg_du_en(tid) && reg_time >= reg_du_time(tid)) {
+        // Handle overflow
+        when(!(reg_time(conf.timeBits-1) === UInt(1) && reg_du_time(tid)(conf.timeBits) === UInt(1))) {
+          // Wake up thread
+          reg_tmodes(tid) := reg_tmodes(tid) & TMODE_AND_A
+          reg_du_en(tid) := Bool(false)
+        }
+      }
+    }
+  }
+  
 
   io.rw.data_out := data_out
   io.slots := reg_slots

@@ -163,6 +163,8 @@ object FlexpretConstants
   val TMODE_HZ = UInt(1, 2)
   val TMODE_SA = UInt(2, 2)
   val TMODE_SZ = UInt(3, 2)
+  val TMODE_AND_A = UInt(2, 2)
+  val TMODE_OR_Z  = UInt(1, 2)
 
   val CAUSE_X = UInt(0, 4)
 

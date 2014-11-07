@@ -275,6 +275,7 @@ object CSRs {
   val slots = uarch0
   val tmodes = uarch1
   val gpos = uarch2
+  val delay_until = uarch3
   val all = {
     val res = collection.mutable.ArrayBuffer[Int]()
     res += fflags

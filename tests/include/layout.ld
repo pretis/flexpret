@@ -13,6 +13,7 @@ SECTIONS
   .data :
   {
     *(.rodata*);
+    *(.sdata*);
     *(.data*);
   }
   bss_start = .;
