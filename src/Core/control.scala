@@ -165,6 +165,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   // default values
   dec_if_kill  := Bool(false)
   exe_if_kill  := Bool(false)
+  mem_if_kill  := Bool(false)
   exe_dec_kill := Bool(false)
   exe_kill     := Bool(false)
   dec_replay   := Bool(false)
@@ -325,15 +326,18 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   // set number of cycles.
   // Note: If need support for more than a few cycles, switch to counters with
   // mux.
-  
-  val exe_reg_if_kill = Reg(next = dec_fence_i.toBool)
-  //val mem_reg_if_kill = Reg(next = Reg(next = ))
-
-  when(dec_fence_i.toBool) {
-    dec_if_kill := Bool(true) //TODO: check
-  }
+  // TODO: best way to handle?
+  val dec_kill2 = Bool()
+  dec_kill2 := Bool(false)
+  val dec_kill3 = Bool()
+  dec_kill3 := Bool(false)
+  val exe_reg_if_kill = Reg(init = Bool(false), next = (dec_kill2 || dec_kill3))
+  val mem_reg_if_kill = Reg(init = Bool(false), next = Reg(init = Bool(false), next = dec_kill3))
   when(exe_reg_valid && exe_reg_if_kill) {
     exe_if_kill := Bool(true)
+  }
+  when(mem_reg_valid && mem_reg_if_kill) {
+    mem_if_kill := Bool(true)
   }
 
   // A simple implementation of the FENCE.I instruction is to prevent the
@@ -341,6 +345,17 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   // FENCE.I instruction has completed execute stage (so any preceding 
   // instruction has completed at least memory stage). This can be done by
   // killing any instruction with the same thread ID in fetch for 2 cycles.
+  when(dec_fence_i.toBool) {
+    dec_if_kill := Bool(true) //TODO: bug on replay?
+    dec_kill2 := Bool(true)
+  }
+
+  // Delay until
+  val dec_du = (dec_csr_type != CSR_F) && (io.dec_inst(31, 20) === Bits(CSRs.delay_until))
+  when(dec_du) {
+    dec_if_kill := Bool(true)
+    dec_kill3 := Bool(true)
+  }
 
   // to datapath
   io.next_tid           := next_tid
