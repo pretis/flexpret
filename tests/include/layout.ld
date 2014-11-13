@@ -1,3 +1,4 @@
+/* Basic linker script for .text at TEXT_START_ADDR and .data; .bss at DATA_START_ADDR */
 OUTPUT_ARCH("riscv")
 
 SECTIONS
@@ -6,12 +7,14 @@ SECTIONS
   . = TEXT_START_ADDR;
   .text :
   {
+    *startup.o (.text);
     *(.text*);
   }
   /* data: Initialized data segment */
   . = DATA_START_ADDR;
   .data :
   {
+    *startup.o (.data);
     *(.rodata*);
     *(.sdata*);
     *(.data*);

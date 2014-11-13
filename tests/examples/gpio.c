@@ -1,7 +1,8 @@
 // Example C program to write, mask set, and mask clear GPIO bits.
 // Michael Zimmer (mzimmer@eecs.berkeley.edu)
 
-#include "ptio.h"
+#include "flexpret_timing.h"
+#include "flexpret_io.h"
 
 int main(void)
 {

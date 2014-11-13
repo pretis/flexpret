@@ -1,10 +1,9 @@
-// Example C program for bit-banging synchronous communication.
+// Example C program for bit-banging variable duty cycle communication.
 //
 // This program sends an array of curr_bytes. For each curr_byte, bits are sent from least
-// significant to most significant by setting the data pin to 0/1 after each
-// positive clock edge.
-// gpio(0): clock pin, with period PERIOD and ~50% duty cycle
-// gpio(1): data pin, 0/1 depending on current bit
+// significant to most significant by using either a longer or shorter duty
+// cycle than nominal.
+// gpio(0): variable duty cycle with PERIOD, logic 1 is 75% high, 0 is 25% high
 //
 // Michael Zimmer (mzimmer@eecs.berkeley.edu)
 
@@ -12,9 +11,12 @@
 #include "flexpret_io.h"
 
 #define PERIOD 10000
+#define HIGH1 7500
+#define HIGH0 2500
+
 // TODO extern for message
 
-int sync_comm()  
+int duty_comm()
 {
     char message[4] = {'t','e','s','t'};
     unsigned int i, j; // loop counters
@@ -24,17 +26,16 @@ int sync_comm()
         curr_byte = message[i];
         for(j = 0; j < 8; j++) {
             // 1 is mask for gpio(0)
-            // 2 is mask for gpio(1)
-            gpio_set(1); // posedge clk
+            gpio_set(1); // go high
             if(curr_byte & 1) {
-                gpio_set(2); // if bit == 1, gpio(1) = 1
+                delay_until(time + HIGH1);
+                gpio_clear(1); // if bit == 1, stay high for .75*PERIOD
             } else {
-                gpio_clear(2); // else bit == 0, gpio(1) = 0
+                delay_until(time + HIGH0);
+                gpio_clear(1); // else bit == 0, stay high for .25*PERIOD
             }
             curr_byte = curr_byte >> 1; // Setup next bit
-            periodic_delay(&time, PERIOD/2); // wait PERIOD/2 since last delay
-            gpio_clear(1); // negedge clk
-            periodic_delay(&time, PERIOD/2); // wait PERIOD/2 since last delay
+            periodic_delay(&time, PERIOD); // wait PERIOD since last delay
         }
     }
     return 1;
@@ -42,6 +43,6 @@ int sync_comm()
 
 int main(void)
 {
-    return sync_comm();
+    return duty_comm();
 }
 

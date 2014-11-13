@@ -1,7 +1,8 @@
-// Example C program for get_time and delay_until instructions.
+// Example C program for delay_until instruction.
 // Michael Zimmer (mzimmer@eecs.berkeley.edu)
 
-#include "ptio.h"
+#include "flexpret_timing.h"
+#include "flexpret_io.h"
 
 int main(void)
 {
