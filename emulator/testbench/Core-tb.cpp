@@ -135,6 +135,15 @@ int main (int argc, char* argv[])
         if(c->Core__io_gpio_out_0 != c->Core__io_gpio_out_0__prev) {
             printf("GPIO (tid = 0, cycle = %7d): 0x%08x\n", cycle, c->Core__io_gpio_out_0.lo_word());
         }
+        if(c->Core__io_gpio_out_1 != c->Core__io_gpio_out_1__prev) {
+            printf("GPIO (tid = 1, cycle = %7d): 0x%08x\n", cycle, c->Core__io_gpio_out_1.lo_word());
+        }
+        if(c->Core__io_gpio_out_2 != c->Core__io_gpio_out_2__prev) {
+            printf("GPIO (tid = 2, cycle = %7d): 0x%08x\n", cycle, c->Core__io_gpio_out_2.lo_word());
+        }
+        if(c->Core__io_gpio_out_3 != c->Core__io_gpio_out_3__prev) {
+            printf("GPIO (tid = 3, cycle = %7d): 0x%08x\n", cycle, c->Core__io_gpio_out_3.lo_word());
+        }
         
         // FIXME: remove when possible
         // Hack to reset dspm for each test run.
