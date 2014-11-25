@@ -25,14 +25,14 @@ int duty_comm()
     for(i = 0; i < 4; i++) { // iterate over array of curr_bytes
         curr_byte = message[i];
         for(j = 0; j < 8; j++) {
-            // 1 is mask for gpio(0)
-            gpio_set(1); // go high
+            // 1 is mask for gpo(0)
+            gpo_set(1); // go high
             if(curr_byte & 1) {
                 delay_until(time + HIGH1);
-                gpio_clear(1); // if bit == 1, stay high for .75*PERIOD
+                gpo_clear(1); // if bit == 1, stay high for .75*PERIOD
             } else {
                 delay_until(time + HIGH0);
-                gpio_clear(1); // else bit == 0, stay high for .25*PERIOD
+                gpo_clear(1); // else bit == 0, stay high for .25*PERIOD
             }
             curr_byte = curr_byte >> 1; // Setup next bit
             periodic_delay(&time, PERIOD); // wait PERIOD since last delay

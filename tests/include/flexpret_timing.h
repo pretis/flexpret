@@ -1,6 +1,6 @@
 #include "encoding.h"
 
-// Width <= 31
+// Width <= 32
 #define get_time() (read_csr(time))
 #define delay_until(val) ({write_csr(uarch3, val);})
 
@@ -15,6 +15,6 @@
 static inline void periodic_delay(unsigned int* time, unsigned int period) {
     *time += period;
     // TODO parameterize?
-    *time &= 0x7FFFFFFF;
+//    *time &= 0x7FFFFFFF;
     delay_until(*time);
 }
