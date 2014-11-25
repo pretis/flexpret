@@ -27,6 +27,7 @@ case class FlexpretConfiguration(threads: Int, iMemKB: Int, dMemKB: Int, excepti
   val dMemAddrBits = log2Up(4*dMemDepth) // byte addressable
 
   // GPIO
+  val gpiBits = 8
   val gpoBits = 8
 
   // Bus
@@ -40,9 +41,9 @@ case class FlexpretConfiguration(threads: Int, iMemKB: Int, dMemKB: Int, excepti
 
 
   // functionality
-  val timeBits = 31
+  val timeBits = 32
   val timeInc = 10
-  require(timeBits <= 31) // TODO: support up to 63 bits
+  require(timeBits <= 32) // TODO: support up to 64 bits
   val getTime = true
   val delayUntil = true
   // val systemCounters = true
@@ -90,6 +91,7 @@ class HostIO() extends Bundle
 
 class GPIO(implicit conf: FlexpretConfiguration) extends Bundle
 {
+  val in = Vec.fill(conf.threads) { Bits(INPUT, conf.gpiBits) }
   val out = Vec.fill(conf.threads) { Bits(OUTPUT, conf.gpoBits) }
 }
 

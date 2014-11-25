@@ -43,9 +43,10 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   val reg_tmodes = Vec(conf.initialTmodes.map(i => Reg(init = i)))
   val reg_evecs = Vec.fill(conf.threads) { Reg(UInt()) } //ifex
   val reg_to_host = Reg(init = Bits(0, 32))
-  val reg_gpos = Vec.fill(conf.threads) { Reg(UInt(width = conf.gpoBits)) }
+  val reg_gpis = Vec.fill(conf.threads) { Reg(init = UInt(0, conf.gpiBits)) }
+  val reg_gpos = Vec.fill(conf.threads) { Reg(init = UInt(0, conf.gpoBits)) }
   val reg_time = Reg(init = UInt(0, conf.timeBits))
-  val reg_du_time = Vec.fill(conf.threads) { Reg(UInt(width = conf.timeBits+1)) }
+  val reg_du_time = Vec.fill(conf.threads) { Reg(UInt(width = conf.timeBits)) }
   val reg_du_en = Vec.fill(conf.threads) { Reg(init = Bool(false)) }
 
   
@@ -69,16 +70,19 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
     }
   }
 
+  // Read CSR
   val def_data_out = reg_to_host
   data_out :=
     Mux(compare_addr(CSRs.tohost), reg_to_host,
     Mux(compare_addr(CSRs.gpos), (if(conf.gpoBits < 32) Cat(Bits(0, 32-conf.gpoBits), reg_gpos(io.rw.thread)) else reg_gpos(io.rw.thread)),
+    Mux(compare_addr(CSRs.gpis), (if(conf.gpiBits < 32) Cat(Bits(0, 32-conf.gpiBits), reg_gpis(io.rw.thread)) else reg_gpis(io.rw.thread)),
     Mux(compare_addr(CSRs.slots), reg_slots.toBits(),
     Mux(compare_addr(CSRs.tmodes), Cat(Bits(0, 32-2*conf.threads), reg_tmodes.toBits()),
     Mux(compare_addr(CSRs.hartid), Cat(Bits(0, 32-conf.threadBits), io.rw.thread),
     Mux(compare_addr(CSRs.evec), (if(conf.exceptions) reg_evecs(io.rw.thread) else def_data_out), //ifex
-    Mux(compare_addr(CSRs.time), (if(conf.getTime) Cat(Bits(0, 32-conf.timeBits), reg_time) else def_data_out),
-        def_data_out))))))) // default
+    Mux(compare_addr(CSRs.time), (if(conf.getTime) reg_time else def_data_out),
+    //Mux(compare_addr(CSRs.time), (if(conf.getTime) Cat(Bits(0, 32-conf.timeBits), reg_time) else def_data_out),
+        def_data_out)))))))) // default
 
   // Update CSR (overwrite write)
   if(conf.getTime) {
@@ -90,17 +94,19 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   if(conf.delayUntil) {
     for(tid <- 0 until conf.threads) {
       // Compare count
-      when(reg_du_en(tid) && reg_time >= reg_du_time(tid)) {
-        // Handle overflow
-        when(!(reg_time(conf.timeBits-1) === UInt(1) && reg_du_time(tid)(conf.timeBits) === UInt(1))) {
+      when(reg_du_en(tid) && ((reg_time - reg_du_time(tid))(conf.timeBits-1) === UInt(0,1))) {
+  //      // Handle overflow
+  //      when(!(reg_time(conf.timeBits-1) === UInt(1) && reg_du_time(tid)(conf.timeBits) === UInt(1))) {
           // Wake up thread
           reg_tmodes(tid) := reg_tmodes(tid) & TMODE_AND_A
           reg_du_en(tid) := Bool(false)
-        }
+  //      }
       }
     }
   }
-  
+
+  // Every cycle, register GPI pins
+  reg_gpis := io.gpio.in
 
   io.rw.data_out := data_out
   io.slots := reg_slots

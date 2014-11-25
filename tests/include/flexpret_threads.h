@@ -4,6 +4,10 @@
 #define THREADS 4
 #endif
 
+// Added for FlexPRET
+typedef unsigned int uint32_t;
+#define NULL 0L
+
 typedef struct hwthread_state {
     void (*func)();
     uint32_t stack_address;

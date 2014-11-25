@@ -36,11 +36,11 @@ DEFAULT_RULES = $(eval $(call COMPILE_TEMPLATE,\
 				))
 
 #
-%.inst: %.bin
+%.inst: %.elf
 	$(RISCV_SPLIT_INST) $< $@
 
 #
-%.data: %.bin
+%.data: %.elf
 	$(RISCV_SPLIT_DATA) $< $@
 
 #
@@ -75,9 +75,9 @@ $(PROG_BUILD_DIR)/%.o: %.c | $(PROG_BUILD_DIR)
 	$(7)
 
 # Link all files. Generate additional files.
-$(1:%=$(PROG_BUILD_DIR)/%.bin): %.bin: $(3) $(2:%=$(PROG_BUILD_DIR)/%.o) %.o
+$(1:%=$(PROG_BUILD_DIR)/%.elf): %.elf: $(3) $(2:%=$(PROG_BUILD_DIR)/%.o) %.o
 	$(6) $$^ -o $$@
-	$(RISCV_OBJDUMP) $$@ > $$(@:.bin=.dump)
+	$(RISCV_OBJDUMP) $$@ > $$(@:.elf=.dump)
 
 endef
 

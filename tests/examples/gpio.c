@@ -6,11 +6,11 @@
 
 int main(void)
 {
-    gpio_write(0x55);
-    gpio_set(0xF0);
-    gpio_clear(0x0F);
-    debug_string(itoa_hex(gpio_read()));
+    gpo_write(0x55);
+    gpo_set(0xF0);
+    gpo_clear(0x0F);
+    debug_string(itoa_hex(gpo_read()));
     debug_string("\n")
-    return (gpio_read() == 0xF0);
+    return (gpo_read() == 0xF0);
 }
 

@@ -19,9 +19,9 @@ class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
   val data_in = Bits(INPUT, 32)
 }
 
-class DSpm(implicit conf: FlexpretConfiguration) extends Module
-// TODO: rename blackbox signals
-//class DSRAM(conf: FlexpretConfiguration) extends BlackBox
+
+//class DSpm(implicit conf: FlexpretConfiguration) extends Module
+class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
 {
   val io = new Bundle {
     val core = new DataMemCoreIO()

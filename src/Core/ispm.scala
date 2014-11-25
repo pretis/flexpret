@@ -27,7 +27,9 @@ class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
   }
 }
 
-class ISpm(implicit conf: FlexpretConfiguration) extends Module
+
+class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
+//class ISpm(implicit conf: FlexpretConfiguration) extends Module
 {
   val io = new Bundle {
     val core = new InstMemCoreIO()
@@ -53,16 +55,12 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module
   io.core.rw.data_out := dout_rw
   
   // Read/write port connected to datapath (has priority) and external bus.
+  io.bus.ready := Bool(false)
   when(io.core.rw.enable) {
-    io.bus.ready := Bool(false)
-    dout_rw := ispm(io.core.rw.addr)
     when(io.core.rw.write) {
       ispm(io.core.rw.addr) := io.core.rw.data_in
     }
-  } .otherwise {
-    io.bus.ready := Bool(true)
-    when(io.bus.write) {
-      ispm(io.bus.addr) := io.bus.data_in
-    }
+    dout_rw := ispm(io.core.rw.addr)
   }
+  // TODO: bus connection for ISPM
 }

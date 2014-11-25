@@ -296,7 +296,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module
   io.control.csr_slots := csr.io.slots
   io.control.csr_tmodes := csr.io.tmodes
   io.host.to_host := csr.io.host.to_host
-  io.gpio.out := csr.io.gpio.out
+  io.gpio <> csr.io.gpio
   
   wb_reg_tid     := mem_reg_tid
   wb_reg_rd_addr := mem_reg_rd_addr

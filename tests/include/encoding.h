@@ -3,9 +3,6 @@
 #ifndef RISCV_CSR_ENCODING_H
 #define RISCV_CSR_ENCODING_H
 
-// Added for FlexPRET
-typedef unsigned int uint32_t;
-#define NULL 0L
 
 #define SR_S     0x00000001
 #define SR_PS    0x00000002

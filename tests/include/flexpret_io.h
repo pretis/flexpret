@@ -1,9 +1,11 @@
 #include "encoding.h"
 
-#define gpio_set(mask) (set_csr(uarch2, mask))
-#define gpio_clear(mask) (clear_csr(uarch2, mask))
-#define gpio_write(val) ({write_csr(uarch2, val);})
-#define gpio_read() (read_csr(uarch2))
+#define gpo_set(mask) (set_csr(uarch2, mask))
+#define gpo_clear(mask) (clear_csr(uarch2, mask))
+#define gpo_write(val) ({write_csr(uarch2, val);})
+#define gpo_read() (read_csr(uarch2))
+
+#define gpi_read() (read_csr(uarch5))
 
 #define EMULATOR_ADDR 0xFFFFFF00
 #define debug_string(s) emulator_outputstr(s);
