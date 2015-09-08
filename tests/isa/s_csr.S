@@ -12,8 +12,8 @@ RVTEST_RV32S
 RVTEST_CODE_BEGIN
 
   # Set up evec in case we trap.
-  la t0, evec
-  csrw evec, t0
+  la x4, evec
+  csrw evec, x4
 ##  csrwi count, 0
 ##
 ##  csrwi sup0, 3
@@ -39,6 +39,7 @@ RVTEST_CODE_BEGIN
    ## added
    li TESTNUM, 12
   # Exit by doing a syscall.
+epc:
   TEST_CASE(13, x0, 1, scall)
 
   # We should only fall through to this if scall failed.
@@ -47,32 +48,38 @@ RVTEST_CODE_BEGIN
 evec:
   # Trapping on tests 10, 11, and 13 is usually good news.
   # Note that since the test didn't complete, TESTNUM is smaller by 1.
-##  li t0, 9
-##  beq TESTNUM, t0, privileged
-##  li t0, 10
-##  beq TESTNUM, t0, privileged
-  li t0, 12
-  beq TESTNUM, t0, syscall
+##  li x4, 9
+##  beq TESTNUM, x4, privileged
+##  li x4, 10
+##  beq TESTNUM, x4, privileged
+  li x4, 12
+  beq TESTNUM, x4, syscall
 
   # Trapping on other tests is bad news.
   j fail
 
 ##privileged:
 ##  # Make sure CAUSE indicates a lack of privilege.
-##  csrr t0, cause
-##  li t1, CAUSE_PRIVILEGED_INSTRUCTION
-##  bne t0, t1, fail
+##  csrr x4, cause
+##  li x5, CAUSE_PRIVILEGED_INSTRUCTION
+##  bne x4, x5, fail
 ##  # Return to user mode, but skip the trapping instruction.
-##  csrr t0, epc
-##  addi t0, t0, 4
-##  csrw epc, t0
+##  csrr x4, epc
+##  addi x4, x4, 4
+##  csrw epc, x4
 ##  sret
 
 syscall:
   # Make sure CAUSE indicates a syscall.
-##  csrr t0, cause
-##  li t1, CAUSE_SYSCALL
-##  bne t0, t1, fail
+  li TESTNUM, 14
+  csrr x4, cause
+  li x5, CAUSE_SYSCALL
+  bne x4, x5, fail
+  # Make sure EPC is correct.
+  li TESTNUM, 15
+  csrr x4, epc
+  la x5, epc
+  bne x4, x5, fail
 
   # We're done.
   j pass

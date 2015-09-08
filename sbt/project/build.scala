@@ -12,7 +12,12 @@ object BuildSettings {
       version := buildVersion,
       scalaVersion := buildScalaVersion,
       scalaSource in Compile := Path.absolute(file(sourcePath)),
-      libraryDependencies += "edu.berkeley.cs" %% "chisel" % "latest.release"
+// latest version:
+//      libraryDependencies += "edu.berkeley.cs" %% "chisel" % "latest.release"
+// if latest not compatible:     
+      libraryDependencies += "edu.berkeley.cs" %% "chisel" % "2.2.27"
+// from source:
+//      libraryDependencies += "edu.berkeley.cs" %% "chisel" % "2.3-SNAPSHOT"
     )
   }
 }

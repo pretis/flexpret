@@ -3,9 +3,8 @@
 #
 # Michael Zimmer (mzimmer@eecs.berkeley.edu)
 
-PROG = $(PROG_BASE) $(PROG_DEP)
 
-PROG_BASE= \
+PROG= \
 	add addi \
 	and andi \
 	auipc \
@@ -22,36 +21,29 @@ PROG_BASE= \
 	srl srli \
 	sub \
 	xor xori \
+	$(if $(findstring true, $(MUL)), mul mulh mulhu mulhsu) \
+	$(if $(findstring ex, $(SUFFIX)), $(PROG_EX)) \
+	$(if $(findstring ti, $(SUFFIX)), $(PROG_TI)) \
+	$(if $(findstring all, $(SUFFIX)), $(PROG_ALL)) \
 
-PROG_DEP= \
-	s_csr
+PROG_EX= \
+	exc_illegal \
+	exc_external
+PROG_TI= \
+	$(PROG_EX) \
+	flex_du \
+	flex_wu \
+	flex_ie \
+	flex_ee
+PROG_ALL= \
+	$(PROG_TI) \
 
-#I?: 
-#sltiu sltu fence scall sbreak rdcycle rdcycleh rdtime rdtimeh rdinstret rdinstreth
-#M: 
-#mul mulh mulhu mulhsu \
-#div divu \
-#rem remu \
-#A: 
-#amoadd_w amoand_w amomax_w amomaxu_w amomin_w amominu_w amoor_w amoswap_w \
-#A?:
-#amoxor_w lr_w sc_w
+	
+#s_csr \
+#exc_priv \
+#flex_gpio
 
-#ifeq ($(GET_TIME),true)
-#  ifeq ($(DELAY_UNTIL),true)
-##	PROG_DEP += riscv_gtdu
-#  endif
-#  ifeq ($(EXCEPTION_ON_EXPIRE),true)
-##	PROG_DEP += riscv_ie
-#  endif
-#endif
+MAX_CYCLES = 150000
+EMULATOR_OPTS ?= --sweep
 
 $(DEFAULT_RULES)
-
-#rv32ui_mc_tests = \
-#	lrsc
-#
-#rv32ui_p_tests = $(addprefix rv32ui-p-, $(rv32ui_sc_tests))
-#rv32ui_pm_tests = $(addprefix rv32ui-pm-, $(rv32ui_mc_tests))
-#
-#spike_tests += $(rv32ui_p_tests) $(rv32ui_pm_tests)

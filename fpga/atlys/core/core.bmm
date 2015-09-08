@@ -1,0 +1,76 @@
+ADDRESS_MAP core MICROBLAZE-LE 0
+  ADDRESS_SPACE ispm RAMB16 [0x0000000:0x0003FFF] 
+    BUS_BLOCK
+//      flexpret/imem/Mram_ispm8 [31:28];
+//      flexpret/imem/Mram_ispm7 [27:24];
+//      flexpret/imem/Mram_ispm6 [23:20];
+//      flexpret/imem/Mram_ispm5 [19:16];
+//      flexpret/imem/Mram_ispm4 [15:12];
+//      flexpret/imem/Mram_ispm3 [11:8];
+//      flexpret/imem/Mram_ispm2 [7:4];
+//      flexpret/imem/Mram_ispm1 [3:0];
+      flexpret/imem/Mram_ispm_0007 [31:28];
+      flexpret/imem/Mram_ispm_0006 [27:24];
+      flexpret/imem/Mram_ispm_0005 [23:20];
+      flexpret/imem/Mram_ispm_0004 [19:16];
+      flexpret/imem/Mram_ispm_0003 [15:12];
+      flexpret/imem/Mram_ispm_0002 [11:8];
+      flexpret/imem/Mram_ispm_0001 [7:4];
+      flexpret/imem/Mram_ispm [3:0];
+    END_BUS_BLOCK;
+  END_ADDRESS_SPACE; 
+  //ADDRESS_SPACE dspm COMBINED [0x20000000:0x20003FFF]
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm1 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm2 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm3 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm4 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm5 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm6 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm7 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //  ADDRESS_RANGE RAMB16
+  //    BUS_BLOCK
+  //      flexpret/dmem/Mram_dspm8 RAMB16 [31:0];
+  //    END_BUS_BLOCK;
+  //  END_ADDRESS_RANGE;
+  //END_ADDRESS_SPACE;
+  ADDRESS_SPACE dspm RAMB16 [0x20000000:0x20003FFF]
+    BUS_BLOCK
+      flexpret/dmem/Mram_dspm_0013 [31:28];
+      flexpret/dmem/Mram_dspm_0011 [27:24];
+      flexpret/dmem/Mram_dspm_0009 [23:20];
+      flexpret/dmem/Mram_dspm_0007 [19:16];
+      flexpret/dmem/Mram_dspm_0005 [15:12];
+      flexpret/dmem/Mram_dspm_0003 [11:8];
+      flexpret/dmem/Mram_dspm_0001 [7:4];
+      flexpret/dmem/Mram_dspm [3:0];
+    END_BUS_BLOCK;
+  END_ADDRESS_SPACE;
+END_ADDRESS_MAP;

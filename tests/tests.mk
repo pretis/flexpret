@@ -6,9 +6,12 @@
 VPATH = $(TESTS_DIR)/include:$(PROG_SRC_DIR)
 
 # RISC-V commands.
-RISCV_GCC = riscv-gcc -m32
-RISCV_OBJDUMP = riscv-objdump --disassemble-all --section=.text --section=.data --section=.bss
-RISCV_OBJCOPY = riscv-objcopy
+#RISCV_GCC = riscv-gcc -m32
+#RISCV_OBJDUMP = riscv-objdump --disassemble-all --section=.text --section=.data --section=.bss
+#RISCV_OBJCOPY = riscv-objcopy
+RISCV_GCC = riscv64-unknown-elf-gcc -m32
+RISCV_OBJDUMP = riscv64-unknown-elf-objdump --disassemble-all --section=.text --section=.data --section=.bss
+RISCV_OBJCOPY = riscv64-unknown-elf-objcopy
 RISCV_SPLIT_DATA = $(RISCV_OBJCOPY) --only-section .data --only-section .bss -O binary
 RISCV_SPLIT_INST = $(RISCV_OBJCOPY) --only-section .text -O binary
 RISCV_TO_MEM = hexdump -v -e '1/4 "%08X" "\n"'
@@ -20,10 +23,10 @@ RISCV_C_OPTS ?= -Wall -O$(RISCV_OLEVEL) -I$(TESTS_DIR)/include
 RISCV_S_OPTS ?= -I$(TESTS_DIR)/include
 # -fpic: position independent code
 #  need to include -lc if -nostdlib used?
-RISCV_LD_OPTS ?= -nostdlib -I$(TESTS_DIR)/include -Xlinker -defsym -Xlinker TEXT_START_ADDR=0x2000000 -Xlinker -defsym -Xlinker DATA_START_ADDR=0x4000000 -T
+RISCV_LD_OPTS ?= -nostdlib -I$(TESTS_DIR)/include -Xlinker -defsym -Xlinker TEXT_START_ADDR=0x00000000 -Xlinker -defsym -Xlinker DATA_START_ADDR=0x20000000 -T
 
 # TODO: support fpga target
-LINK_SCRIPT = layout.ld
+LINK_SCRIPT ?= layout.ld
 
 # Default rules for compiling executable.
 DEFAULT_RULES = $(eval $(call COMPILE_TEMPLATE,\

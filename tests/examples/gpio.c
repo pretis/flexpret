@@ -6,11 +6,14 @@
 
 int main(void)
 {
-    gpo_write(0x55);
-    gpo_set(0xF0);
-    gpo_clear(0x0F);
-    debug_string(itoa_hex(gpo_read()));
+    gpo_write_0(0x1);
+    set_compare(get_time() + 10000);
+    delay_until();
+    gpo_set_0(0x2);
+    gpo_clear_0(0x1);
+    // should be 2
+    debug_string(itoa_hex(gpo_read_0()));
     debug_string("\n")
-    return (gpo_read() == 0xF0);
+    return (gpo_read_0() == 0x2);
 }
 

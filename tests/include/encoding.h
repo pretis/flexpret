@@ -4,6 +4,39 @@
 #define RISCV_CSR_ENCODING_H
 
 
+// timing instructions
+#define TI_DU custom0 zero, zero, zero, 0
+#define TI_WU custom1 zero, zero, zero, 0
+#define TI_EE custom2 zero, zero, zero, 0
+#define TI_IE custom2 zero, zero, zero, 1
+
+// temp for older RISC-V
+#define scause cause
+#define sepc epc
+
+#define CAUSE_IE 0x8000000d
+#define CAUSE_EE 0xd
+#define CAUSE_EXTERNAL_INT 0x8000000e
+
+// 5[8+]
+// Hack until csr instruction can take immediate value
+//#define CSR_SLOTS 0x5C0
+//#define CSR_TMODES 0x5C1
+#define CSR_CLOCK fflags
+#define CSR_SLOTS badvaddr
+#define CSR_TMODES ptbr
+#define CSR_IMEM_P asid
+#define CSR_DMEM_P impl
+#define CSR_GPO_P fatc
+#define CSR_GPI_0 uarch0
+#define CSR_GPI_1 uarch1
+#define CSR_GPI_2 uarch2
+#define CSR_GPI_3 uarch3
+#define CSR_GPO_0 uarch4
+#define CSR_GPO_1 uarch5
+#define CSR_GPO_2 uarch6
+#define CSR_GPO_3 uarch7
+
 #define SR_S     0x00000001
 #define SR_PS    0x00000002
 #define SR_EI    0x00000004

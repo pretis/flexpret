@@ -10,7 +10,7 @@ duty_comm \
 both_comm
 
 C_STARTUP = startup
-RISCV_S_OPTS += -DT0_FREQ=1
-#RISCV_C_OPTS += 
+#RISCV_S_OPTS +=
+RISCV_C_OPTS += -DDEBUG_EMULATOR
 
 $(DEFAULT_RULES)

@@ -1,12 +1,12 @@
+#ifndef FLEXPRET_THREADS_H
+#define FLEXPRET_THREADS_H
+
 #include "encoding.h"
+#include "flexpret_const.h"
 
 #ifndef THREADS
 #define THREADS 4
 #endif
-
-// Added for FlexPRET
-typedef unsigned int uint32_t;
-#define NULL 0L
 
 typedef struct hwthread_state {
     void (*func)();
@@ -26,8 +26,9 @@ uint32_t hwthread_done(uint32_t tid) {
     return (startup_state[tid].func == NULL);
 }
 
+// CSR_SLOTS
 #define set_slots(s7, s6, s5, s4, s3, s2, s1, s0) (\
-        {write_csr(uarch0, (\
+        {swap_csr(badvaddr, (\
         ((s7 & 0xF) << 28) | \
         ((s6 & 0xF) << 24) | \
         ((s5 & 0xF) << 20) | \
@@ -48,8 +49,9 @@ uint32_t hwthread_done(uint32_t tid) {
 #define SLOT_S 14
 #define SLOT_D 15
 
+// CSR_TMODES
 #define set_tmodes_4(t3, t2, t1, t0) (\
-        {write_csr(uarch1, (\
+        {write_csr(ptbr, (\
         ((t3 & 0x3) << 6) | \
         ((t2 & 0x3) << 4) | \
         ((t1 & 0x3) << 2) | \
@@ -59,3 +61,17 @@ uint32_t hwthread_done(uint32_t tid) {
 #define TMODE_HZ 1
 #define TMODE_SA 2
 #define TMODE_SZ 3
+
+// Memory Protection
+#define MEMP_T0 0
+#define MEMP_T1 1
+#define MEMP_T2 2
+#define MEMP_T3 3
+#define MEMP_T4 4
+#define MEMP_T5 5
+#define MEMP_T6 6
+#define MEMP_T7 7
+#define MEMP_SH 8
+#define MEMP_RO 9
+
+#endif
