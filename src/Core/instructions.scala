@@ -98,9 +98,9 @@ object Instructions {
   def AMOSWAP_D          = Bits("b00001????????????011?????0101111")
   def LR_D               = Bits("b00010??00000?????011?????0101111")
   def SC_D               = Bits("b00011????????????011?????0101111")
-  def SCALL              = Bits("b00000000000000000000000001110011")
+  //def SCALL              = Bits("b00000000000000000000000001110011")
   def SBREAK             = Bits("b00000000000100000000000001110011")
-  def SRET               = Bits("b10000000000000000000000001110011")
+  //def SRET               = Bits("b10000000000000000000000001110011")
   def CSRRW              = Bits("b?????????????????001?????1110011")
   def CSRRS              = Bits("b?????????????????010?????1110011")
   def CSRRC              = Bits("b?????????????????011?????1110011")
@@ -193,6 +193,11 @@ object Instructions {
   def CUSTOM3_RD         = Bits("b?????????????????100?????1111011")
   def CUSTOM3_RD_RS1     = Bits("b?????????????????110?????1111011")
   def CUSTOM3_RD_RS1_RS2 = Bits("b?????????????????111?????1111011")
+  val DU = CUSTOM0_RD_RS1_RS2
+  val WU = CUSTOM1_RD_RS1_RS2
+  val IE = CUSTOM2_RD_RS1_RS2
+  def SCALL              = Bits("b0??????????0?????000?????1110011")
+  def SRET               = Bits("b1????????????????000?????1110011")
 }
 object Causes {
   val misaligned_fetch = 0x0
@@ -207,6 +212,10 @@ object Causes {
   val fault_load = 0xa
   val fault_store = 0xb
   val accelerator_disabled = 0xc
+  // custom (5th bit is interrupt)
+  val ee = 0xd
+  val ie = 0x1d
+  val external_int = 0x1e
   val all = {
     val res = collection.mutable.ArrayBuffer[Int]()
     res += misaligned_fetch
@@ -272,11 +281,14 @@ object CSRs {
   val timeh = 0xc81
   val instreth = 0xc82
   //flexpret
-  val slots = uarch0
-  val tmodes = uarch1
-  val gpos = uarch2
-  val delay_until = uarch3
-  val gpis = uarch5
+  val clock = fflags
+  val slots = badvaddr
+  val tmodes = ptbr
+  val iMemProtection = asid
+  val dMemProtection = impl
+  val gpoProtection = fatc
+  val gpiBase = uarch0
+  val gpoBase = uarch4
   val all = {
     val res = collection.mutable.ArrayBuffer[Int]()
     res += fflags
@@ -324,6 +336,11 @@ object CSRs {
     // flexpret
     res += slots
     res += tmodes
+    res += iMemProtection
+    res += dMemProtection
+    res += gpoProtection
+    res += gpiBase
+    res += gpoBase
     res.toArray
   }
   val all32 = {

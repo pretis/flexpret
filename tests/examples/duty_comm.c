@@ -10,39 +10,40 @@
 #include "flexpret_timing.h"
 #include "flexpret_io.h"
 
-#define PERIOD 10000
-#define HIGH1 7500
-#define HIGH0 2500
+#define PERIOD 1200
+#define HIGH1 700
+#define HIGH0 350
 
-// TODO extern for message
-
-int duty_comm()
+void duty_comm(uint32_t* data, uint32_t length)
 {
-    char message[4] = {'t','e','s','t'};
-    unsigned int i, j; // loop counters
-    char curr_byte; // current curr_byte
-    unsigned int time = get_time(); // used for period loop
-    for(i = 0; i < 4; i++) { // iterate over array of curr_bytes
-        curr_byte = message[i];
-        for(j = 0; j < 8; j++) {
-            // 1 is mask for gpo(0)
-            gpo_set(1); // go high
-            if(curr_byte & 1) {
-                delay_until(time + HIGH1);
-                gpo_clear(1); // if bit == 1, stay high for .75*PERIOD
-            } else {
-                delay_until(time + HIGH0);
-                gpo_clear(1); // else bit == 0, stay high for .25*PERIOD
+    uint32_t i, j;                   // loop counters
+    uint32_t current;                // current word of data
+    uint32_t time = get_time()+1000; // start time after initialization
+    for(i = 0; i < length; i++) {    // iterate through input data
+        current = data[i];           // read next word
+        for(j = 0; j < 32; j++) {    // iterate through each bit in word
+            time = time + PERIOD;    
+            set_compare(time);
+            delay_until();           // wait until next period
+            gpo_set_0(1);            // output pin goes high
+            if(current & 1) {        // if bit == 1...
+                set_compare(time + HIGH1);
+                delay_until();       // stay high for .75*PERIOD
+                gpo_clear_0(1);      // output bit goes low 
+            } else {                 // if bit == 0...
+                set_compare(time + HIGH0);
+                delay_until();       // stay high for .25*PERIOD
+                gpo_clear_0(1);      // output bit goes low
             }
-            curr_byte = curr_byte >> 1; // Setup next bit
-            periodic_delay(&time, PERIOD); // wait PERIOD since last delay
+            current = current >> 1;  // setup next bit
         }
     }
-    return 1;
 }
 
 int main(void)
 {
-    return duty_comm();
+    uint32_t data[2] = {0x01234567, 0x89ABCDEF};
+    duty_comm(data,2);
+    return 1;
 }
 

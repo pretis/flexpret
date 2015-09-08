@@ -20,13 +20,8 @@
 
 TESTBENCH ?= $(EMULATOR_DIR)/testbench/$(MODULE)-tb.cpp
 
-#TODO
 ifeq ($(DEBUG), true)
-CONFIG = $(CORE_CONFIG)-debug
 SBT_ARGS = --debug --vcd
-SIM_DEBUG = --vcd=$(@:%.out=%.vcd)
-else
-CONFIG = $(CORE_CONFIG)
 endif
 #------------------------------------------------------------------------------
 # Generate C++ emulator 
@@ -34,7 +29,7 @@ endif
 # Generate C++ emulator from Chisel code.
 $(EMULATOR_SRC_DIR)/$(MODULE).cpp: $(SRC_DIR)/$(MODULE)/*.scala
 	cd $(SBT_DIR) && \
-	$(SBT) "project Core" "run $(CONFIG) --backend c --targetDir $(SBT_TO_BASE)/$(EMULATOR_SRC_DIR) $(SBT_ARGS)"
+	$(SBT) "project Core" "run $(CORE_CONFIG) --backend c --targetDir $(SBT_TO_BASE)/$(EMULATOR_SRC_DIR) $(SBT_ARGS)"
 
 # Create build directory if needed.
 $(EMULATOR_BUILD_DIR):
@@ -45,8 +40,9 @@ $(EMULATOR).o: $(addprefix $(EMULATOR_SRC_DIR)/, $(MODULE).cpp $(MODULE).h emula
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Compile testbench.
+TESTBENCH_OPTS = $(if $(findstring true, $(FLEXPRET)),-DFLEXPRET) -DTHREADS=$(THREADS)
 $(EMULATOR)-tb.o: $(TESTBENCH) $(addprefix $(EMULATOR_SRC_DIR)/, $(MODULE).cpp $(MODULE).h emulator.h) | $(EMULATOR_BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -I$(EMULATOR_SRC_DIR) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(EMULATOR_SRC_DIR) $(TESTBENCH_OPTS) -c $< -o $@
 
 # Link C++ emulator with testbench.
 $(EMULATOR): %: %.o %-tb.o

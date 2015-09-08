@@ -27,7 +27,7 @@ class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
   }
 }
 
-
+// TODO: interal module for Blackbox
 class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
 //class ISpm(implicit conf: FlexpretConfiguration) extends Module
 {
@@ -49,18 +49,33 @@ class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
     dout_r := ispm(io.core.r.addr)
   }
 
-  // read/write port
-  // infer sequential read
-  val dout_rw = Reg(Bits(width = 32))
-  io.core.rw.data_out := dout_rw
-  
-  // Read/write port connected to datapath (has priority) and external bus.
-  io.bus.ready := Bool(false)
-  when(io.core.rw.enable) {
-    when(io.core.rw.write) {
-      ispm(io.core.rw.addr) := io.core.rw.data_in
+  if(conf.iMemCoreRW || conf.iMemBusRW) {
+    // read/write port
+    // infer sequential read
+    val dout_rw = Reg(Bits(width = 32))
+
+    if(conf.iMemBusRW) {
+      io.bus.data_out := dout_rw
+      io.bus.ready := Bool(true)
+      when(io.bus.enable) {
+        when(io.bus.write) {
+          ispm(io.bus.addr) := io.bus.data_in
+        }
+        dout_rw := ispm(io.bus.addr)
+      }
     }
-    dout_rw := ispm(io.core.rw.addr)
+
+    // Core has priority over bus
+    if(conf.iMemCoreRW) {
+      io.core.rw.data_out := dout_rw
+      when(io.core.rw.enable) {
+        if(conf.iMemBusRW) io.bus.ready := Bool(false)
+        when(io.core.rw.write) {
+          ispm(io.core.rw.addr) := io.core.rw.data_in
+        }
+        dout_rw := ispm(io.core.rw.addr)
+      }
+    }
+
   }
-  // TODO: bus connection for ISPM
 }

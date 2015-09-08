@@ -20,8 +20,9 @@ class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
 }
 
 
-//class DSpm(implicit conf: FlexpretConfiguration) extends Module
+// TODO: interal module for Blackbox
 class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
+//class DSpm(implicit conf: FlexpretConfiguration) extends Module
 {
   val io = new Bundle {
     val core = new DataMemCoreIO()
@@ -46,6 +47,22 @@ class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
       Mux(io.core.byte_write(0), io.core.data_in( 7,  0), current( 7,  0))
     )
   }
+  
+  if(conf.dMemBusRW) { 
+    // read/write port for bus
+    val dout_2 = Reg(Bits(width = 32)) // infer sequential read
+    io.bus.data_out := dout_2
+  
+    when(io.bus.enable) {
+      val current_2 = dspm(io.bus.addr)
+      dout := current_2
+      dspm(io.bus.addr) := Cat(
+        Mux(io.bus.byte_write(3), io.bus.data_in(31, 24), current_2(31, 24)),
+        Mux(io.bus.byte_write(2), io.bus.data_in(23, 16), current_2(23, 16)),
+        Mux(io.bus.byte_write(1), io.bus.data_in(15,  8), current_2(15,  8)),
+        Mux(io.bus.byte_write(0), io.bus.data_in( 7,  0), current_2( 7,  0))
+      )
+    }
+  }
 
-  // TODO: read/write port for bus
 }

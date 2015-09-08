@@ -2,7 +2,6 @@
 #define _ENV_PHYSICAL_SINGLE_CORE_H
 
 #include "encoding.h"
-#include "asm_macros.h"
 
 //-----------------------------------------------------------------------
 // Begin Macro
@@ -51,7 +50,7 @@
   .endm
 
 #define RVTEST_32_ENABLE                                                \
-  li a0, SR_S64;                                                        \
+  //li a0, SR_S64;                                                        \
   csrc status, a0;                                                      \
 
 #define RVTEST_FP_ENABLE                                                \
@@ -76,32 +75,16 @@
   csrr a0, hartid;                                                      \
   1: bnez a0, 1b;                                                       \
 
-//#define EXTRA_INIT                                                      
-//#define EXTRA_INIT_TIMER
-
-// Begin FlexPRET
-// Execute tests for every possible scheduling frequency.
-// E.g. With 4 hardware threads and flexible scheduling, run with thread 
-// scheduled every 4th cycle, then every 3rd, ...
-#define EXTRA_INIT                                                      \
-extra_init_begin:               \
-  READ_FLEX_THREADS(x27);       \
-  beqz x27, extra_init_end;     \
-  READ_MAX_THREADS(x27);        \
-set_t0_freq:                    \
-  SET_T0_FREQ(x27, x26, x25);   \
-  addi x27, x27, -1;            \
-extra_init_end:
-  
+#define EXTRA_INIT                                                      
 #define EXTRA_INIT_TIMER
-// End FlexPRET
+
 
 #define RVTEST_CODE_BEGIN                                               \
         .text;                                                          \
         .align  4;                                                      \
         .global _start;                                                 \
 _start:                                                                 \
-        RISCV_MULTICORE_DISABLE;                                        \
+        //RISCV_MULTICORE_DISABLE;                                        \
         init;                                                           \
         EXTRA_INIT;                                                     \
         EXTRA_INIT_TIMER;                                               \
@@ -118,25 +101,20 @@ _start:                                                                 \
 
 // Begin FlexPRET
 #define RVTEST_PASS                                                     \
-        bnez x27, set_t0_freq;                                          \
         fence;                                                          \
         csrw tohost, 1;                                                 \
-1:      b 1b;                                                           \
-// End FlexPRET
+        csrsi CSR_GPO_0, 1;                                             \
+1:      j 1b;                                                           \
 
-//#define RVTEST_PASS                                                     \
-//        fence;                                                          \
-//        csrw tohost, 1;                                                 \
-//1:      b 1b;                                                           \
 
 #define TESTNUM x28
 #define RVTEST_FAIL                                                     \
         fence;                                                          \
         beqz TESTNUM, 1f;                                               \
-        sll TESTNUM, TESTNUM, 1;                                        \
-        or TESTNUM, TESTNUM, 1;                                         \
         csrw tohost, TESTNUM;                                           \
-1:      b 1b;                                                           \
+        csrsi CSR_GPO_0, 2; \
+1:      j 1b;                                                           \
+// End FlexPRET
 
 //-----------------------------------------------------------------------
 // Data Section Macro

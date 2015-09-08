@@ -1,0 +1,9 @@
+*.prj
+*.exe
+*.wdb
+*.log
+*.xmsgs
+*.cmd
+*.ini
+iseconfig/
+isim/
