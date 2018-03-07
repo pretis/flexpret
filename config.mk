@@ -18,7 +18,8 @@ THREADS ?= 4
 FLEXPRET ?= true
 ISPM_KBYTES ?= 16
 DSPM_KBYTES ?= 16
-MUL ?= false
+MUL ?= true
+DIV ?= true
 SUFFIX ?= ti
 
 # Target

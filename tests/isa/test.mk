@@ -22,6 +22,7 @@ PROG= \
 	sub \
 	xor xori \
 	$(if $(findstring true, $(MUL)), mul mulh mulhu mulhsu) \
+	$(if $(findstring true, $(DIV)), div divu rem remu) \
 	$(if $(findstring ex, $(SUFFIX)), $(PROG_EX)) \
 	$(if $(findstring ti, $(SUFFIX)), $(PROG_TI)) \
 	$(if $(findstring all, $(SUFFIX)), $(PROG_ALL)) \
@@ -38,7 +39,7 @@ PROG_TI= \
 PROG_ALL= \
 	$(PROG_TI) \
 
-	
+
 #s_csr \
 #exc_priv \
 #flex_gpio

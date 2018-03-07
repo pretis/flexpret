@@ -2,7 +2,7 @@
 File: core.scala
 Description: FlexPRET Processor (configurable 5-stage RISC-V processor)
 Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
-Contributors: 
+Contributors:
 License: See LICENSE.txt
 ******************************************************************************/
 package Core
@@ -10,7 +10,7 @@ package Core
 import Chisel._
 import FlexpretConstants._
 
-case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemKB: Int, mul: Boolean, features: String) 
+case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemKB: Int, mul: Boolean, div: Boolean, features: String)
 {
 
   println("features: " + features)
@@ -35,7 +35,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemK
 
   // General
   val threadBits = log2Up(threads)
-  
+
   // Datapath
   // If true, allow arbitrary interleaving of threads in pipeline using bypass paths
   // If false, at least four hardware threads must be interleaved in the
@@ -77,7 +77,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemK
   // upper bits are for thread ID
   val busAddrBits = 10
 
-  // Memory Protection 
+  // Memory Protection
   val memRegions = 8
   val iMemLowIndex = iMemHighIndex - log2Up(memRegions) + 1
   val dMemLowIndex = dMemHighIndex - log2Up(memRegions) + 1
@@ -135,7 +135,7 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle
   val data_in = Bits(INPUT, 32)
 }
 
-class HostIO() extends Bundle 
+class HostIO() extends Bundle
 {
   val to_host = Bits(OUTPUT, 32)
 }
@@ -161,7 +161,7 @@ class Core(confIn: FlexpretConfiguration) extends Module
 {
 
   implicit val conf = confIn
-  
+
   val io = new CoreIO()
 
   val control = Module(new Control())
@@ -170,7 +170,7 @@ class Core(confIn: FlexpretConfiguration) extends Module
   //val imem = Module(new ISpm_BRAM())
   val dmem = Module(new DSpm())
   //val dmem = Module(new DSpm_BRAM())
- 
+
   // internal
   datapath.io.control <> control.io
   datapath.io.imem <> imem.io.core
@@ -184,14 +184,14 @@ class Core(confIn: FlexpretConfiguration) extends Module
   io.gpio <> datapath.io.gpio
   for(tid <- 0 until conf.threads) {
     datapath.io.int_exts(tid) := io.int_exts(tid)
-  } 
+  }
   //io.int_exts <> datapath.io.int_exts
 
 }
 
 object CoreMain {
-  def main(args: Array[String]): Unit = { 
-    
+  def main(args: Array[String]): Unit = {
+
     val confString = args(0)
     val chiselArgs = args.slice(1, args.length)
 
@@ -202,9 +202,10 @@ object CoreMain {
       parsed.get.group(3).toInt,
       parsed.get.group(4).toInt,
       confString contains "mul",
+      confString contains "div",
       parsed.get.group(5)
       )
-      
+
     // Pass configuration to FlexPRET processor.
     chiselMain( chiselArgs, () => Module(new Core(coreConfig)) )
 

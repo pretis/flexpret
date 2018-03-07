@@ -2,7 +2,7 @@
 File: constants.scala
 Description: Constant values for parameters, control signals, and RISC-V ISA.
 Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
-Contributors: 
+Contributors:
 License: See LICENSE.txt
 ******************************************************************************/
 package Core
@@ -22,7 +22,7 @@ object FlexpretConstants
   val T = Bool(true)
   val F = Bool(false)
   val X = Bits("b?", 1)
-  
+
   // immediate
   val IMM_WI = 3
   val IMM_S  = UInt(0, 3)
@@ -39,7 +39,7 @@ object FlexpretConstants
   val OP1_RS1 = UInt(1, 2)
   val OP1_0   = UInt(2, 2)
   val OP1_X   = Bits("b??", 2)
- 
+
   // ALU op2 select
   val OP2_WI = 2
   val OP2_IMM = UInt(0, 2)
@@ -61,7 +61,7 @@ object FlexpretConstants
   val ALU_SLTU = UInt(11, 4)
   val ALU_SRA  = UInt(13, 4)
   val ALU_X    = Bits("b????", 4)
-  
+
   // branch condition
   val BR_WI = 3
   val BR_EQ  = UInt(0, 3)
@@ -71,21 +71,21 @@ object FlexpretConstants
   val BR_LTU = UInt(4, 3)
   val BR_GEU = UInt(5, 3)
   val BR_X   = Bits("b???", 3)
- 
+
   // CSR types
   val CSR_WI = 2
   val CSR_W = UInt(1, 2)
   val CSR_S = UInt(2, 2)
   val CSR_C = UInt(3, 2)
   val CSR_X = Bits("b??", 2)
-  
+
   // rd from execute stage select
   val EXE_RD_WI = 2
   val EXE_RD_ALU = UInt(0, 2)
   val EXE_RD_CSR = UInt(1, 2)
   val EXE_RD_PC4 = UInt(2, 2)
   val EXE_RD_X   = Bits("b??", 2)
-  
+
   // memory load/store operation types
   val MEM_WI = 4
   val MEM_LB  = UInt(0,  4)
@@ -98,21 +98,25 @@ object FlexpretConstants
   val MEM_SW  = UInt(10, 4)
   val MEM_X   = Bits("b????", 4)
 
-  val MUL_WI = 2
-  val MUL_L   = UInt(0, 2)
-  val MUL_H   = UInt(1, 2)
-  val MUL_HSU = UInt(2, 2)
-  val MUL_HU  = UInt(3, 2)
-  val MUL_X   = Bits("b??", 2)
-  
+  val MUL_WI = 3
+  val MUL_L   = UInt(0, 3)
+  val MUL_H   = UInt(1, 3)
+  val MUL_HSU = UInt(2, 3)
+  val MUL_HU  = UInt(3, 3)
+  val DIV_L   = UInt(4, 3)
+  val DIV_LU = UInt(5, 3)
+  val REM_L   = UInt(6, 3)
+  val REM_LU = UInt(7, 3)
+  val MUL_X   = Bits("b???", 3)
+
   // rd from memory stage select
   val MEM_RD_WI = 2
   val MEM_RD_REG = UInt(0, 2)
   val MEM_RD_MEM = UInt(1, 2)
   val MEM_RD_MUL = UInt(2, 2)
   val MEM_RD_X   = Bits("b??", 2)
-  
-  
+
+
   // ************************************************************
   // Determined by control
 
@@ -136,10 +140,10 @@ object FlexpretConstants
   val RS2_EXE = UInt(1, 2)
   val RS2_MEM = UInt(2, 2)
   val RS2_WB  = UInt(3, 2)
- 
+
   // ************************************************************
   // Constants
-  
+
   // thread scheduling slots
   val SLOT_WI = 4
   val SLOT_T0 = UInt(0, 4)
@@ -178,7 +182,7 @@ object FlexpretConstants
   val ADDR_DSPM_VAL  = Bits("b001", ADDR_DSPM_BITS)
   val ADDR_BUS_BITS  = 2
   val ADDR_BUS_VAL   = Bits("b01", ADDR_BUS_BITS)
-  
+
   // memory protection
   val MEMP_WI = 4
   val MEMP_T0 = UInt(0, 4)
