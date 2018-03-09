@@ -27,19 +27,29 @@ class Multiplier(implicit conf: FlexpretConfiguration) extends Module {
   // 2 cycle
   io.result := Reg(next = result)
 
-
-  // FIXME: synthetisable signed rem operator not yet implemented
   def rem(dividend: Bits, divider: Bits) : Bits = {
-    return Mux(io.func === REM_LU,
-                divider_unsigned(dividend, divider, Bool(true)),
-                dividend % divider);
+    return divider_signed(dividend, divider, Bool(true));
   }
 
-  // FIXME: synthetisable signed div operator not yet implemented
   def div(dividend : Bits, divider: Bits) : Bits = {
-    return Mux(io.func === DIV_LU,
-                divider_unsigned(dividend, divider, Bool(false)),
-                dividend / divider);
+    return divider_signed(dividend, divider, Bool(false));
+  }
+
+  def divider_signed(dividend: Bits, divider: Bits, isRemainder: Bool) : Bits = {
+
+    val signed_dividend = dividend(32);
+    val signed_divider = divider(32);
+    val signed_quotient = signed_dividend^signed_divider;
+    val signed_remainder = signed_dividend;
+
+    val udividend = Mux(signed_dividend, ~dividend + Bits(1,1), dividend);
+    val udivider = Mux(signed_divider, ~divider + Bits(1,1), divider);
+
+    var result = divider_unsigned(udividend, udivider, isRemainder);
+
+    return Mux((isRemainder && signed_remainder) || (!isRemainder && signed_quotient),
+      ~result + Bits(1,1),
+      result);
   }
 
   def divider_unsigned(dividend : Bits, divider: Bits, isRemainder: Bool) : Bits = {
