@@ -279,6 +279,17 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module
     mem_mul_result := mult.io.result
   }
 
+  // Divider
+  val mem_div_result = UInt()
+  mem_div_result := mem_reg_rd_data // default mem_rd_data
+  if(conf.div) {
+    val div = Module(new Divider())
+    div.io.op1  := exe_reg_op1
+    div.io.op2  := exe_reg_op2
+    div.io.func := io.control.exe_mul_type
+    mem_div_result := div.io.result
+  }
+
   // Load and Store Unit
   // Request in execute stage, response in memory stage.
   val loadstore = Module(new LoadStore())
@@ -371,8 +382,10 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module
   mem_rd_data := 
     Mux(io.control.mem_rd_data_sel === MEM_RD_MEM, loadstore.io.data_out,
     Mux(io.control.mem_rd_data_sel === MEM_RD_MUL, mem_mul_result, //mul
+    Mux(io.control.mem_rd_data_sel === MEM_RD_DIV, mem_div_result, //div
     // MEM_RD_REG
     mem_reg_rd_data)
+    ) //div
     ) //mul
 
   // Provide inputs to rd port of register file.

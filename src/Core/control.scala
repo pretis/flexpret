@@ -141,18 +141,6 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
     MUL    -> (if(conf.mul) {
               List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   MUL_L,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
-    DIV    -> (if(conf.div) {
-              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_L,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
-              } else { default }),
-    DIVU   -> (if(conf.div) {
-              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_LU,   EXE_RD_X,   MEM_X,  MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
-              } else { default }),
-    REM    -> (if(conf.div) {
-              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_L,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
-              } else { default }),
-    REMU   -> (if(conf.div) {
-              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_LU,   EXE_RD_X,   MEM_X,  MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
-              } else { default }),
     MULH   -> (if(conf.mul) {
               List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   MUL_H,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
@@ -161,6 +149,18 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
               } else { default }),
     MULHU  -> (if(conf.mul) {
               List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   MUL_HU,  EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
+              } else { default }),
+    DIV    -> (if(conf.div) {
+              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_L,   EXE_RD_X,   MEM_X,   MEM_RD_DIV, T, F, F, F, F, F, F, F, F, F, F, F)
+              } else { default }),
+    DIVU   -> (if(conf.div) {
+              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_LU,   EXE_RD_X,   MEM_X,  MEM_RD_DIV, T, F, F, F, F, F, F, F, F, F, F, F)
+              } else { default }),
+    REM    -> (if(conf.div) {
+              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_L,   EXE_RD_X,   MEM_X,   MEM_RD_DIV, T, F, F, F, F, F, F, F, F, F, F, F)
+              } else { default }),
+    REMU   -> (if(conf.div) {
+              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_LU,   EXE_RD_X,   MEM_X,  MEM_RD_DIV, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
     SCALL  -> List(T, IMM_X, OP1_X,   OP2_X,   ALU_X,    BR_X,   CSR_X,   MUL_X,   EXE_RD_X,   MEM_X,   MEM_RD_X,   F, F, F, F, F, F, F, F, T, F, F, F),
     SRET   -> (if(conf.privilegedMode) {
@@ -428,6 +428,13 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   // Make all multiplication instructions take 2 cycles
   if(conf.mul) {
     when(dec_reg_valid && (dec_mem_rd_data_sel === MEM_RD_MUL)) {
+      dec_stall := Bool(true)
+    }
+  }
+
+  // Make all division instructions take 2 cycles
+  if(conf.div) {
+    when(dec_reg_valid && (dec_mem_rd_data_sel === MEM_RD_DIV)) {
       dec_stall := Bool(true)
     }
   }
