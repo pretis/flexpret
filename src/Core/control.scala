@@ -144,14 +144,14 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
     DIV    -> (if(conf.div) {
               List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_L,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
-    DIVU    -> (if(conf.div) {
-              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_LU,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
+    DIVU   -> (if(conf.div) {
+              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   DIV_LU,   EXE_RD_X,   MEM_X,  MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
     REM    -> (if(conf.div) {
               List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_L,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
-    REMU    -> (if(conf.div) {
-              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_LU,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
+    REMU   -> (if(conf.div) {
+              List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   REM_LU,   EXE_RD_X,   MEM_X,  MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
               } else { default }),
     MULH   -> (if(conf.mul) {
               List(T, IMM_X, OP1_RS1, OP2_RS2, ALU_X,    BR_X,   CSR_X,   MUL_H,   EXE_RD_X,   MEM_X,   MEM_RD_MUL, T, F, F, F, F, F, F, F, F, F, F, F)
