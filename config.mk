@@ -18,8 +18,8 @@ THREADS ?= 4
 FLEXPRET ?= true
 ISPM_KBYTES ?= 16
 DSPM_KBYTES ?= 16
-MUL ?= true
-DIV ?= true
+MUL ?= false
+DIV ?= false # Synthesizable but at low clock frequency
 SUFFIX ?= ti
 
 # Target
