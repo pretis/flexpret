@@ -25,28 +25,29 @@ class Divider(implicit conf: FlexpretConfiguration) extends Module {
   // 2 cycle
   io.result := Reg(next = result)
 
-  def rem(dividend: Bits, divider: Bits) : Bits = {
+  def rem(dividend: SInt, divider: SInt) : Bits = {
     return divider_signed(dividend, divider, Bool(true));
   }
 
-  def div(dividend : Bits, divider: Bits) : Bits = {
+  def div(dividend : SInt, divider: SInt) : Bits = {
     return divider_signed(dividend, divider, Bool(false));
   }
 
-  def divider_signed(dividend: Bits, divider: Bits, isRemainder: Bool) : Bits = {
+  def divider_signed(dividend: SInt, divider: SInt, isRemainder: Bool) : Bits = {
 
-    val signed_dividend = dividend(32);
-    val signed_divider = divider(32);
-    val signed_quotient = signed_dividend^signed_divider;
-    val signed_remainder = signed_dividend;
+    val sign_dividend = dividend < UInt(0);
+    val sign_divider = divider < UInt(0);
+    val sign_quotient = sign_dividend^sign_divider;
+    val sign_remainder = sign_dividend;
+    val sign_result = (isRemainder && sign_remainder) || (!isRemainder && sign_quotient);
 
-    val udividend = Mux(signed_dividend, ~dividend + Bits(1,1), dividend);
-    val udivider = Mux(signed_divider, ~divider + Bits(1,1), divider);
+    val result = divider_unsigned(
+      Mux(sign_dividend, -dividend, dividend),
+      Mux(sign_divider, -divider, divider),
+      isRemainder);
 
-    var result = divider_unsigned(udividend, udivider, isRemainder);
-
-    return Mux((isRemainder && signed_remainder) || (!isRemainder && signed_quotient),
-      ~result + Bits(1,1),
+    return Mux(sign_result,
+      UInt(0)-result,
       result);
   }
 
