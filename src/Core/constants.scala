@@ -110,7 +110,7 @@ object FlexpretConstants
   val MUL_X   = Bits("b???", 3)
 
   // rd from memory stage select
-  val MEM_RD_WI = 2
+  val MEM_RD_WI = 3
   val MEM_RD_REG = UInt(0, 3)
   val MEM_RD_MEM = UInt(1, 3)
   val MEM_RD_MUL = UInt(2, 3)
