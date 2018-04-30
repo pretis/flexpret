@@ -54,22 +54,19 @@ class Divider(implicit conf: FlexpretConfiguration) extends Module {
   def divider_unsigned(dividend : Bits, divider: Bits, isRemainder: Bool) : Bits = {
     var scaled_divider  = Cat(Bits(0,1), divider, Bits(0,31));
     var temp_remainder  = Cat(Bits(0,32), dividend);
-    var temp_result     = Bits(0, 64);
     var quotient        = Bits(0,32);
-    var remainder       = Bits(0,32);
-    var temp            = Cat(Bits(1,1), Bits(0,32)); // FIXME: temp is a 33-bit value, otherwise, the last occurence in the for loop fails
+    var temp            = Cat(Bits(1,1), Bits(0,32));
 
     for (i <- 0 until 32) {
-      temp_result = temp_remainder - scaled_divider;
+      val temp_result = temp_remainder - scaled_divider;
       quotient = Mux(temp_result(63-i), quotient & (~temp(32,1)), quotient | temp(32,1));
       temp_remainder = Mux(temp_result(63-i), temp_remainder, temp_result);
       scaled_divider = scaled_divider >> UInt(1);
 
       temp = temp >> UInt(1);
     }
-    remainder = temp_remainder(31,0);
 
-    val result = Mux(isRemainder, remainder, quotient);
+    val result = Mux(isRemainder, temp_remainder(31,0), quotient);
     return result;
   }
 }
