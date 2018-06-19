@@ -57,7 +57,7 @@ include config.mk
 
 # Construct core configuration string (used for directory naming).
 # Note: '?=' not used so string is only constructed once.
-CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEX)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d-$(MUL_STAGES)smul$(if $(findstring true, $(STATS)),-stats)$(if $(findstring true, $(EXCEPTIONS)),-exc)$(if $(findstring true, $(GET_TIME)),-gt)$(if $(findstring true, $(DELAY_UNTIL)),-du)$(if $(findstring true, $(EXCEPTION_ON_EXPIRE)),-ee)
+CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d$(if $(findstring true, $(MUL)),-mul)-$(SUFFIX)
 
 # Default will build target and selected programs.
 all: $(TARGET)
@@ -100,7 +100,8 @@ PROG_BUILD_DIR = $(TESTS_DIR)/$(PROG_DIR)/build/$(PROG_CONFIG)
 PROG_RESULTS_DIR = $(TESTS_DIR)/$(PROG_DIR)/results/$(PROG_CONFIG)/$(CORE_CONFIG)
 
 # Default rules and templates for compilation of programs.
-#include $(TESTS_DIR)/tests.mk
+# Note: Comment out to not compile and use existing binaries.
+include $(TESTS_DIR)/tests.mk
 
 # Define what programs in selected directory will be compiled and their
 # configuration.
@@ -115,29 +116,23 @@ prog: $(PROG:%=$(PROG_BUILD_DIR)/%.inst.mem) $(PROG:%=$(PROG_BUILD_DIR)/%.data.m
 
 ifeq ($(TARGET),emulator)
 
-# TODO: force STATS=true?
-# TODO: debug?
-#MAX_CYCLES ?= 20000000
-MAX_CYCLES ?= 200000
+MAX_CYCLES ?= 20000000
 ifeq ($(DEBUG), true)
-CONFIG = $(CORE_CONFIG)-debug
-SBT_ARGS = --debug --vcd
-SIM_DEBUG = --vcd=$(@:%.out=%.vcd)
 else
-CONFIG = $(CORE_CONFIG)
+SIM_DEBUG = --vcdstart=$(MAX_CYCLES)
 endif
 
 $(PROG:%=$(PROG_RESULTS_DIR)/%.out): $(PROG_RESULTS_DIR)/%.out: $(PROG_BUILD_DIR)/%.inst.mem $(PROG_BUILD_DIR)/%.data.mem $(EMULATOR)
 	mkdir -p $(PROG_RESULTS_DIR)
-	./$(EMULATOR) --maxcycles=$(MAX_CYCLES) --ispm=$(PROG_BUILD_DIR)/$*.inst.mem --dspm=$(PROG_BUILD_DIR)/$*.data.mem --vcd=$(@:.out=.vcd) > $@ 2>&1
+	./$(EMULATOR) --maxcycles=$(MAX_CYCLES) --ispm=$(PROG_BUILD_DIR)/$*.inst.mem --dspm=$(PROG_BUILD_DIR)/$*.data.mem --vcd=$(@:.out=.vcd) $(SIM_DEBUG) $(EMULATOR_OPTS) > $@ 2>&1
 	echo $@ $^
 
 # Possible targets are emulator and fpga.
 run: $(PROG:%=$(PROG_RESULTS_DIR)/%.out)
-	@echo; perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.{8})\*{3}(.*)/' \
+	@echo; perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.*)\*{3}(.*)/' \
 	$^; echo;
 
-CLEAN_TARGET = $(EMULATOR_SRC_DIR) $(EMULATOR_BUILD_DIR) $(PROG_RESULTS_DIR)
+CLEAN_TARGET = $(EMULATOR_SRC_DIR) $(EMULATOR_BUILD_DIR) $(PROG_RESULTS_DIR) $(PROG_BUILD_DIR)
 
 endif
 
@@ -148,15 +143,13 @@ endif
 clean:
 	rm -rf $(CLEAN_TARGET)
 	
-#rm -rf $(PROG_BUILD_DIR) $(CLEAN_TARGET)
 
 # Clean for all configurations and targets.
 cleanall:
 	rm -rf $(EMULATOR_DIR)/generated-src
 	rm -rf $(EMULATOR_DIR)/build
 	rm -rf $(FGPA_DIR)/generated-src
-	find $(TESTS_DIR) -type d -name "results" -exec rm -rf {} \;
-
-#find $(TESTS_DIR) -type d -name "build" -exec rm -rf {} \;
+	find $(TESTS_DIR) -type d -name "results" -exec rm -rf {} \; \
+		find $(TESTS_DIR) -type d -name "build" -exec rm -rf {} \;
 
 .PHONY: run emulator fpga prog clean cleanall

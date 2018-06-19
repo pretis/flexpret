@@ -1,567 +1,410 @@
 /******************************************************************************
-datapath.scala:
-  Datapath.
-Authors: 
-  Michael Zimmer (mzimmer@eecs.berkeley.edu)
-  Chris Shaver (shaver@eecs.berkeley.edu)
-  Hokeun Kim (hokeunkim@eecs.berkeley.edu)
-Acknowledgement:
-  Based on Sodor single-thread 5-stage RISC-V processor by Christopher Celio.
-  https://github.com/ucb-bar/riscv-sodor/
-******************************************************************************/
-
+ * File: datapath.scala
+ * Description: Datapath
+ * Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
+ * Contributors: 
+ * License: See LICENSE.txt
+ * ******************************************************************************/
 package Core
-{
 
 import Chisel._
-import Node._
-import Common._
-import CoreConstants._
+import FlexpretConstants._
 
-class DatToCtlIo(conf: CoreConfig) extends Bundle()
+class Datapath(implicit conf: FlexpretConfiguration) extends Module
 {
-  val if_valid    = Bool(OUTPUT)
-  val if_tid      = UInt(OUTPUT, conf.threadBits)
-  val dec_valid   = Bool(OUTPUT)
-  val dec_inst    = Bits(OUTPUT, 32)
-  val dec_tid     = UInt(OUTPUT, conf.threadBits)
-  val exe_valid   = Bool(OUTPUT)
-  val exe_tid     = UInt(OUTPUT, conf.threadBits)
-  val exe_br_eq   = Bool(OUTPUT)
-  val exe_br_lt   = Bool(OUTPUT)
-  val exe_br_ltu  = Bool(OUTPUT)
-  val exe_br_type = UInt(OUTPUT,  4)
-  val exe_schedule = Bits(OUTPUT, 32) 
-  val exe_thread_modes = Vec.fill(conf.threads) { UInt(OUTPUT, 2) }
-  //val exe_du_wait = Bool(OUTPUT) //ifdu
-  val exe_exception = Vec.fill(conf.threads) { Bool(OUTPUT) } //ifex
-  val exe_ie_en = Vec.fill(conf.threads) { Bool(OUTPUT) } //ifex
-}
-
-class DatapathIo(conf: CoreConfig) extends Bundle()
-{
-  val ispm = new MemIo(conf.iSpmAddrBits).flip() //TODO: selective list
-  val dspm = new MemIo(conf.dSpmAddrBits).flip()
-  val ctl  = new CtlToDatIo(conf).flip()
-  val dat  = new DatToCtlIo(conf)
-  val top  = new CoreIo(conf.iSpmAddrBits)
-}
-
-class Datapath(conf: CoreConfig) extends Module 
-{
-  val io = new DatapathIo(conf)
-
-  //**********************************
-  // Pipeline State Registers
-
-  // Instruction Fetch State
-  val if_reg_pcs            = Vec.fill(conf.threads){ Reg(init = PC_INIT.toUInt) } // PC for each thread. //TODO force to 30 bits?
-  val if_reg_tid            = Reg(outType= UInt() )
-  val if_reg_valid          = Reg(init = Bool(false)) // Used to kill cycle.
-
-  // Instruction Decode State
-  val dec_reg_inst          = Reg(init = BUBBLE)
-  val dec_reg_pc            = Reg(outType= UInt() )
-  val dec_reg_tid           = Reg(outType= UInt() )
-  val dec_reg_valid         = Reg(init = Bool(false))
-
-  // Execute State
-  val exe_reg_pc            = Reg(outType= UInt() ) // Used for relative jump and return address.
-  val exe_reg_tid           = Reg(outType= UInt() )
-  val exe_reg_valid         = Reg(init = Bool(false))
-  val exe_reg_wbaddr        = Reg(outType= UInt() ) // rd or ra.
-  val exe_reg_rs1_addr      = Reg(outType= UInt() ) // Address still used for PCR.
-  val exe_reg_rs1_data      = Reg(outType= Bits() )
-  val exe_reg_op2_data      = Reg(outType= Bits() ) // Either rs2 or sign-extended immediate.  
-  val exe_reg_rs2_data      = Reg(outType= Bits() )
-  val exe_reg_ctrl_br_type  = Reg(init = BR_N) // Branch condition.
-  val exe_reg_ctrl_alu_fun  = Reg(outType= UInt() )
-  val exe_reg_ctrl_wb_sel   = Reg(outType= UInt() ) // Source of data for rd.
-  val exe_reg_ctrl_rf_wen   = Reg(init = Bool(false)) // Write enable for regfile.
-  val exe_reg_ctrl_mem_r    = Reg(init = Bool(false))
-  val exe_reg_ctrl_mem_w    = Reg(init = Bool(false))
-  val exe_reg_ctrl_mem_mask = Reg(outType= UInt() )
-  val exe_reg_ctrl_pcr_fcn  = Reg(init = PCR_N) // PCR op.
-  //val exe_reg_ns_clock      = Reg(init = UInt(0, 64))  //ifget
-  val exe_reg_ns_clock      = if(conf.getTime) { 
- //                               Reg(init = Bits("h1FFFFFE0C", 64).toUInt) 
-                                Reg(init = Bits(0, 64).toUInt) 
-                              } else { null }// 50 cycles until h toggle. //ifgt
-  val exe_reg_store         = if(conf.getTime) {
-                                Vec.fill(conf.threads) { Reg(init = UInt(0, 32)) } // Data storage for multicycle instructions. //ifgt
-                              } else { null }
-  val exe_reg_ie_en         = if(conf.exceptionOnExpire) { 
-                                Vec.fill(conf.threads) { Reg(init = Bool(false)) } // ifee
-                              } else { null }
-  val exe_reg_ie_ns         = if(conf.exceptionOnExpire) { 
-                                Vec.fill(conf.threads) { Reg(init = UInt(0, 64)) } // ifee
-                              } else { null }
-  val exe_reg_du_en         = if(conf.delayUntil) { 
-                                Vec.fill(conf.threads) { Reg(init = Bool(false)) } // ifee
-                              } else { null }
-  val exe_reg_du_ns         = if(conf.delayUntil) { 
-                                Vec.fill(conf.threads) { Reg(init = UInt(0, 64)) } // ifee
-                              } else { null }
-                            
-                              // TEMP HACK
-                              //for(tid <- 0 until conf.threads) {
-                              //  exe_reg_ie_en(tid) := exe_reg_ie_en(tid)
-                              //  exe_reg_ie_ns(tid) := exe_reg_ie_ns(tid)
-                              //}
-
-  // Memory State
-  val mem_reg_tid           = Reg(outType= UInt() )
-  val mem_reg_alu_out       = Reg(outType= Bits() )
-  val mem_reg_wbaddr        = Reg(outType= UInt() )
-  val mem_reg_ctrl_rf_wen   = Reg(init = Bool(false))
-  val mem_reg_ctrl_mem_mask = Reg(outType= UInt() )
-  val mem_reg_ctrl_wb_sel   = Reg(outType= UInt() )
-  val mem_reg_addr_dest     = Reg(outType= UInt() )
-
-  // Writeback State
-  val wb_reg_tid            = Reg(outType= UInt() )
-  val wb_reg_wbaddr         = Reg(outType= UInt() )
-  val wb_reg_wbdata         = Reg(outType= Bits(width = XPRLEN) )
-  val wb_reg_ctrl_rf_wen    = Reg(init = Bool(false))
-
-
-  //**********************************
-  // Prepare for instruction fetch stage.
-  
-  val if_pc_plus4 = UInt()
-  val exe_brjmp_target = UInt()
-  val exe_evec = Vec.fill(conf.threads) { UInt() } //ifex
-
-  // TODO bundle
-  val exe_mem_dest = UInt()
-  val exe_mem_addr = UInt()
-  val exe_mem_wdata = Bits()
-  val exe_mem_w = Bool()
-  
-  // Source of next PC for all PC registers.
-  val next_if_reg_pcs = Vec.fill(conf.threads) { UInt() }
-  for(tid <- 0 until conf.threads) {
-    next_if_reg_pcs(tid) := 
-        Mux(io.ctl.next_pc_sel(tid) === NPC_PCREG, if_reg_pcs(tid),
-        Mux(io.ctl.next_pc_sel(tid) === NPC_PLUS4, if_pc_plus4,
-        Mux(io.ctl.next_pc_sel(tid) === NPC_BRJMP, exe_brjmp_target,
-        Mux(io.ctl.next_pc_sel(tid) === NPC_EVEC,
-        if(conf.exceptions) { exe_evec(tid) } else { if_reg_pcs(tid) }, //ifex
-        Mux(io.ctl.next_pc_sel(tid) === NPC_DEC, 
-        if(conf.mulStages == 3) { dec_reg_pc(tid) } else { if_reg_pcs(tid) }, //ifmul3
-        if_reg_pcs(tid))))))
-  }
- 
-  // Next PC to be fetched.
-  val next_pc = next_if_reg_pcs(io.ctl.next_tid)
-
-  // Instruction Memory
-  // Address needs to be provided to SRAM I-SPM at end of cycle before fetch stage.
-  // Temporarily allow ld/st from ISPM
-  // Note: Memory and threads not protected (other threads may lose their cycle)
-  val ispm_w = Mux(exe_mem_dest === ADDR_DEST_ISPM, exe_mem_w, Bool(false))
-  io.ispm.req.addr := Mux(exe_mem_dest != ADDR_DEST_ISPM, 
-                          next_pc(conf.iSpmAddrBits+1,2),
-                          exe_mem_addr(conf.iSpmAddrBits+1,2)) 
-  io.ispm.req.wdata := exe_mem_wdata
-  io.ispm.req.w := ispm_w
-  io.ispm.req.r := !ispm_w
-  
-  //TODO exception if PC out of range.
-  //val dest_ispm = (next_pc(XPRLEN-1, XPRLEN-ADDR_ISPM_BITS) ^ ADDR_ISPM_VAL) === Bits(0, ADDR_ISPM_BITS) 
-    //bug io.dat.exe_exception(tid) := Bool(false)
-  for(tid <- 0 until conf.threads) {
-    io.dat.exe_exception(tid) := Bool(false)
-  }
-  // TODO FIXME: hack to prevent chisel bug
-  when(if_reg_pcs(if_reg_tid) === Bits("h00000000").toUInt) {
-    io.dat.exe_exception(if_reg_tid) := Bool(true)
+  val io = new Bundle {
+    val control = new ControlDatapathIO().flip
+    val imem = new InstMemCoreIO().flip
+    val dmem = new DataMemCoreIO().flip
+    val bus = new BusIO().flip
+    val host = new HostIO()
+    val gpio = new GPIO()
+    val int_exts = Vec.fill(conf.threads) { Bool(INPUT) }
   }
 
-  if_reg_pcs := next_if_reg_pcs
-  if_reg_tid := io.ctl.next_tid
-  // Kill cycle if scheduler doesn't return a valid result or 
-  // instruction memory is being written to.
-  if_reg_valid := io.ctl.next_valid && (exe_mem_dest != ADDR_DEST_ISPM)
-  //val next_valid = io.ctl.next_valid
+  // ************************************************************
+  // Pipeline Registers and Cross-Stage Signals
 
-  //**********************************
+  // instruction fetch stage
+  val if_reg_tid       = Reg(UInt())
+  val if_reg_pc        = if(conf.threads > 1) Reg(UInt()) else UInt() // PC
+  val if_reg_pcs       = Vec.fill(conf.threads) { Reg(init = ADDR_PC_INIT.toUInt) } // PC for each thread
+
+  val if_pc_plus4      = UInt()
+
+  // decode stage
+  val dec_reg_tid      = Reg(UInt())
+  val dec_reg_pc       = Reg(UInt()) // alu op1, exception address
+  val dec_reg_pc4      = Reg(UInt()) // rd for JAL*
+  val dec_reg_inst     = Reg(Bits()) // decoded by control unit
+
+  // execute stage
+  val exe_reg_tid      = Reg(UInt())
+  val exe_reg_rd_addr  = Reg(UInt())
+  val exe_reg_op1      = Reg(UInt()) // either rs1, PC, or 0
+  val exe_reg_op2      = Reg(UInt()) // either rs2, immediate, 0, or 4
+  val exe_reg_rs1_data = Reg(Bits()) // branch check
+  val exe_reg_rs2_data = Reg(Bits()) // branch check, store data
+  val exe_reg_pc       = Reg(UInt()) // exception address
+  val exe_reg_pc4      = Reg(UInt()) // rd for JAL*
+  val exe_reg_csr_addr = Reg(UInt())
+  val exe_reg_csr_data = Reg(UInt())
+
+  val exe_alu_result   = Bits()
+  val exe_address      = UInt()
+  val exe_rd_data      = Bits()
+  val exe_evec         = UInt() // trap handler address
+
+  // memory stage
+  val mem_reg_tid      = Reg(UInt())
+  val mem_reg_rd_addr  = Reg(UInt())
+  val mem_reg_rd_data  = Reg(Bits()) // result from execute stage
+  val mem_reg_address  = Reg(UInt())
+  val mem_evec         = UInt()
+  val mem_rd_data      = Bits()
+  
+  // writeback stage
+  val wb_reg_tid       = Reg(UInt())
+  val wb_reg_rd_addr   = Reg(UInt())
+  val wb_reg_rd_data   = Reg(Bits())
+
+  val wb_rd_data       = Bits()
+
+  // ************************************************************
+  // Next PCs Generation
+
+  // For each thread, determine next input to its PC register.
+  val next_pcs = Vec.fill(conf.threads) { UInt() }
+  for(tid <- 0 until conf.threads) { next_pcs(tid) := if_reg_pcs(tid) } // default value
+  when(io.control.next_pc_sel(if_reg_tid) === NPC_PLUS4) {
+    next_pcs(if_reg_tid) := if_pc_plus4
+  }
+  if(!conf.regBrJmp) { 
+    when(io.control.next_pc_sel(exe_reg_tid) === NPC_BRJMP) {
+      next_pcs(exe_reg_tid) := exe_address
+    }
+  } else {
+    when(io.control.next_pc_sel(mem_reg_tid) === NPC_BRJMP) {
+      next_pcs(mem_reg_tid) := mem_reg_address
+    }
+  }
+  // higher priority than BRJMP
+  if(conf.exceptions) {
+    if(!conf.regEvec) {
+      when(io.control.next_pc_sel(exe_reg_tid) === NPC_EVEC) {
+        next_pcs(exe_reg_tid) := exe_evec
+      }
+    } else {
+      when(io.control.next_pc_sel(mem_reg_tid) === NPC_EVEC) {
+        next_pcs(mem_reg_tid) := mem_evec
+      }
+    }
+  }
+  
+  // Provide next PC address (PC of scheduled thread) to instruction memory.
+  // Note: For all SRAMs, input provided at end of clock cycle so data
+  // will become available in the next clock cycle.
+  val next_tid = io.control.next_tid
+  val next_pc = next_pcs(next_tid)
+  // TODO: best way to handle 4t-rr w/ reg*?
+  //val next_pc = if(conf.bypassing) next_pcs(next_tid) else if_reg_pcs(next_tid)
+  io.imem.r.addr := next_pc(31, 2)
+  io.imem.r.enable := (if(conf.iMemForceEn) Bool(true) else io.control.next_valid)
+  
+  // Provide inputs to fetch stage registers. 'if_reg_pc' is redundant, but
+  // prevents needing to demux all the PCs a 2nd time in the fetch stage.
+  if_reg_tid := next_tid
+  if_reg_pc  := (if(conf.threads > 1) next_pc else if_reg_pcs(0))
+  if_reg_pcs := next_pcs
+
+  // ************************************************************
   // Instruction Fetch Stage
-  
-  // PC+4 of fetched thread.
-  if_pc_plus4 := if_reg_pcs(if_reg_tid) + UInt(4, XPRLEN)
+
+  // Compute PC+4 of fetched thread.
+  if_pc_plus4 := if_reg_pc + UInt(4)
+
+  // Instruction is returned by instruction memory.
+  val if_inst = io.imem.r.data_out
+
+  // Provide rs1 and rs2 address to register file (bit location is constant so
+  // it can be done before instruction is decoded).
+  val regfile = Module(new RegisterFile())
+  regfile.io.rs1.thread := if_reg_tid
+  regfile.io.rs1.addr := if_inst(19, 15)
+  regfile.io.rs2.thread := if_reg_tid
+  regfile.io.rs2.addr := if_inst(24, 20)
+
+  // Provide data to control.
+  io.control.if_tid := if_reg_tid
  
-  // On load-use with 1 thread scheduled, decode instruction must be replayed.
-  val next_dec_inst = Bits()
-  next_dec_inst := dec_reg_inst
-  when(!io.ctl.dec_stall) {
-    next_dec_inst := Mux(io.ctl.if_kill || !if_reg_valid, BUBBLE, io.ispm.resp.data)
-    dec_reg_pc := if_reg_pcs(if_reg_tid)
-    dec_reg_tid := if_reg_tid
-    dec_reg_valid := if_reg_valid && !io.ctl.if_kill 
+  // Exception checks
+  if(conf.causes.contains(Causes.misaligned_fetch)) {
+    // Lower 2 bits should be 0
+    io.control.if_exc_misaligned := if_reg_pc(1, 0) != Bits(0)
+  } else {
+    io.control.if_exc_misaligned := Bool(false)
   }
-  dec_reg_inst := next_dec_inst
+  if(conf.causes.contains(Causes.fault_fetch)) {
+    // PC should be in memory space of I-SPM
+    //spike: rm
+    io.control.if_exc_fault := if_reg_pc(31, conf.iMemAddrBits+2) != Cat(ADDR_ISPM_VAL, Bits(0, 30 - ADDR_ISPM_BITS - conf.iMemAddrBits))
+  } else {
+    io.control.if_exc_fault := Bool(false)
+  }
 
-  // Register file read addresses need to be provided to 
-  // SRAM at end of cycle before decode stage.
-  val if_rs1_addr = next_dec_inst(26, 22).toUInt
-  val if_rs2_addr = next_dec_inst(21, 17).toUInt
-  val if_tid = Mux(io.ctl.dec_stall, dec_reg_tid, if_reg_tid)
+  // Provide inputs to decode stage registers.
+  dec_reg_tid := if_reg_tid
+  dec_reg_pc := if_reg_pc
+  dec_reg_pc4 := if_pc_plus4
+  dec_reg_inst := if_inst
 
-  //**********************************
+
+  // ************************************************************
   // Decode Stage
 
-  val dec_rs1_addr = dec_reg_inst(26, 22).toUInt
-  val dec_rs2_addr = dec_reg_inst(21, 17).toUInt
-  val dec_wbaddr   = Mux(io.ctl.wa_sel != WA_RA, dec_reg_inst(31, 27).toUInt, RA)
-  val mem_wbdata   = Bits(width = XPRLEN)
-
-  // Register File
-  // Read from end of fetch stage, Write from end of memory stage.
-  // TODO: dont need r0
-  val regfile = Module(new RegisterFile(conf.threads*32, 5+conf.threadBits))
-  regfile.io.rs1_addr := Cat(if_tid, if_rs1_addr)
-  regfile.io.rs2_addr := Cat(if_tid, if_rs2_addr)
-  regfile.io.waddr    := Cat(mem_reg_tid, mem_reg_wbaddr)
-  regfile.io.wdata    := mem_wbdata
-  regfile.io.wen      := mem_reg_ctrl_rf_wen
-
-  
-  val rs1NZ = dec_rs1_addr != UInt(0);
-  val rs2NZ = dec_rs2_addr != UInt(0);
-  val rf_rs1_data = Mux(rs1NZ, regfile.io.rs1_data, UInt(0, XPRLEN))
-  val rf_rs2_data = Mux(rs2NZ, regfile.io.rs2_data, UInt(0, XPRLEN))
-
-  // immediates
-  val imm_btype = Cat(dec_reg_inst(31,27), dec_reg_inst(16,10))
-  val imm_itype = dec_reg_inst(21,10)
-  val imm_ltype = dec_reg_inst(26,7)
-  val imm_jtype = dec_reg_inst(31,7)
-
-  // sign-extend immediates
-  val imm_itype_sext = Cat(Fill(imm_itype(11), 20), imm_itype)
-  val imm_btype_sext = Cat(Fill(imm_btype(11), 20), imm_btype)
-  val imm_jtype_sext = Cat(Fill(imm_jtype(24),  7), imm_jtype)
-
-  // Operand 2 Mux   
-  val dec_alu_op2 = MuxCase(UInt(0), Array(
-               (io.ctl.op2_sel === OP2_RS2)   -> rf_rs2_data,
-               (io.ctl.op2_sel === OP2_ITYPE) -> imm_itype_sext,
-               (io.ctl.op2_sel === OP2_BTYPE) -> imm_btype_sext,
-               (io.ctl.op2_sel === OP2_LTYPE) -> Cat(imm_ltype, Bits(0, 12)),
-               (io.ctl.op2_sel === OP2_JTYPE) -> imm_jtype_sext
-               )).toUInt
-
-  // Bypass Muxes
-  val exe_alu_out  = Bits(width = XPRLEN)
-
-  val dec_rs1_data = Bits(width = XPRLEN)
-  val dec_op2_data = Bits(width = XPRLEN)
-  val dec_rs2_data = Bits(width = XPRLEN)
-
-  val op2Rs = io.ctl.op2_sel === OP2_RS2
-
-  // TODO: optimize for 2-3 fixed threads.
-  if(conf.flex || conf.threads < 4) {
-    dec_rs1_data := MuxCase(rf_rs1_data, Array(
-      ((exe_reg_tid === dec_reg_tid) && (exe_reg_wbaddr === dec_rs1_addr) && rs1NZ && exe_reg_ctrl_rf_wen) -> exe_alu_out,
-      ((mem_reg_tid === dec_reg_tid) && (mem_reg_wbaddr === dec_rs1_addr) && rs1NZ && mem_reg_ctrl_rf_wen) -> mem_wbdata,
-      ((wb_reg_tid === dec_reg_tid) && (wb_reg_wbaddr  === dec_rs1_addr) && rs1NZ &&  wb_reg_ctrl_rf_wen) -> wb_reg_wbdata
-    ));
-
-    dec_op2_data := MuxCase(dec_alu_op2, Array(
-      ((exe_reg_tid === dec_reg_tid) && (exe_reg_wbaddr === dec_rs2_addr) && rs2NZ && exe_reg_ctrl_rf_wen && op2Rs) -> exe_alu_out,
-      ((mem_reg_tid === dec_reg_tid) && (mem_reg_wbaddr === dec_rs2_addr) && rs2NZ && mem_reg_ctrl_rf_wen && op2Rs) -> mem_wbdata,
-      ((wb_reg_tid === dec_reg_tid) && (wb_reg_wbaddr  === dec_rs2_addr) && rs2NZ &&  wb_reg_ctrl_rf_wen && op2Rs) -> wb_reg_wbdata
-    ));
-
-    dec_rs2_data := MuxCase(rf_rs2_data, Array(
-      ((exe_reg_tid === dec_reg_tid) && (exe_reg_wbaddr === dec_rs2_addr) && rs2NZ && exe_reg_ctrl_rf_wen) -> exe_alu_out,
-      ((mem_reg_tid === dec_reg_tid) && (mem_reg_wbaddr === dec_rs2_addr) && rs2NZ && mem_reg_ctrl_rf_wen) -> mem_wbdata,
-      ((wb_reg_tid === dec_reg_tid) && (wb_reg_wbaddr  === dec_rs2_addr) && rs2NZ &&  wb_reg_ctrl_rf_wen) -> wb_reg_wbdata
-    ));
+  // rs1 and rs2 are returned by register file, but updated value may need to be
+  // forwarded from later stages.
+  val dec_rs1_data = Bits()
+  val dec_rs2_data = Bits()
+  if(conf.bypassing) {
+  dec_rs1_data := MuxLookup(io.control.dec_rs1_sel, regfile.io.rs1.data, Array(
+    RS1_EXE -> exe_rd_data,
+    RS1_MEM -> mem_rd_data,
+    RS1_WB  -> wb_rd_data //,
+    //RS1_DEC -> regfile.io.rs1.data //FIXME: causes chisel verilog bug
+    ))
+  dec_rs2_data := MuxLookup(io.control.dec_rs2_sel, regfile.io.rs2.data, Array(
+    RS2_EXE -> exe_rd_data,
+    RS2_MEM -> mem_rd_data,
+    RS2_WB  -> wb_rd_data //,
+    //RS2_DEC -> regfile.io.rs2.data //FIXME: causes chisel verilog bug
+    ))
   } else {
-    dec_rs1_data := rf_rs1_data
-    dec_op2_data := dec_alu_op2
-    dec_rs2_data := rf_rs2_data
+    dec_rs1_data := regfile.io.rs1.data
+    dec_rs2_data := regfile.io.rs2.data
   }
 
+  // Generate immediate values.
+  val dec_imm_i = Cat(Fill(21, dec_reg_inst(31)), dec_reg_inst(30, 20))
+  val dec_imm_s = Cat(Fill(21, dec_reg_inst(31)), dec_reg_inst(30, 25), dec_reg_inst(11,7))
+  val dec_imm_b = Cat(Fill(20, dec_reg_inst(31)), dec_reg_inst(7), dec_reg_inst(30, 25), dec_reg_inst(11, 8), Bits(0, 1))
+  val dec_imm_u = Cat(dec_reg_inst(31,12), Bits(0, 12))
+  val dec_imm_j = Cat(Fill(12, dec_reg_inst(31)), dec_reg_inst(19, 12), dec_reg_inst(20), dec_reg_inst(30, 21), Bits(0, 1))
+  // For CSR
+  val dec_imm_z = Cat(Bits(0, 27), dec_reg_inst(19, 15)) 
 
-  // Interrupt on expire.  //ifee
-  if(conf.exceptionOnExpire) {
-    when(io.ctl.ie_enable) {
-      exe_reg_ie_en(dec_reg_tid) := Bool(true)
-      exe_reg_ie_ns(dec_reg_tid) := Cat(dec_rs1_data, dec_rs2_data).toUInt
-    }
-    when(io.ctl.ie_disable) {
-      exe_reg_ie_en(dec_reg_tid) := Bool(false)
-    }
-    // TODO: verify.
-    io.dat.exe_ie_en := exe_reg_ie_en
-  }
+  val dec_imm = MuxLookup(io.control.dec_imm_sel, dec_imm_i, Array(
+    IMM_S -> dec_imm_s,
+    IMM_B -> dec_imm_b,
+    IMM_U -> dec_imm_u,
+    IMM_J -> dec_imm_j,
+    IMM_I -> dec_imm_i,
+    IMM_Z -> dec_imm_z
+  ))
 
-  if(conf.delayUntil) {
-    when(io.ctl.du_enable) {
-      exe_reg_du_en(dec_reg_tid) := Bool(true)
-      exe_reg_du_ns(dec_reg_tid) := Cat(dec_rs1_data, dec_rs2_data).toUInt
-    }
-    for(tid <- 0 until conf.threads) {
-      when(io.dat.exe_exception(tid)) {
-        exe_reg_du_en(tid) := Bool(false)
-      }
-    }
-  }
+  // Set operands for ALU.
+  val dec_op1 = MuxLookup(io.control.dec_op1_sel, Bits(0, 32), Array(
+    OP1_RS1 -> dec_rs1_data,
+    OP1_PC  -> dec_reg_pc
+  )) // default: OP1_0
+  val dec_op2 = MuxLookup(io.control.dec_op2_sel, Bits(0, 32), Array(
+    OP2_RS2 -> dec_rs2_data,
+    OP2_IMM -> dec_imm
+  )) // default: OP2_0
+
+  val dec_csr_data = Mux(io.control.dec_op2_sel === OP2_IMM, dec_imm, dec_rs1_data)
+
+  // Provide data to control.
+  io.control.dec_tid  := dec_reg_tid
+  io.control.dec_inst := dec_reg_inst
+
+
+  // Provide inputs to execute stage registers.
+  exe_reg_tid      := dec_reg_tid
+  exe_reg_rd_addr  := dec_reg_inst(11, 7)
+  exe_reg_op1      := dec_op1
+  exe_reg_op2      := dec_op2
+  exe_reg_rs1_data := dec_rs1_data
+  exe_reg_rs2_data := dec_rs2_data
+  exe_reg_pc       := dec_reg_pc
+  exe_reg_pc4      := dec_reg_pc4
+  exe_reg_csr_addr := dec_reg_inst(31, 20)
+  exe_reg_csr_data := dec_csr_data
+
   
-   exe_reg_pc            := dec_reg_pc
-   exe_reg_tid           := dec_reg_tid
-   exe_reg_valid         := dec_reg_valid
-   exe_reg_wbaddr        := dec_wbaddr
-   exe_reg_rs1_addr      := dec_rs1_addr
-   exe_reg_rs1_data      := dec_rs1_data
-   exe_reg_op2_data      := dec_op2_data
-   exe_reg_rs2_data      := dec_rs2_data
-   exe_reg_ctrl_br_type  := io.ctl.br_type
-   exe_reg_ctrl_alu_fun  := io.ctl.alu_fun
-   exe_reg_ctrl_wb_sel   := io.ctl.wb_sel
-   exe_reg_ctrl_rf_wen   := io.ctl.rf_wen
-   exe_reg_ctrl_mem_r    := io.ctl.mem_r
-   exe_reg_ctrl_mem_w    := io.ctl.mem_w
-   exe_reg_ctrl_mem_mask := io.ctl.mem_mask
-   exe_reg_ctrl_pcr_fcn  := io.ctl.pcr_fcn
-
-   when(io.ctl.dec_kill || io.ctl.dec_stall) {
-      exe_reg_valid         := Bool(false)
-      exe_reg_wbaddr        := UInt(0)
-      exe_reg_ctrl_rf_wen   := Bool(false)
-      exe_reg_ctrl_mem_r    := Bool(false)
-      exe_reg_ctrl_mem_w    := Bool(false)
-      exe_reg_ctrl_pcr_fcn  := PCR_N
-      exe_reg_ctrl_br_type  := BR_N
-    }
-
-  //**********************************
+  // ************************************************************
   // Execute Stage
   
-  val pcr_out = Bits(width = XPRLEN)
+  // ALU
+  val exe_alu_shift = exe_reg_op2(4, 0)
+  val def_exe_alu_result = exe_reg_op1 + exe_reg_op2
+  exe_alu_result := MuxLookup(io.control.exe_alu_type, def_exe_alu_result, Array(
+    ALU_ADD ->  (exe_reg_op1 + exe_reg_op2),
+    ALU_SLL ->  (exe_reg_op1 << exe_alu_shift)(32-1, 0),
+    ALU_XOR ->  (exe_reg_op1 ^ exe_reg_op2),
+    ALU_SRL ->  (exe_reg_op1 >> exe_alu_shift),
+    ALU_OR  ->  (exe_reg_op1 | exe_reg_op2),
+    ALU_AND ->  (exe_reg_op1 & exe_reg_op2),
+    ALU_SUB ->  (exe_reg_op1 - exe_reg_op2),
+    ALU_SLT ->  (exe_reg_op1.toSInt < exe_reg_op2.toSInt),
+    ALU_SLTU -> (exe_reg_op1 < exe_reg_op2),
+    ALU_SRA ->  (exe_reg_op1.toSInt >> exe_alu_shift)
+  ))
+  // ALU is used to calculate address for L*, S*, J*, B*
+  exe_address := exe_alu_result
+    
+  // Check branch condition.
+  val exe_br_cond = Bool()
+  val exe_lt = exe_reg_rs1_data.toSInt < exe_reg_rs2_data.toSInt
+  val exe_ltu = exe_reg_rs1_data < exe_reg_rs2_data
+  val exe_eq = exe_reg_rs1_data === exe_reg_rs2_data
+  val def_exe_br_cond = Bool(false)
+  exe_br_cond := MuxLookup(io.control.exe_br_type, def_exe_br_cond, Array(
+    BR_EQ  -> exe_eq,
+    BR_LT  -> exe_lt,
+    BR_LTU -> exe_ltu,
+    BR_NE  -> !exe_eq,
+    BR_GE  -> !exe_lt,
+    BR_GEU -> !exe_ltu
+  ))
 
-  // Alu
-  val alu = Module(new Alu(conf))
-  alu.io.op1  := exe_reg_rs1_data
-  alu.io.op2  := exe_reg_op2_data
-  alu.io.func := exe_reg_ctrl_alu_fun
- 
   // Multiplier
-  val mul = Module(new Multiplier(conf.mulStages))
-  mul.io.op1 := exe_reg_rs1_data
-  mul.io.op2 := exe_reg_op2_data
-  mul.io.func := exe_reg_ctrl_alu_fun
-  //mul.io.valid := exe_reg_ctrl
-
-  // Real-time clock //ifgt
-  if(conf.getTime) {
-    exe_reg_ns_clock := exe_reg_ns_clock + UInt(10, 64)
-    // When GT_L (get lower 32 bits of ns) is executed, store upper 32 bits
-    // of ns to allow GT_L, GT_H to be atomic clock read.
-    when(exe_reg_ctrl_wb_sel === WB_GTL) {
-      exe_reg_store(exe_reg_tid) := exe_reg_ns_clock(63, 32)
-    }
+  val mem_mul_result = UInt()
+  mem_mul_result := mem_reg_rd_data // default mem_rd_data
+  if(conf.mul) {
+    val mult = Module(new Multiplier())
+    mult.io.op1  := exe_reg_op1
+    mult.io.op2  := exe_reg_op2
+    mult.io.func := io.control.exe_mul_type
+    mem_mul_result := mult.io.result
   }
 
-  val exe_du_expire = Vec.fill(conf.threads) { Bool() } //ifdu
-  // Interrupt on expire.  //ifee
-  for(tid <- 0 until conf.threads) {
-    //bug io.dat.exe_exception(tid) := Bool(false)
-    if(conf.exceptionOnExpire) {
-      when(exe_reg_ie_en(tid)) {
-        when(exe_reg_ns_clock >= exe_reg_ie_ns(tid)) {
-          io.dat.exe_exception(tid) := Bool(true)
-          exe_reg_ie_en(tid) := Bool(false)
-        }
-      }
-    }
-    exe_du_expire(tid) := Bool(false)
-    if(conf.delayUntil) {
-      when(exe_reg_du_en(tid)) {
-        when(exe_reg_ns_clock >= exe_reg_du_ns(tid)) {
-          exe_du_expire(tid) := Bool(true)
-          exe_reg_du_en(tid) := Bool(false)
-        }
-      }
-    }
-  }
-
-  // Compare current clock to delay until time. 
-  //val exe_du_wait = Bool() //ifdu
-  //if(conf.delayUntil) {
-  //  exe_du_wait :=  exe_reg_ns_clock < Cat(exe_reg_rs1_data, exe_reg_rs2_data).toUInt //ifdu
-  //} else {
-  //  exe_du_wait := Bool(false)
-  //}
-  val exe_pc_plus4 = (exe_reg_pc + UInt(4))(XPRLEN-1,0);
-
-  exe_alu_out := Mux(exe_reg_ctrl_wb_sel === WB_PC4, exe_pc_plus4,
-                 Mux(exe_reg_ctrl_wb_sel === WB_PCR, pcr_out,
-                 Mux(exe_reg_ctrl_wb_sel === WB_MUL, 
-                       if(conf.mulStages == 1) { mul.io.result } else { alu.io.result },
-                 Mux(exe_reg_ctrl_wb_sel === WB_GTL, 
-                       if(conf.getTime) { exe_reg_ns_clock(31, 0) } else { alu.io.result }, //ifgt
-                 Mux(exe_reg_ctrl_wb_sel === WB_GTH, 
-                       if(conf.getTime) { exe_reg_store(exe_reg_tid) } else {alu.io.result}, //ifgt
-                 alu.io.result)))))
-
-
-  // Branch/Jump Target Calculation
-  val brjmp_offset = exe_reg_pc + Cat(exe_reg_op2_data(XPRLEN-1,0), UInt(0,1)).toUInt
-  val jmp_absolute = alu.io.result.toUInt
-  // Jump/Branch target from execute stage.
-  exe_brjmp_target := Mux(io.ctl.exe_pc_sel === PC_BRJMP, brjmp_offset, 
-                      //Mux(io.ctl.exe_pc_sel === PC_DU, if(conf.delayUntil) { exe_reg_pc } else { jmp_absolute }, //ifdu
-                      jmp_absolute)//)
-
-  // Address in range and memory operation.
-  val exe_mem_en = (exe_reg_ctrl_mem_w || exe_reg_ctrl_mem_r)
-  exe_mem_dest := MuxCase(ADDR_DEST_NONE, Array(
-    ((alu.io.result(XPRLEN-1, XPRLEN-ADDR_DSPM_BITS) ^ ADDR_DSPM_VAL) === Bits(0, ADDR_DSPM_BITS) && exe_mem_en) -> ADDR_DEST_DSPM,
-    ((alu.io.result(XPRLEN-1, XPRLEN-ADDR_ISPM_BITS) ^ ADDR_ISPM_VAL) === Bits(0, ADDR_ISPM_BITS) && exe_mem_en) -> ADDR_DEST_ISPM,
-    (exe_mem_en) -> ADDR_DEST_PERIF))
-
-  // TODO: update
-  // Temporary: Hook up I-SPM
-  exe_mem_addr := alu.io.result.toUInt
-  exe_mem_wdata := exe_reg_rs2_data
-  exe_mem_w := exe_reg_ctrl_mem_w 
-  // Address and data needs to be provided to SRAM D-SPM at end of execute stage and not in memory stage.
-  // Alignment and mask generation for subword and word writes.
-  val exe_store_handler = Module(new StoreHandler())
-  exe_store_handler.io.addr := alu.io.result(1, 0).toUInt
-  exe_store_handler.io.din  := exe_reg_rs2_data
-  exe_store_handler.io.typ  := exe_reg_ctrl_mem_mask
-
-  val exe_mem_page = alu.io.result(conf.dSpmPageIndex+conf.dSpmPageBits-1,conf.dSpmPageIndex).toUInt
-  val exe_mem_valid = Bool()
-  io.dspm.req.addr      := alu.io.result(conf.dSpmAddrBits+1,2).toUInt
-  io.dspm.req.r        := exe_reg_ctrl_mem_r && (exe_mem_dest === ADDR_DEST_DSPM)
-  io.dspm.req.w        := exe_reg_ctrl_mem_w && (exe_mem_dest === ADDR_DEST_DSPM) && exe_mem_valid
-  io.dspm.req.wmask     := exe_store_handler.io.mask 
-  io.dspm.req.wdata     := exe_store_handler.io.dout
-
-  // Connect to peripherals
-  io.top.bus.req.addr := Reg(next = alu.io.result.toUInt)
-  io.top.bus.req.wdata := Reg(next = exe_reg_rs2_data)
-  io.top.bus.req.r := Reg(next = (exe_mem_dest === ADDR_DEST_PERIF) && exe_reg_ctrl_mem_r)
-  io.top.bus.req.w := Reg(next = (exe_mem_dest === ADDR_DEST_PERIF) && exe_reg_ctrl_mem_w)
+  // Load and Store Unit
+  // Request in execute stage, response in memory stage.
+  val loadstore = Module(new LoadStore())
+  // memories and bus
+  loadstore.io.dmem <> io.dmem
+  loadstore.io.imem.rw <> io.imem.rw
+  loadstore.io.bus <> io.bus
+  // datapath inputs
+  loadstore.io.addr      := exe_address
+  loadstore.io.thread    := exe_reg_tid
+  loadstore.io.load      := io.control.exe_load
+  loadstore.io.store     := io.control.exe_store
+  loadstore.io.mem_type  := io.control.exe_mem_type
+  loadstore.io.data_in   := exe_reg_rs2_data
+  // control inputs
+  loadstore.io.kill := io.control.exe_kill
   
-  // Co-processor Registers
-  val pcr = Module(new Pcr(conf))
-  pcr.io.host <> io.top.host
-  io.dat.exe_schedule := pcr.io.schedule 
-  io.dat.exe_thread_modes := pcr.io.thread_modes
-  // MTPCR: in dec, read reg(rs2); in wb, write pcr(rs1) and reg(rd=0)
-  // MFPCR: in dec, read pcr(rs1); in wb, write reg(rd)
-  pcr.io.fcn       := exe_reg_ctrl_pcr_fcn
-  pcr.io.req_addr  := exe_reg_rs1_addr
-  pcr.io.req_tid   := exe_reg_tid
-  pcr.io.req_wdata := exe_reg_rs2_data
-  if(conf.stats) {
-    val cvalid = Reg(next = Reg(next = Reg(next = io.ctl.next_valid)))
-    pcr.io.stat.ivalid := cvalid && exe_reg_valid
-    pcr.io.stat.cvalid := cvalid
-    pcr.io.stat.tid := exe_reg_tid 
-  }
-  pcr_out          := pcr.io.resp_data
-  pcr.io.tsleep := io.ctl.tsleep
-  pcr.io.tsleep_tid := dec_reg_tid
+ // Control and Status Register (CSR) Unit
+  val csr = Module(new CSR())
+  val exe_csr_data = if(conf.dedicatedCsrData) exe_reg_csr_data else exe_alu_result
+  // CSR modification
+  csr.io.rw.addr := exe_reg_csr_addr
+  csr.io.rw.thread := exe_reg_tid
+  csr.io.rw.csr_type := io.control.exe_csr_type
+  csr.io.rw.write := io.control.exe_csr_write
+  csr.io.rw.data_in := exe_csr_data
+  csr.io.rw.valid := io.control.exe_valid
 
-  //TODO: allow region to be size 0
-  exe_mem_valid := (exe_mem_page <= pcr.io.mem_shared) || (exe_mem_page >= pcr.io.mem_priv_l(exe_reg_tid) && exe_mem_page <= pcr.io.mem_priv_h(exe_reg_tid))
+  // exception handling
+  csr.io.kill := io.control.exe_kill
+  csr.io.exception := io.control.exe_exception
+  csr.io.epc := exe_reg_pc
+  csr.io.cause := io.control.exe_cause
 
-  for(tid <- 0 until conf.threads) {
-    pcr.io.exception(tid) := io.dat.exe_exception(tid) || exe_du_expire(tid)
-  }
-  //pcr.io.exception := io.dat.exe_exception || //ifex
-  if(conf.exceptions) {
-    for(tid <- 0 until conf.threads) {
-      exe_evec(tid) := pcr.io.evec(tid).toUInt
-      pcr.io.epc(tid) := MuxCase(if_reg_pcs(tid), Array(
-        (io.ctl.next_epc(tid) === EPC_PCREG) -> if_reg_pcs(tid),
-        (io.ctl.next_epc(tid) === EPC_IFPC) -> if_reg_pcs(if_reg_tid),
-        (io.ctl.next_epc(tid) === EPC_DECPC) -> dec_reg_pc,
-        (io.ctl.next_epc(tid) === EPC_BRJMP) -> exe_brjmp_target
-      ))
-    }
-  }
+  // timing instructions
+  csr.io.sleep := io.control.exe_sleep
+  csr.io.ie := io.control.exe_ie
+  csr.io.ee := io.control.exe_ee
+  io.control.exe_expire := csr.io.expire
+  csr.io.dec_tid := dec_reg_tid
 
-  mem_reg_tid           := exe_reg_tid 
-  mem_reg_alu_out       := exe_alu_out
-  mem_reg_wbaddr        := exe_reg_wbaddr
-  mem_reg_ctrl_rf_wen   := exe_reg_ctrl_rf_wen
-  mem_reg_ctrl_mem_mask := exe_reg_ctrl_mem_mask
-  mem_reg_ctrl_wb_sel   := exe_reg_ctrl_wb_sel
-  mem_reg_addr_dest     := exe_mem_dest
+  // privileged
+  csr.io.sret := io.control.exe_sret
 
+  // external interrupt (per thread)
+  csr.io.int_exts := io.int_exts
 
-  //**********************************
-  // Memory Stage
-
-
-  // TODO: subword ld/st w/ perif and ispm?
-
-  // Alignment and sign-extension for subword reads. 
-  val mem_load_handler = Module(new LoadHandler())
-  mem_load_handler.io.addr := mem_reg_alu_out(1, 0).toUInt
-  mem_load_handler.io.din  := Mux(mem_reg_addr_dest === ADDR_DEST_PERIF, io.top.bus.resp.data, io.dspm.resp.data)
-  mem_load_handler.io.typ  := mem_reg_ctrl_mem_mask
-  //val mem_resp_data = mem_load_handler.io.dout
-  val mem_resp_data = MuxCase(mem_load_handler.io.dout, Array(
-    (mem_reg_addr_dest === ADDR_DEST_DSPM) -> mem_load_handler.io.dout,
-    (mem_reg_addr_dest === ADDR_DEST_ISPM) -> io.ispm.resp.data,
-    (mem_reg_addr_dest === ADDR_DEST_PERIF) -> mem_load_handler.io.dout))
-    //(mem_reg_addr_dest === ADDR_DEST_PERIF) -> io.top.perif.resp_data))
-
-  // WB Mux
-  mem_wbdata := MuxCase(mem_reg_alu_out, Array(
-    (mem_reg_ctrl_wb_sel === WB_ALU) -> mem_reg_alu_out,
-    (mem_reg_ctrl_wb_sel === WB_PC4) -> mem_reg_alu_out,
-    (mem_reg_ctrl_wb_sel === WB_MEM) -> mem_resp_data,
-    (mem_reg_ctrl_wb_sel === WB_MUL) -> 
-    (if(conf.mulStages >= 2) { mul.io.result } else { mem_reg_alu_out }),
-    (mem_reg_ctrl_wb_sel === WB_PCR) -> mem_reg_alu_out,
-    (mem_reg_ctrl_wb_sel === WB_GTL) -> mem_reg_alu_out, 
-    (mem_reg_ctrl_wb_sel === WB_GTH) -> mem_reg_alu_out
-  )).toSInt()
-
-
-  //**********************************
-  // Writeback Stage
+  // stats (not designed for performance)
+  csr.io.cycle := io.control.exe_cycle
+  csr.io.instret := io.control.exe_instret
  
-  wb_reg_tid            := mem_reg_tid
-  wb_reg_wbaddr         := mem_reg_wbaddr
-  wb_reg_wbdata         := mem_wbdata
-  wb_reg_ctrl_rf_wen    := mem_reg_ctrl_rf_wen
+  // trap handling address, depends on conf.regEvec
+  exe_evec := csr.io.evecs(exe_reg_tid)
 
+  // memory protection
+  loadstore.io.dmem_protection := csr.io.dmem_protection
+  loadstore.io.imem_protection := csr.io.imem_protection
 
-  //**********************************
-  // External Signals
+  
+  // Only keep needed result for rd.
+  exe_rd_data := Mux(io.control.exe_rd_data_sel === EXE_RD_CSR, csr.io.rw.data_out, 
+                 Mux(io.control.exe_rd_data_sel === EXE_RD_PC4, exe_reg_pc4,
+                     exe_alu_result)) // default: EXE_RD_ALU
+ 
+  // Provide data to control.
+  io.control.exe_br_cond := exe_br_cond
+  io.control.exe_tid     := exe_reg_tid
+  io.control.exe_rd_addr := exe_reg_rd_addr
+  
+  // exceptions from execute stage to control
+  io.control.exe_int_expire           := csr.io.int_expire
+  io.control.exe_exc_expire           := csr.io.exc_expire
+  io.control.exe_int_ext              := csr.io.int_ext
+  io.control.exe_exc_priv_inst        := csr.io.priv_fault
+  io.control.exe_exc_load_misaligned  := loadstore.io.load_misaligned 
+  io.control.exe_exc_load_fault       := loadstore.io.load_fault
+  io.control.exe_exc_store_misaligned := loadstore.io.store_misaligned
+  io.control.exe_exc_store_fault      := loadstore.io.store_fault
+    
+  // Provide inputs to memory stage registers.
+  mem_reg_tid     := exe_reg_tid
+  mem_reg_rd_addr := exe_reg_rd_addr
+  mem_reg_rd_data := exe_rd_data
+  mem_reg_address := exe_address
+  
+  // ************************************************************
+  // Memory Stage
+ 
+  // Data to store back to rd can come from execute stage or data memory.
+  mem_rd_data := 
+    Mux(io.control.mem_rd_data_sel === MEM_RD_MEM, loadstore.io.data_out,
+    Mux(io.control.mem_rd_data_sel === MEM_RD_MUL, mem_mul_result, //mul
+    // MEM_RD_REG
+    mem_reg_rd_data)
+    ) //mul
 
-  // datapath to controlpath outputs
-  io.dat.if_valid   := if_reg_valid
-  io.dat.if_tid     := if_reg_tid
-  io.dat.dec_valid  := dec_reg_valid
-  io.dat.dec_inst   := dec_reg_inst
-  io.dat.dec_tid    := dec_reg_tid
-  io.dat.exe_valid  := exe_reg_valid
-  io.dat.exe_tid    := exe_reg_tid
-  io.dat.exe_br_eq  := (exe_reg_rs1_data === exe_reg_rs2_data)
-  io.dat.exe_br_lt  := (exe_reg_rs1_data.toSInt < exe_reg_rs2_data.toSInt) 
-  io.dat.exe_br_ltu := (exe_reg_rs1_data.toUInt < exe_reg_rs2_data.toUInt)
-  io.dat.exe_br_type:= exe_reg_ctrl_br_type
-  //io.dat.exe_du_wait:= exe_du_wait //ifdu
+  // Provide inputs to rd port of register file.
+  regfile.io.rd.thread  := mem_reg_tid
+  regfile.io.rd.addr    := mem_reg_rd_addr
+  regfile.io.rd.data    := mem_rd_data
+  regfile.io.rd.enable  := io.control.mem_rd_write
+  
+  io.control.mem_tid     := mem_reg_tid
+  io.control.mem_rd_addr := mem_reg_rd_addr
+ 
+  // thread scheduling
+  io.control.csr_slots := csr.io.slots
+  io.control.csr_tmodes := csr.io.tmodes
 
-  // Ptp signals
-  if(conf.getTime) {
-    io.top.exe_ns_clock := exe_reg_ns_clock
-  }
-}
+  // I/O
+  io.host.to_host := csr.io.host.to_host
+  io.gpio <> csr.io.gpio
 
+  
+  // trap handling address, depends on conf.regEvec
+  mem_evec := csr.io.evecs(mem_reg_tid)
+  
+  wb_reg_tid     := mem_reg_tid
+  wb_reg_rd_addr := mem_reg_rd_addr
+  wb_reg_rd_data := mem_rd_data
+  
+  // ************************************************************
+  // Writeback Stage
+  wb_rd_data := wb_reg_rd_data
+  
+  io.control.wb_tid     := wb_reg_tid
+  io.control.wb_rd_addr := wb_reg_rd_addr
 
 }

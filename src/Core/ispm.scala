@@ -1,40 +1,81 @@
 /******************************************************************************
-ispm.scala:
-  Instruction scratchpad memory.
-Authors: 
-  Michael Zimmer (mzimmer@eecs.berkeley.edu)
-  Chris Shaver (shaver@eecs.berkeley.edu)
+File: ispm.scala
+Description: Instruction scratchpad memory
+Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
+Contributors: 
+License: See LICENSE.txt
 ******************************************************************************/
-
 package Core
+
+import Chisel._
+
+class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
 {
+  val r = new Bundle {
+    // read port
+    val addr = UInt(INPUT, conf.iMemAddrBits)
+    val enable = Bool(INPUT)
+    val data_out = Bits(OUTPUT, 32)
+  }
+  val rw = new Bundle {
+    // read/write port
+    val addr = UInt(INPUT, conf.iMemAddrBits)
+    val enable = Bool(INPUT)
+    val data_out = Bits(OUTPUT, 32)
+    val write = Bool(INPUT)
+    val data_in = Bits(INPUT, 32)
+  }
+}
 
-  import Chisel._
-  import Node._
-  import Common._
-  import CoreConstants._
-
-  class ISpm(conf: CoreConfig) extends Module
-  {
-    val io = new MemIo(conf.iSpmAddrBits)
-
-    // Memory for instruction SPM.
-    val mem = Mem(out = Bits(width = XPRLEN), n = (conf.iSpmKBytes*1024/4), seqRead = true)
-
-    // Registered output for sequential read.
-    val dout = Reg(outType= Bits(width = XPRLEN) )
-
-    when(io.req.w) {
-      // Write.
-      mem(io.req.addr) := io.req.wdata
-    } 
-    .elsewhen(io.req.r)
-    {
-      // Read.
-      dout := mem(io.req.addr)
-    }
-    io.resp.data := dout
-
+// TODO: interal module for Blackbox
+class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
+//class ISpm(implicit conf: FlexpretConfiguration) extends Module
+{
+  val io = new Bundle {
+    val core = new InstMemCoreIO()
+    val bus = new InstMemBusIO()
   }
 
+  // memory for instruction SPM
+  val ispm = Mem(Bits(width = 32), conf.iMemDepth, true)
+
+  // read port
+  // infer sequential read
+  val dout_r = Reg(Bits(width = 32))
+  io.core.r.data_out := dout_r
+
+  // Read port connected to core for instruction fetch.
+  when(io.core.r.enable) {
+    dout_r := ispm(io.core.r.addr)
+  }
+
+  if(conf.iMemCoreRW || conf.iMemBusRW) {
+    // read/write port
+    // infer sequential read
+    val dout_rw = Reg(Bits(width = 32))
+
+    if(conf.iMemBusRW) {
+      io.bus.data_out := dout_rw
+      io.bus.ready := Bool(true)
+      when(io.bus.enable) {
+        when(io.bus.write) {
+          ispm(io.bus.addr) := io.bus.data_in
+        }
+        dout_rw := ispm(io.bus.addr)
+      }
+    }
+
+    // Core has priority over bus
+    if(conf.iMemCoreRW) {
+      io.core.rw.data_out := dout_rw
+      when(io.core.rw.enable) {
+        if(conf.iMemBusRW) io.bus.ready := Bool(false)
+        when(io.core.rw.write) {
+          ispm(io.core.rw.addr) := io.core.rw.data_in
+        }
+        dout_rw := ispm(io.core.rw.addr)
+      }
+    }
+
+  }
 }
