@@ -104,10 +104,12 @@ Tests
 
 RISC-V Compiler
 --------------------------------------------------------------------------------
-We use the RISC-V GCC compiler, see [riscv.org](http://riscv.org/) for installation instructions.
+We use the RISC-V GCC compiler, see [riscv.org](http://riscv.org/) for more information.
 
 RISC-V toolchain version this branch is developed against:
 https://github.com/riscv/riscv-gnu-toolchain/commit/9a8a0aa98571c97291702e2e283fc1056f3ce2e2
+
+A docker image with the compiler version installed can be created by using or modifying `docker/Dockerfile`.
 
 Program Compilation
 --------------------------------------------------------------------------------
