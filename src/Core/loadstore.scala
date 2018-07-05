@@ -16,9 +16,7 @@ object LoadFormat {
   def apply(data: Bits, address: UInt, memType: UInt) = {
     // Shift data to move subword loads to lowest bytes.
     // Address -> Shift Amount: 00->0, 01->8, 10->16, 11->24
-    // TODO: wait until chisel bug is fixed
-    //val shifted = data >> (Cat(address, UInt(0,3)))
-    val shifted = UInt(data) >> (Cat(address, UInt(0,3)))
+    val shifted = data >> (Cat(address, UInt(0,3)))
 
     // Zero or sign extend.
     Mux(memType === MEM_LB,  Cat(Fill(24, shifted( 7)), shifted(7,  0)),
@@ -151,7 +149,7 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   io.dmem.enable := (if(conf.dMemForceEn) Bool(true)
                     else dmem_op && (io.load || io.store))
   io.dmem.byte_write := StoreMask(io.addr(1, 0), io.mem_type) & 
-                        Fill(write.toBits, 4)
+                        Fill(4, write.toBits)
 
 
   // instruction memory input
