@@ -226,11 +226,11 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   }
   // TODO: bits?
   if(conf.gpioProtection) {
-    when(compare_addr(CSRs.gpoProtection)) { data_out := reg_gpo_protection.toBits() }
+    when(compare_addr(CSRs.gpoProtection)) { data_out := reg_gpo_protection.asUInt }
   }
   if(conf.memProtection) {
-    when(compare_addr(CSRs.iMemProtection)) { data_out := reg_imem_protection.toBits() }
-    when(compare_addr(CSRs.dMemProtection)) { data_out := reg_dmem_protection.toBits() }
+    when(compare_addr(CSRs.iMemProtection)) { data_out := reg_imem_protection.asUInt }
+    when(compare_addr(CSRs.dMemProtection)) { data_out := reg_dmem_protection.asUInt }
   }
   if(conf.stats) {
     when(compare_addr(CSRs.time)) { data_out := reg_time(31,0) }

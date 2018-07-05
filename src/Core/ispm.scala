@@ -37,7 +37,7 @@ class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
   }
 
   // memory for instruction SPM
-  val ispm = Mem(Bits(width = 32), conf.iMemDepth, true)
+  val ispm = SeqMem(Bits(width = 32), conf.iMemDepth)
 
   // read port
   // infer sequential read

@@ -30,7 +30,7 @@ class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
   }
   
   // memory for data SPM
-  val dspm = Mem(Bits(width = 32), conf.dMemDepth, true)
+  val dspm = SeqMem(Bits(width = 32), conf.dMemDepth)
 
 
   // read/write port for core
