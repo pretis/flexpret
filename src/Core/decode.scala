@@ -28,7 +28,6 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 package Core
 
 import Chisel._
-import Node._
 
 object DecodeLogic
 {
