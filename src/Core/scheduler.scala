@@ -64,7 +64,7 @@ class Scheduler(implicit conf: FlexpretConfiguration) extends Module
     // Implemented as round-robin arbiter using mask-based approach 
     // (Arbiters: Design Ideas and Coding Styles, Matt Weber).
     val slotOH = Reg(init = Vec(Seq.fill(8)(Bool(false))))
-    val slotRequest = io.slots.map(i => i != SLOT_D)
+    val slotRequest = io.slots.map(i => i =/= SLOT_D)
     val slotGrantOH = RRArbiterMaskMethod(slotRequest, slotOH)
     val slotGrantValid = slotGrantOH.foldLeft(Bool(false))(_ || _)
     val slotSelected = Mux1H(slotGrantOH, io.slots)
@@ -81,7 +81,7 @@ class Scheduler(implicit conf: FlexpretConfiguration) extends Module
     io.valid := Bool(false)
     when(slotGrantValid) { 
       slotOH := slotGrantOH 
-      when(slotSelected != SLOT_S && threadActive(slotSelected(conf.threadBits-1,0))) {
+      when(slotSelected =/= SLOT_S && threadActive(slotSelected(conf.threadBits-1,0))) {
         io.thread := slotSelected(conf.threadBits,0)
         io.valid := Bool(true)
       } .elsewhen(threadModeGrantValid) {

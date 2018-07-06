@@ -223,7 +223,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   val stall_count = Reg(init = Vec(Seq.fill(conf.threads){ UInt(0, 2) }))
   for(tid <- 0 until conf.threads) {
     // default behavior is decrement
-    stall_count(tid) := Mux(stall_count(tid) != UInt(0), stall_count(tid) - UInt(1), UInt(0))
+    stall_count(tid) := Mux(stall_count(tid) =/= UInt(0), stall_count(tid) - UInt(1), UInt(0))
   }
 
   // 1 cycle instruction: -
@@ -274,7 +274,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
 
   // Keep track of address and decision to write to rd, used for forwarding
   // logic and writeback stage.
-  val dec_rd_write = (io.dec_inst(11, 7) != UInt(0)) && dec_rd_en.toBool
+  val dec_rd_write = (io.dec_inst(11, 7) =/= UInt(0)) && dec_rd_en.toBool
   // dec_reg_valid != dec_valid requires flush, next instruction in decode will
   // not be valid if from same thread, so forwarding decision doesn't matter
   val exe_reg_rd_write = Reg(next = dec_rd_write && dec_reg_valid)
