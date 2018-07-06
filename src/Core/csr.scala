@@ -60,8 +60,8 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   // CSR state
 
   // thread scheduler
-  val reg_slots = RegInit(Vec(conf.initialSlots.map(i => i).toSeq)) // i => i since they are already UInts
-  val reg_tmodes = RegInit(Vec(conf.initialTmodes.map(i => i).toSeq))
+  val reg_slots = RegInit(VecInit(conf.initialSlots.map(i => i).toSeq)) // i => i since they are already UInts
+  val reg_tmodes = RegInit(VecInit(conf.initialTmodes.map(i => i).toSeq))
   // exception handling
   val reg_evecs = Reg(Vec(conf.threads, UInt()))
   val reg_epcs = Reg(Vec(conf.threads, UInt())) // RO?
@@ -75,27 +75,27 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   val reg_gpis: Seq[UInt] = conf.gpiPortSizes.map(i => Reg(UInt(i.W))).toSeq // RO
   val reg_gpos: Seq[UInt] = conf.gpoPortSizes.map(i => RegInit(0.U(i.W))).toSeq
   // protection
-  val reg_gpo_protection = Vec(conf.initialGpo.map(i => Reg(init = i)))
-  val reg_imem_protection = Vec(conf.initialIMem.map(i => Reg(init = i)))
-  val reg_dmem_protection = Vec(conf.initialDMem.map(i => Reg(init = i)))
+  val reg_gpo_protection = RegInit(VecInit(conf.initialGpo.map(i => i).toSeq))
+  val reg_imem_protection = RegInit(VecInit(conf.initialIMem.map(i => i).toSeq))
+  val reg_dmem_protection = RegInit(VecInit(conf.initialDMem.map(i => i).toSeq))
   // stats
   val reg_cycle = Reg(Vec(conf.threads, UInt(64.W))) // RO
   val reg_instret = Reg(Vec(conf.threads, UInt(64.W))) // RO
   // status
-  val reg_mtie = RegInit(Vec(Seq.fill(conf.threads) { false.B }))
-  val reg_prv1 = RegInit(Vec(Seq.fill(conf.threads) { 0.U(2.W) }))
-  val reg_ie1 = RegInit(Vec(Seq.fill(conf.threads) { false.B }))
-  val reg_prv = RegInit(Vec(Seq.fill(conf.threads) { 3.U(2.W) }))
-  val reg_ie = RegInit(Vec(Seq.fill(conf.threads) { false.B }))
-  val reg_msip = RegInit(Vec(Seq.fill(conf.threads) { false.B }))
+  val reg_mtie = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val reg_prv1 = RegInit(VecInit(Seq.fill(conf.threads) { 0.U(2.W) }))
+  val reg_ie1 = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val reg_prv = RegInit(VecInit(Seq.fill(conf.threads) { 3.U(2.W) }))
+  val reg_ie = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val reg_msip = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
 
   // Invisible
-  val reg_timer = RegInit(Vec(Seq.fill(conf.threads) { TIMER_OFF }))
+  val reg_timer = RegInit(VecInit(Seq.fill(conf.threads) { TIMER_OFF }))
 
   // for reading of status CSR
   val status = Wire(Vec(conf.threads, UInt()))
   for (tid <- 0 until conf.threads) {
-    status(tid) := Cat(Bits(1, 1), Bits(0, 4), reg_mtie(tid), Bits(0, 20), reg_prv1(tid), reg_ie1(tid), reg_prv(tid), reg_ie(tid), reg_msip(tid), Bits(0, 3))
+    status(tid) := Cat(1.U(1.W), 0.U(4.W), reg_mtie(tid), 0.U(20.W), reg_prv1(tid), reg_ie1(tid), reg_prv(tid), reg_ie(tid), reg_msip(tid), 0.U(3.W))
   }
 
 
@@ -163,7 +163,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
     for (i <- 0 until conf.gpoPortSizes.length) {
       when(compare_addr(CSRs.gpoBase + i)) {
         if (conf.gpioProtection) {
-          when(((reg_gpo_protection(i) === MEMP_SH) || (reg_gpo_protection(i)(conf.threadBits - 1, 0) === io.rw.thread)) && (reg_gpo_protection(i) != MEMP_RO)) {
+          when(((reg_gpo_protection(i) === MEMP_SH) || (reg_gpo_protection(i)(conf.threadBits - 1, 0) === io.rw.thread)) && (reg_gpo_protection(i) =/= MEMP_RO)) {
             reg_gpos(i) := data_in(conf.gpoPortSizes(i) - 1, 0)
           }
         } else {
@@ -206,19 +206,19 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   // ************************************************************
   // CSR read
 
-  def zero_extend(base: Bits, len: Int): Bits = if (len < 32) Cat(Bits(0, 32 - len), base) else base
+  def zero_extend(base: Bits, len: Int): Bits = if (len < 32) Cat(0.U((32 - len).W), base) else base
 
   data_out := 0.U(32.W)
   if (conf.threads > 1) {
     when(compare_addr(CSRs.slots)) {
-      data_out := reg_slots.toBits
+      data_out := reg_slots.asUInt
     }
     when(compare_addr(CSRs.hartid)) {
       data_out := zero_extend(io.rw.thread, conf.threadBits)
     }
   }
   when(compare_addr(CSRs.tmodes)) {
-    data_out := zero_extend(reg_tmodes.toBits, 2 * conf.threads)
+    data_out := zero_extend(reg_tmodes.asUInt, 2 * conf.threads)
   }
   if (conf.exceptions) {
     when(compare_addr(CSRs.evec)) {
@@ -228,7 +228,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
       data_out := reg_epcs(io.rw.thread)
     }
     when(compare_addr(CSRs.cause)) {
-      data_out := Cat(reg_causes(io.rw.thread)(CAUSE_WI - 1), Bits(0, 32 - CAUSE_WI), reg_causes(io.rw.thread)(CAUSE_WI - 2, 0))
+      data_out := Cat(reg_causes(io.rw.thread)(CAUSE_WI - 1), 0.U((32 - CAUSE_WI).W), reg_causes(io.rw.thread)(CAUSE_WI - 2, 0))
     }
     when(compare_addr(CSRs.sup0)) {
       data_out := reg_sup0(io.rw.thread)
@@ -236,7 +236,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   }
   if (conf.getTime) {
     when(compare_addr(CSRs.clock)) {
-      data_out := zero_extend(reg_time(conf.timeBits - 1, 0).toBits, conf.timeBits)
+      data_out := zero_extend(reg_time(conf.timeBits - 1, 0).asUInt, conf.timeBits)
     }
   }
   when(compare_addr(CSRs.tohost)) {
@@ -244,12 +244,12 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   }
   for (i <- 0 until conf.gpiPortSizes.length) {
     when(compare_addr(CSRs.gpiBase + i)) {
-      data_out := zero_extend(reg_gpis(i).toBits, conf.gpiPortSizes(i))
+      data_out := zero_extend(reg_gpis(i).asUInt, conf.gpiPortSizes(i))
     }
   }
   for (i <- 0 until conf.gpoPortSizes.length) {
     when(compare_addr(CSRs.gpoBase + i)) {
-      data_out := zero_extend(reg_gpos(i).toBits, conf.gpoPortSizes(i))
+      data_out := zero_extend(reg_gpos(i).asUInt, conf.gpoPortSizes(i))
     }
   }
   // TODO: bits?
@@ -328,7 +328,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
 
   // update time every cycle
   if (conf.getTime) {
-    reg_time := reg_time + UInt(conf.timeInc)
+    reg_time := reg_time + conf.timeInc.U
   }
 
   // unless conf.roundRobin, use comparator for each thread
@@ -336,7 +336,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   if (conf.delayUntil || conf.interruptExpire) {
     for (tid <- 0 until conf.threads) {
       // Each value compared to current time
-      expired(tid) := (reg_time(conf.timeBits - 1, 0) - reg_compare(tid)) (conf.timeBits - 1) === UInt(0, 1)
+      expired(tid) := (reg_time(conf.timeBits - 1, 0) - reg_compare(tid)) (conf.timeBits - 1) === 0.U(1.W)
       if (conf.roundRobin) {
         when(io.rw.thread != UInt(tid)) {
           expired(tid) := false.B
@@ -434,7 +434,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
     }
   } else {
     when (io.exception) {
-      reg_ie := Vec(Seq.fill(conf.threads) { false.B })
+      reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
     }
   }
 
