@@ -285,6 +285,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   val loadstore = Module(new LoadStore())
   // memories and bus
   loadstore.io.dmem <> io.dmem
+  loadstore.io.imem.r <> DontCare // loadstore only uses write port
   loadstore.io.imem.rw <> io.imem.rw
   loadstore.io.bus <> io.bus
   // datapath inputs
