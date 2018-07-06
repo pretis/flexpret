@@ -32,7 +32,7 @@ class DSpm(implicit conf: FlexpretConfiguration) extends Module
   }
   
   // memory for data SPM
-  val dspm = SeqMem(Bits(width = 32), conf.dMemDepth)
+  val dspm = SeqMem(conf.dMemDepth, Bits(width = 32))
 
 
   // read/write port for core
