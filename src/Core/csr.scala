@@ -60,21 +60,13 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   // CSR state
 
   // thread scheduler
-  val reg_slots = Vec(conf.initialSlots.map(i => Reg(init = i)))
-  val reg_tmodes = Vec(conf.initialTmodes.map(i => Reg(init = i)))
+  val reg_slots = conf.initialSlots.map(i => RegInit(i)).toSeq
+  val reg_tmodes = conf.initialTmodes.map(i => RegInit(i)).toSeq
   // exception handling
-  val reg_evecs = Vec.fill(conf.threads) {
-    Reg(UInt())
-  }
-  val reg_epcs = Vec.fill(conf.threads) {
-    Reg(UInt())
-  } // RO?
-  val reg_causes = Vec.fill(conf.threads) {
-    Reg(UInt())
-  } // RO
-  val reg_sup0 = Vec.fill(conf.threads) {
-    Reg(UInt())
-  }
+  val reg_evecs = Reg(Vec(conf.threads, UInt()))
+  val reg_epcs = Reg(Vec(conf.threads, UInt())) // RO?
+  val reg_causes = Reg(Vec(conf.threads, UInt())) // RO
+  val reg_sup0 = Reg(Vec(conf.threads, UInt()))
   // timing instructions
   val reg_time = RegInit(0.U(64.W)) // RO, less bits if !conf.stats
   val reg_compare = Reg(Vec(conf.threads, UInt(conf.timeBits.W)))
