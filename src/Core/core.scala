@@ -166,6 +166,8 @@ class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val gpio = new GPIO()
   val int_exts = Input(Vec(8, Bool()))
   //val int_exts = Input(Vec(conf.threads, Bool()))
+
+  override def cloneType = (new CoreIO).asInstanceOf[this.type]
 }
 
 class Core(confIn: FlexpretConfiguration) extends Module {
