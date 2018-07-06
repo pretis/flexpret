@@ -39,7 +39,7 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module
   }
 
   // memory for instruction SPM
-  val ispm = SeqMem(Bits(width = 32), conf.iMemDepth)
+  val ispm = SeqMem(conf.iMemDepth, Bits(width = 32))
 
   // read port
   // infer sequential read

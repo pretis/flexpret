@@ -31,7 +31,7 @@ class RegisterFile(implicit conf: FlexpretConfiguration) extends Module
     }
   }
 
-  val regfile = SeqMem(Bits(width = 32), conf.regDepth)
+  val regfile = SeqMem(conf.regDepth, Bits(width = 32))
 
   // infer sequential read
   val dout1 = Reg(Bits(width = 32))
