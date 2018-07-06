@@ -23,8 +23,8 @@ class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
 
 
 // TODO: interal module for Blackbox
-class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
-//class DSpm(implicit conf: FlexpretConfiguration) extends Module
+//class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
+class DSpm(implicit conf: FlexpretConfiguration) extends Module
 {
   val io = new Bundle {
     val core = new DataMemCoreIO()

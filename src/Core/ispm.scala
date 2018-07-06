@@ -30,8 +30,8 @@ class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
 }
 
 // TODO: interal module for Blackbox
-class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
-//class ISpm(implicit conf: FlexpretConfiguration) extends Module
+//class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
+class ISpm(implicit conf: FlexpretConfiguration) extends Module
 {
   val io = new Bundle {
     val core = new InstMemCoreIO()
