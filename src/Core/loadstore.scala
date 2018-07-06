@@ -2,7 +2,7 @@
 File: loadstore.scala
 Description: Handle load/store operations to D-SPM, I-SPM, or bus
 Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
-Contributors: 
+Contributors:
 License: See LICENSE.txt
 ******************************************************************************/
 package Core
@@ -44,15 +44,19 @@ object StoreFormat {
 // Use byte address within word (lowest 2 bits) and type of store to correctly
 // format store mask.
 object StoreMask {
-  def apply(address: UInt, memType: UInt) = {
+  def apply(address: UInt, memType: UInt): UInt = {
     // Store mask for subword stores depends on address.
     // Byte store: 00->0001, 01->0010, 10->0100, 11->1000
     // Half-word store: 00->0011, 10->1100
     // Word store: 00->1111
-    Mux(memType === MEM_SB, Bits(1, 1) << address,
-    Mux(memType === MEM_SH, Bits(3, 2) << address,
-    Mux(memType === MEM_SW, Bits(15, 4),
-                        Bits(0, 4))))
+    when (memType === MEM_SH) {
+      // Half-word stores must have an LSB of 0
+      assert(address(0) === 0.U)
+    }
+    Mux(memType === MEM_SB, (1.U(1.W) << address)(3, 0),
+    Mux(memType === MEM_SH, ("b11".U(2.W) << address)(3, 0),
+    Mux(memType === MEM_SW, 15.U(4.W),
+                            0.U(4.W))))
   }
 }
 
@@ -85,7 +89,7 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   // Preserve byte location and type of operation.
   val addr_byte_reg = Reg(next = io.addr(1, 0))
   val mem_type_reg = Reg(next = io.mem_type)
-  
+
   // Determine source/destination by address range
   val dmem_op = io.addr(31, 32-ADDR_DSPM_BITS) === ADDR_DSPM_VAL
   val imem_op = io.addr(31, 32-ADDR_ISPM_BITS) === ADDR_ISPM_VAL
@@ -137,19 +141,19 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   if(conf.causes.contains(Causes.fault_store)) {
     store_fault := io.store && (bad_address || !permission)
   }
- 
+
   // remember last operation
   val dmem_op_reg = Reg(next = dmem_op)
   val imem_op_reg = Reg(next = imem_op)
- 
-  val write = io.store && permission && !store_misaligned && !store_fault && !io.kill
+
+  val write: Bool = io.store && permission && !store_misaligned && !store_fault && !io.kill
   // data memory input
   io.dmem.addr := io.addr(conf.dMemAddrBits-1, 2) // assumes aligned
   io.dmem.data_in := StoreFormat(io.data_in, io.mem_type)
   io.dmem.enable := (if(conf.dMemForceEn) Bool(true)
                     else dmem_op && (io.load || io.store))
-  io.dmem.byte_write := StoreMask(io.addr(1, 0), io.mem_type) & 
-                        Fill(4, write.toBits)
+  io.dmem.byte_write := (StoreMask(io.addr(1, 0), io.mem_type) &
+                        Fill(4, write.asUInt)).toBools
 
 
   // instruction memory input
@@ -157,7 +161,7 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   if(conf.iMemCoreRW) {
     io.imem.rw.addr := io.addr(conf.iMemAddrBits-1, 2) // assumes word aligned
     io.imem.rw.data_in := io.data_in // TODO: currently only supports word write
-    io.imem.rw.enable := (if(conf.iMemForceEn) Bool(true) 
+    io.imem.rw.enable := (if(conf.iMemForceEn) Bool(true)
                           else imem_op && (io.load || io.store))
     io.imem.rw.write := imem_op && write
   } else {
@@ -177,7 +181,7 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   io.data_out := Mux(dmem_op_reg, LoadFormat(io.dmem.data_out, addr_byte_reg, mem_type_reg),
                  Mux(imem_op_reg, io.imem.rw.data_out,
                      io.bus.data_out))
-    
+
   io.load_misaligned  := load_misaligned
   io.load_fault       := load_fault
   io.store_misaligned := store_misaligned
