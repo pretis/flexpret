@@ -140,9 +140,8 @@ class HostIO() extends Bundle {
 }
 
 class GPIO(implicit conf: FlexpretConfiguration) extends Bundle {
-  // TODO(edwardw): fix this hardcoded bundle
-  val in = Input(Vec(4, UInt(1.W))) // Vec(conf.gpiPortSizes.map(i => Bits(INPUT, i)))
-  val out = Output(Vec(4, UInt(2.W))) // Vec(conf.gpoPortSizes.map(i => Bits(OUTPUT, i)))
+  val in: Seq[UInt] = conf.gpiPortSizes.map(i => Input(UInt(i.W))).toSeq
+  val out: Seq[UInt] = conf.gpoPortSizes.map(i => Output(UInt(i.W))).toSeq
 }
 
 class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
