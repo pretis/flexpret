@@ -376,8 +376,8 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   }
 
   // Determine how to update PC for each thread.
-  val next_pc_sel = Wire(Vec(conf.threads, UInt()))
-  for(tid <- 0 until conf.threads) { next_pc_sel := NPC_PCREG }
+  val next_pc_sel = Wire(Vec(conf.threads, UInt(2.W)))
+  for(tid <- 0 until conf.threads) { next_pc_sel(tid) := NPC_PCREG }
   when(if_pre_valid)            { next_pc_sel(io.if_tid)  := NPC_PLUS4 }
   if(!conf.regBrJmp) {
     when(exe_brjmp || exe_du)   { next_pc_sel(io.exe_tid) := NPC_BRJMP }
