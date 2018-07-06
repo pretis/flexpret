@@ -42,8 +42,8 @@ object RRArbiterMaskMethod {
 class Scheduler(implicit conf: FlexpretConfiguration) extends Module 
 {
   val io = new Bundle {
-    val slots = Vec.fill(8) { UInt(INPUT, SLOT_WI) }
-    val thread_modes = Vec.fill(conf.threads) { UInt(INPUT, TMODE_WI) }
+    val slots = Vec(8, UInt(INPUT, SLOT_WI))
+    val thread_modes = Vec(conf.threads, UInt(INPUT, TMODE_WI))
     val thread = UInt(OUTPUT, conf.threadBits)
     val valid = Bool(OUTPUT)
   }
@@ -63,14 +63,14 @@ class Scheduler(implicit conf: FlexpretConfiguration) extends Module
     // Find next slot that isn't disabled.
     // Implemented as round-robin arbiter using mask-based approach 
     // (Arbiters: Design Ideas and Coding Styles, Matt Weber).
-    val slotOH = Vec.fill(8) { Reg(init = Bool(false)) }
+    val slotOH = Reg(init = Vec(Seq.fill(8)(Bool(false))))
     val slotRequest = io.slots.map(i => i != SLOT_D)
     val slotGrantOH = RRArbiterMaskMethod(slotRequest, slotOH)
     val slotGrantValid = slotGrantOH.foldLeft(Bool(false))(_ || _)
     val slotSelected = Mux1H(slotGrantOH, io.slots)
     
     // Find next SRRT that is active.
-    val threadModeOH = Vec.fill(conf.threads) { Reg(init = Bool(false))}
+    val threadModeOH = Reg(init = Vec(Seq.fill(conf.threads)(Bool(false))))
     val threadModeRequest = io.thread_modes.map(i => i === TMODE_SA)
     val threadModeGrantOH = RRArbiterMaskMethod(threadModeRequest, threadModeOH)
     val threadModeGrantValid = threadModeGrantOH.foldLeft(Bool(false))(_ || _)

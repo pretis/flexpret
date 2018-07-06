@@ -19,7 +19,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module
     val bus = new BusIO().flip
     val host = new HostIO()
     val gpio = new GPIO()
-    val int_exts = Vec.fill(conf.threads) { Bool(INPUT) }
+    val int_exts = Vec(conf.threads, Bool(INPUT))
   }
 
   // ************************************************************
@@ -28,7 +28,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module
   // instruction fetch stage
   val if_reg_tid       = Reg(UInt())
   val if_reg_pc        = if(conf.threads > 1) Reg(UInt()) else UInt() // PC
-  val if_reg_pcs       = Vec.fill(conf.threads) { Reg(init = ADDR_PC_INIT.toUInt) } // PC for each thread
+  val if_reg_pcs       = Vec(conf.threads, Reg(init = ADDR_PC_INIT.toUInt)) // PC for each thread
 
   val if_pc_plus4      = UInt()
 
@@ -74,7 +74,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module
   // Next PCs Generation
 
   // For each thread, determine next input to its PC register.
-  val next_pcs = Vec.fill(conf.threads) { UInt() }
+  val next_pcs = Wire(Vec(conf.threads, UInt()))
   for(tid <- 0 until conf.threads) { next_pcs(tid) := if_reg_pcs(tid) } // default value
   when(io.control.next_pc_sel(if_reg_tid) === NPC_PLUS4) {
     next_pcs(if_reg_tid) := if_pc_plus4
