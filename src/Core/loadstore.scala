@@ -72,8 +72,8 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
     val data_in = Bits(INPUT, 32)
     val data_out = Bits(OUTPUT, 32)
     // memory protection
-    val imem_protection = Vec.fill(conf.memRegions) { UInt(INPUT, MEMP_WI) }
-    val dmem_protection = Vec.fill(conf.memRegions) { UInt(INPUT, MEMP_WI) }
+    val imem_protection = Vec(conf.memRegions, UInt(INPUT, MEMP_WI))
+    val dmem_protection = Vec(conf.memRegions, UInt(INPUT, MEMP_WI))
     // exceptions
     val kill = Bool(INPUT)
     val load_misaligned  = Bool(OUTPUT)

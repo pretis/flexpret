@@ -15,8 +15,10 @@ class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
   val addr = UInt(INPUT, conf.dMemAddrBits-2) // assume word aligned
   val enable = Bool(INPUT)
   val data_out = Bits(OUTPUT, 32)
-  val byte_write = Vec.fill(4) { Bool(INPUT) }
+  val byte_write = Vec(4, Bool(INPUT))
   val data_in = Bits(INPUT, 32)
+
+  override def cloneType = (new DataMemCoreIO).asInstanceOf[this.type]
 }
 
 

@@ -30,7 +30,7 @@ class ControlDatapathIO(implicit conf: FlexpretConfiguration) extends Bundle
   val mem_rd_data_sel = UInt(OUTPUT, MEM_RD_WI)
 
   // outputs to datapath (control dependent)
-  val next_pc_sel     = Vec.fill(conf.threads) { UInt(OUTPUT, NPC_WI) }
+  val next_pc_sel     = Vec(conf.threads, UInt(OUTPUT, NPC_WI))
   val next_tid        = UInt(OUTPUT, conf.threadBits)
   val next_valid      = Bool(OUTPUT)
   val dec_rs1_sel     = UInt(OUTPUT, RS1_WI)
@@ -58,8 +58,8 @@ class ControlDatapathIO(implicit conf: FlexpretConfiguration) extends Bundle
   val exe_tid     = UInt(INPUT, conf.threadBits)
   val exe_rd_addr = UInt(INPUT, REG_ADDR_BITS)
   val exe_expire  = Bool(INPUT) // DU, WU
-  val csr_slots   = Vec.fill(8) { UInt(INPUT, SLOT_WI) }
-  val csr_tmodes  = Vec.fill(conf.threads) { UInt(INPUT, TMODE_WI) }
+  val csr_slots   = Vec(8, UInt(INPUT, SLOT_WI))
+  val csr_tmodes  = Vec(conf.threads, UInt(INPUT, TMODE_WI))
   val mem_tid     = UInt(INPUT, conf.threadBits)
   val mem_rd_addr = UInt(INPUT, REG_ADDR_BITS)
   val wb_tid      = UInt(INPUT, conf.threadBits)
@@ -76,6 +76,8 @@ class ControlDatapathIO(implicit conf: FlexpretConfiguration) extends Bundle
   val exe_exc_expire           = Bool(INPUT)
   val exe_int_expire           = Bool(INPUT)
   val exe_int_ext              = Bool(INPUT)
+
+  override def cloneType = (new ControlDatapathIO).asInstanceOf[this.type]
 }
 
 class Control(implicit conf: FlexpretConfiguration) extends Module
@@ -205,20 +207,20 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
 
   // Exception from execute stage (kill fetch, decode, execute)
   // Next valid instruction will be from evec address
-  val exe_exception = Bool()
+  val exe_exception = Wire(Bool())
   exe_exception := Bool(false) // default value
   val mem_reg_exception = Reg(next = exe_exception)
 
   // Flush pipeline from execute stage (kill fetch, decode)
-  val exe_flush = Bool()
+  val exe_flush = Wire(Bool())
   exe_flush := exe_exception // default value
 
   // Stall fetch from decode stage (kill fetch)
-  val dec_stall = Bool()
+  val dec_stall = Wire(Bool())
   dec_stall := Bool(false) // default value
 
   // Multicycle stall (kill fetch multiple times)
-  val stall_count = Vec.fill(conf.threads) { Reg(init = UInt(0, 2)) }
+  val stall_count = Reg(init = Vec(Seq.fill(conf.threads){ UInt(0, 2) }))
   for(tid <- 0 until conf.threads) {
     // default behavior is decrement
     stall_count(tid) := Mux(stall_count(tid) != UInt(0), stall_count(tid) - UInt(1), UInt(0))
@@ -235,7 +237,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   // stall/flush operation).
   // Avoid using if_valid, dec_valid, and exe_valid in control logic because
   // of dependency on exe_flush from exceptions (long path)
-  val next_valid    = Bool()
+  val next_valid    = Wire(Bool())
   val if_reg_valid  = Reg(next = next_valid, init = Bool(false))
   val if_pre_valid  = if_reg_valid &&
                       !(dec_stall && (io.if_tid === io.dec_tid)) &&
@@ -315,7 +317,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   //val exe_brjmp = exe_valid && (exe_reg_jump || (exe_reg_branch && io.exe_br_cond))
 
   // Keep track of delay_until instruction.
-  val exe_du = Bool()
+  val exe_du = Wire(Bool())
   if(conf.delayUntil) {
     val exe_reg_du = Reg(next = dec_du.toBool)
     // If instruction is valid and compare time value has not expired, set PC:
@@ -335,8 +337,8 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   val mem_reg_brjmp = Reg(next = (exe_brjmp || exe_du) && exe_valid)
 
   // Keep track of interrupt/exception on expire instruction.
-  val exe_ie = Bool()
-  val exe_ee = Bool()
+  val exe_ie = Wire(Bool())
+  val exe_ee = Wire(Bool())
   if(conf.interruptExpire) {
   val exe_reg_ie = Reg(next = dec_ie.toBool && io.dec_inst(25).toBool)
   exe_ie := exe_valid && exe_reg_ie
@@ -348,8 +350,8 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   }
 
   // Forwarding logic for rs1 and rs2
-  val dec_rs1_sel = UInt()
-  val dec_rs2_sel = UInt()
+  val dec_rs1_sel = Wire(UInt())
+  val dec_rs2_sel = Wire(UInt())
   if(conf.bypassing) {
     // Assume rs1/rs2 select doesn't matter if execute stage killed (don't need to wait on exe_valid signal).
     // Also doesn't matter if data forwarded if rs1 or rs2 not used.
@@ -374,7 +376,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   }
 
   // Determine how to update PC for each thread.
-  val next_pc_sel = Vec.fill(conf.threads) { UInt() }
+  val next_pc_sel = Wire(Vec(conf.threads, UInt()))
   for(tid <- 0 until conf.threads) { next_pc_sel := NPC_PCREG }
   when(if_pre_valid)            { next_pc_sel(io.if_tid)  := NPC_PLUS4 }
   if(!conf.regBrJmp) {

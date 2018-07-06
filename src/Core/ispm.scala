@@ -25,6 +25,8 @@ class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
     val write = Bool(INPUT)
     val data_in = Bits(INPUT, 32)
   }
+
+  override def cloneType = (new InstMemCoreIO).asInstanceOf[this.type]
 }
 
 // TODO: interal module for Blackbox
