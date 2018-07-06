@@ -97,9 +97,9 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   // Check if address overflows size
   // spike val bad_address = Bool(false)
   val bad_address = (
-    (dmem_op && io.addr(31-ADDR_DSPM_BITS, conf.dMemAddrBits) != Bits(0)) ||
-    (imem_op && io.addr(31-ADDR_ISPM_BITS, conf.iMemAddrBits+2) != Bits(0)) ||
-    (bus_op  && io.addr(31-ADDR_BUS_BITS,  conf.busAddrBits-conf.threadBits) != Bits(0)) )
+    (dmem_op && io.addr(31-ADDR_DSPM_BITS, conf.dMemAddrBits) =/= Bits(0)) ||
+    (imem_op && io.addr(31-ADDR_ISPM_BITS, conf.iMemAddrBits+2) =/= Bits(0)) ||
+    (bus_op  && io.addr(31-ADDR_BUS_BITS,  conf.busAddrBits-conf.threadBits) =/= Bits(0)) )
 
   // Memory protection (for write)
   val permission = Wire(Bool())
@@ -108,8 +108,8 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
     val imem_region_mode = io.imem_protection(io.addr(conf.iMemHighIndex, conf.iMemLowIndex))
     val dmem_region_mode = io.dmem_protection(io.addr(conf.dMemHighIndex, conf.dMemLowIndex))
     // check for permission (shared or matching thread ID)
-    val imem_permission = ((imem_region_mode === MEMP_SH) || (imem_region_mode(conf.threadBits-1,0) === io.thread)) && (imem_region_mode != MEMP_RO)
-    val dmem_permission = ((dmem_region_mode === MEMP_SH) || (dmem_region_mode(conf.threadBits-1,0) === io.thread)) && (dmem_region_mode != MEMP_RO)
+    val imem_permission = ((imem_region_mode === MEMP_SH) || (imem_region_mode(conf.threadBits-1,0) === io.thread)) && (imem_region_mode =/= MEMP_RO)
+    val dmem_permission = ((dmem_region_mode === MEMP_SH) || (dmem_region_mode(conf.threadBits-1,0) === io.thread)) && (dmem_region_mode =/= MEMP_RO)
     // check for exception
     permission := (dmem_op && dmem_permission) || (imem_op && imem_permission) || bus_op
   } else {
@@ -121,8 +121,8 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   load_misaligned := Bool(false)
   if(conf.causes.contains(Causes.misaligned_load)) {
     load_misaligned := io.load && (
-      (((io.mem_type === MEM_LH) || (io.mem_type === MEM_LHU)) && (io.addr(0) != Bits(0))) ||
-      ((io.mem_type === MEM_LW) && (io.addr(1,0) != Bits(0))))
+      (((io.mem_type === MEM_LH) || (io.mem_type === MEM_LHU)) && (io.addr(0) =/= Bits(0))) ||
+      ((io.mem_type === MEM_LW) && (io.addr(1,0) =/= Bits(0))))
   }
   val load_fault = Wire(Bool())
   load_fault := Bool(false)
@@ -133,8 +133,8 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   store_misaligned := Bool(false)
   if(conf.causes.contains(Causes.misaligned_store)) {
     store_misaligned := io.store && (
-      ((io.mem_type === MEM_SH) && (io.addr(0) != Bits(0))) ||
-      ((io.mem_type === MEM_SW) && (io.addr(1,0) != Bits(0))))
+      ((io.mem_type === MEM_SH) && (io.addr(0) =/= Bits(0))) ||
+      ((io.mem_type === MEM_SW) && (io.addr(1,0) =/= Bits(0))))
   }
   val store_fault = Wire(Bool())
   store_fault := Bool(false)
