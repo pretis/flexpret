@@ -98,7 +98,7 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
     (bus_op  && io.addr(31-ADDR_BUS_BITS,  conf.busAddrBits-conf.threadBits) != Bits(0)) )
 
   // Memory protection (for write)
-  val permission = Bool()
+  val permission = Wire(Bool())
   if(conf.memProtection) {
     // determine region mode using address to index
     val imem_region_mode = io.imem_protection(io.addr(conf.iMemHighIndex, conf.iMemLowIndex))
@@ -113,26 +113,26 @@ class LoadStore(implicit conf: FlexpretConfiguration) extends Module
   }
 
   // Exception checks
-  val load_misaligned = Bool()
+  val load_misaligned = Wire(Bool())
   load_misaligned := Bool(false)
   if(conf.causes.contains(Causes.misaligned_load)) {
     load_misaligned := io.load && (
       (((io.mem_type === MEM_LH) || (io.mem_type === MEM_LHU)) && (io.addr(0) != Bits(0))) ||
       ((io.mem_type === MEM_LW) && (io.addr(1,0) != Bits(0))))
   }
-  val load_fault = Bool()
+  val load_fault = Wire(Bool())
   load_fault := Bool(false)
   if(conf.causes.contains(Causes.fault_load)) {
     load_fault := io.load && bad_address
   }
-  val store_misaligned = Bool()
+  val store_misaligned = Wire(Bool())
   store_misaligned := Bool(false)
   if(conf.causes.contains(Causes.misaligned_store)) {
     store_misaligned := io.store && (
       ((io.mem_type === MEM_SH) && (io.addr(0) != Bits(0))) ||
       ((io.mem_type === MEM_SW) && (io.addr(1,0) != Bits(0))))
   }
-  val store_fault = Bool()
+  val store_fault = Wire(Bool())
   store_fault := Bool(false)
   if(conf.causes.contains(Causes.fault_store)) {
     store_fault := io.store && (bad_address || !permission)
