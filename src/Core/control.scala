@@ -260,7 +260,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
 
   // Thread scheduling uses current state and control registers (slots and
   // tmodes).
-  val next_tid = UInt()
+  val next_tid = Wire(UInt())
   val scheduler = Module(new Scheduler())
   scheduler.io.slots := io.csr_slots
   scheduler.io.thread_modes := io.csr_tmodes
@@ -495,7 +495,7 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   val exe_kill = exe_reg_exc || exe_any_exc
 
   // Handle all exceptions in execute stage.
-  val exe_exception_cause = UInt()
+  val exe_exception_cause = Wire(UInt())
   exe_exception_cause := UInt(0)
 
   if(conf.exceptions) {
@@ -518,9 +518,9 @@ class Control(implicit conf: FlexpretConfiguration) extends Module
   }
 
   // stats
-  val exe_cycle = Bool()
+  val exe_cycle = Wire(Bool())
   exe_cycle := Bool(false) // default value
-  val exe_instret = Bool()
+  val exe_instret = Wire(Bool())
   exe_instret := Bool(false) // default value
   if(conf.stats) {
     exe_cycle := Reg(next = Reg(next = Reg(next = next_valid)))
