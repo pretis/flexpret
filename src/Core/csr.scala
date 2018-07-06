@@ -74,8 +74,8 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   val reg_compare         = Vec.fill(conf.threads) { Reg(UInt(width = conf.timeBits)) }
   // I/O
   val reg_to_host         = Reg(init = Bits(0, 32))
-  val reg_gpis            = Vec(conf.gpiPortSizes.map(i => Reg(UInt(width = i)))) // RO
-  val reg_gpos            = Vec(conf.gpoPortSizes.map(i => Reg(init = UInt(0, i))))
+  val reg_gpis: Seq[UInt] = conf.gpiPortSizes.map(i => Reg(UInt(i.W))).toSeq // RO
+  val reg_gpos: Seq[UInt] = conf.gpoPortSizes.map(i => RegInit(0.U(i.W))).toSeq
   // protection
   val reg_gpo_protection  = Vec(conf.initialGpo.map(i => Reg(init = i)))
   val reg_imem_protection = Vec(conf.initialIMem.map(i => Reg(init = i)))
@@ -338,7 +338,8 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
 
   // Input handling
   // Every cycle, register GPI pins
-  reg_gpis := io.gpio.in
+  (reg_gpis zip io.gpio.in) map { case (l, r) => l := r }
+  // Formerly in Chisel2: reg_gpis := io.gpio.in (chisel3#152)
 
   // External interrupt handling
   val int_ext = Bool()
@@ -391,7 +392,10 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module
   }
   io.expire := expired(io.rw.thread)
   io.host.to_host := reg_to_host
-  io.gpio.out := reg_gpos
+
+  (io.gpio.out zip reg_gpos) map { case (l, r) => l := r }
+  // Formerly in Chisel2: io.gpio.out := reg_gpos (chisel3#152)
+
   io.imem_protection := reg_imem_protection
   io.dmem_protection := reg_dmem_protection
   io.exc_expire := exc_expire
