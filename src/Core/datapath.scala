@@ -28,7 +28,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   // instruction fetch stage
   val if_reg_tid = Reg(UInt())
   val if_reg_pc = if (conf.threads > 1) Reg(UInt()) else UInt() // PC
-  val if_reg_pcs = RegInit(Vec(Seq.fill(conf.threads)(ADDR_PC_INIT))) // PC for each thread
+  val if_reg_pcs = RegInit(VecInit(Seq.fill(conf.threads)(ADDR_PC_INIT))) // PC for each thread
 
   val if_pc_plus4 = Wire(UInt())
 
@@ -142,16 +142,16 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   // Exception checks
   if (conf.causes.contains(Causes.misaligned_fetch)) {
     // Lower 2 bits should be 0
-    io.control.if_exc_misaligned := if_reg_pc(1, 0) != Bits(0)
+    io.control.if_exc_misaligned := if_reg_pc(1, 0) =/= 0.U
   } else {
-    io.control.if_exc_misaligned := Bool(false)
+    io.control.if_exc_misaligned := false.B
   }
   if (conf.causes.contains(Causes.fault_fetch)) {
     // PC should be in memory space of I-SPM
     //spike: rm
-    io.control.if_exc_fault := if_reg_pc(31, conf.iMemAddrBits + 2) != Cat(ADDR_ISPM_VAL, Bits(0, 30 - ADDR_ISPM_BITS - conf.iMemAddrBits))
+    io.control.if_exc_fault := if_reg_pc(31, conf.iMemAddrBits + 2) != Cat(ADDR_ISPM_VAL, 0.U((30 - ADDR_ISPM_BITS - conf.iMemAddrBits).W))
   } else {
-    io.control.if_exc_fault := Bool(false)
+    io.control.if_exc_fault := false.B
   }
 
   // Provide inputs to decode stage registers.
@@ -189,11 +189,11 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   // Generate immediate values.
   val dec_imm_i = Cat(Fill(21, dec_reg_inst(31)), dec_reg_inst(30, 20))
   val dec_imm_s = Cat(Fill(21, dec_reg_inst(31)), dec_reg_inst(30, 25), dec_reg_inst(11, 7))
-  val dec_imm_b = Cat(Fill(20, dec_reg_inst(31)), dec_reg_inst(7), dec_reg_inst(30, 25), dec_reg_inst(11, 8), Bits(0, 1))
-  val dec_imm_u = Cat(dec_reg_inst(31, 12), Bits(0, 12))
-  val dec_imm_j = Cat(Fill(12, dec_reg_inst(31)), dec_reg_inst(19, 12), dec_reg_inst(20), dec_reg_inst(30, 21), Bits(0, 1))
+  val dec_imm_b = Cat(Fill(20, dec_reg_inst(31)), dec_reg_inst(7), dec_reg_inst(30, 25), dec_reg_inst(11, 8), 0.U(1.W))
+  val dec_imm_u = Cat(dec_reg_inst(31, 12), 0.U(12.W))
+  val dec_imm_j = Cat(Fill(12, dec_reg_inst(31)), dec_reg_inst(19, 12), dec_reg_inst(20), dec_reg_inst(30, 21), 0.U(1.W))
   // For CSR
-  val dec_imm_z = Cat(Bits(0, 27), dec_reg_inst(19, 15))
+  val dec_imm_z = Cat(0.U(27.W), dec_reg_inst(19, 15))
 
   val dec_imm = MuxLookup(io.control.dec_imm_sel, dec_imm_i, Array(
     IMM_S -> dec_imm_s,
@@ -205,11 +205,11 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   ))
 
   // Set operands for ALU.
-  val dec_op1 = MuxLookup(io.control.dec_op1_sel, Bits(0, 32), Array(
+  val dec_op1 = MuxLookup(io.control.dec_op1_sel, 0.U(32.W), Array(
     OP1_RS1 -> dec_rs1_data,
     OP1_PC -> dec_reg_pc
   )) // default: OP1_0
-  val dec_op2 = MuxLookup(io.control.dec_op2_sel, Bits(0, 32), Array(
+  val dec_op2 = MuxLookup(io.control.dec_op2_sel, 0.U(32.W), Array(
     OP2_RS2 -> dec_rs2_data,
     OP2_IMM -> dec_imm
   )) // default: OP2_0
@@ -257,7 +257,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
 
   // Check branch condition.
   val exe_br_cond = Wire(Bool())
-  val exe_lt = exe_reg_rs1_data.toSInt < exe_reg_rs2_data.toSInt
+  val exe_lt = exe_reg_rs1_data.asSInt < exe_reg_rs2_data.asSInt
   val exe_ltu = exe_reg_rs1_data < exe_reg_rs2_data
   val exe_eq = exe_reg_rs1_data === exe_reg_rs2_data
   val def_exe_br_cond = false.B
