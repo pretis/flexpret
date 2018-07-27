@@ -120,7 +120,7 @@ within `tests/include`. Look at other files within `tests/` for reference.
 
 Chisel
 --------------------------------------------------------------------------------
-We use the Chisel version 2.2.27 that's located as a JAR file online.
+We use Chisel version 3.1 via sbt.
 
 To learn more about Chisel, visit their [website](https://chisel.eecs.berkeley.edu/) and particularly their [documentation section](https://chisel.eecs.berkeley.edu/documentation.html).
 
