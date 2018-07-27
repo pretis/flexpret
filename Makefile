@@ -80,6 +80,16 @@ emulator: $(EMULATOR)
 # FPGA
 # -----------------------------------------------------------------------------
 
+# FIRRTL compiler
+FIRRTL_VERSION="1.1.2"
+FIRRTL_JAR = $(FPGA_DIR)/firrtl.jar
+
+$(FIRRTL_JAR):
+	wget https://github.com/freechipsproject/firrtl/releases/download/v$(FIRRTL_VERSION)/firrtl.jar -O $(FIRRTL_JAR)
+
+# Alias for $(FIRRTL)
+firrtl_jar: $(FIRRTL_JAR)
+
 # FPGA Verilog generation
 FPGA_SRC_DIR = $(FPGA_DIR)/generated-src/$(CORE_CONFIG)
 VERILOG = $(FPGA_SRC_DIR)/$(MODULE).v
