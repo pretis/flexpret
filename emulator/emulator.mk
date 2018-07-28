@@ -1,50 +1,17 @@
-# Makefile fragment for generating C++ emulator from Chisel code.
+# Makefile fragment for generating emulator using Chisel-testers.
 # Currently intended for only single testbench and Chisel source project.
 #
-# The following variables must be defined by the Makefile that includes this
-# fragment ([...] contains default value):
-# EMULATOR: Path to emulator executable
-# MODULE: Chisel top-level component
-# EMULATOR_SRC_DIR: Generated C++ emulator directory
-# EMULATOR_BUILD_DIR: Build directory
-# TESTBENCH: C++ testbench path [testbench/$(MODULE)-tb.cpp]
-# SRC_DIR: Chisel source code directory
-# CORE_CONFIG: Configuration string for Chisel
-# SBT: sbt command
-# SBT_TO_BASE: Relative directory location
-# CXX: C++ compiler
-# CXXFLAGS: C++ compiler flags
-#
-# Michael Zimmer (mzimmer@eecs.berkeley.edu)
+# Edward Wang <edwardw@eecs.berkeley.edu>
 
-
-TESTBENCH ?= $(EMULATOR_DIR)/testbench/$(MODULE)-tb.cpp
-
-ifeq ($(DEBUG), true)
-SBT_ARGS = --debug --vcd
-endif
 #------------------------------------------------------------------------------
-# Generate C++ emulator 
+# Generate emulator
 #------------------------------------------------------------------------------
-# Generate C++ emulator from Chisel code.
-$(EMULATOR_SRC_DIR)/$(MODULE).cpp: $(SRC_DIR)/$(MODULE)/*.scala
+
+# Build a JAR file that runs CoreTesterMain as the main class.
+# See build.scala for the details about this.
+$(SBT_DIR)/Emulator/target/scala-2.11/Emulator-assembly-1.0.jar: $(SRC_DIR)/$(MODULE)/*.scala
 	cd $(SBT_DIR) && \
-	$(SBT) "project Core" "test:runMain Core.test.CoreTesterMain $(CORE_CONFIG) --targetDir $(SBT_TO_BASE)/$(EMULATOR_SRC_DIR) $(SBT_ARGS)"
+	$(SBT) "project Emulator" "assembly"
 
-# Create build directory if needed.
-$(EMULATOR_BUILD_DIR):
-	mkdir -p $(EMULATOR_BUILD_DIR)
-
-# Compile C++ emulator.
-$(EMULATOR).o: $(addprefix $(EMULATOR_SRC_DIR)/, $(MODULE).cpp $(MODULE).h emulator.h) | $(EMULATOR_BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Compile testbench.
-TESTBENCH_OPTS = ""
-$(EMULATOR)-tb.o: $(TESTBENCH) $(addprefix $(EMULATOR_SRC_DIR)/, $(MODULE).cpp $(MODULE).h emulator.h) | $(EMULATOR_BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -I$(EMULATOR_SRC_DIR) $(TESTBENCH_OPTS) -c $< -o $@
-
-# Link C++ emulator with testbench.
-$(EMULATOR): %: %.o %-tb.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
+$(EMULATOR_JAR): $(SBT_DIR)/Emulator/target/scala-2.11/Emulator-assembly-1.0.jar
+	cp $(SBT_DIR)/Emulator/target/scala-2.11/Emulator-assembly-1.0.jar $(EMULATOR_JAR)

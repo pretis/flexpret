@@ -239,6 +239,7 @@ class CoreTester(c: Core, config: FlexpretConfiguration, sweep: Boolean, trace: 
 }
 
 object CoreTesterMain {
+
   // Globals are evil - refactor this
   object Globals {
     var done: Boolean = false

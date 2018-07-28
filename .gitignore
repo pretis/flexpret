@@ -5,5 +5,6 @@ results
 target/
 
 test_run_dir
+emulator/*-emulator.jar
 fpga/firrtl.jar
 fpga/generated-src

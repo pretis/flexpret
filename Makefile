@@ -2,10 +2,10 @@
 # Set configuration in config.mk or pass variable assignments as arguments.
 #
 # Usage:
-# make run: Compile programs located at $(PROG_DIR)/$(PROGS) with 
+# make run: Compile programs located at $(PROG_DIR)/$(PROGS) with
 #   $(PROG_CONFIG) configuration, then execute on target specified by $(TARGET)
 #   (either emulator or fpga) FlexPRET core with $(CORE_CONFIG) configuration.
-# 
+#
 # Optional Usage:
 # make emulator: Generate and compile C++ emulator for FlexPRET core with
 #   $(CORE_CONFIG) configuration.
@@ -50,7 +50,7 @@ CXXFLAGS = -g -O2
 # Core and target configuration
 # -----------------------------------------------------------------------------
 
-# Default configuration of core, programs, and target. 
+# Default configuration of core, programs, and target.
 # Override by modifying config.mk or pass varaible assignment as argument.
 # See file for description of variables.
 include config.mk
@@ -61,20 +61,6 @@ CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)-$(ISPM_KBYTES)
 
 # Default will build target and selected programs.
 all: $(TARGET)
-
-# -----------------------------------------------------------------------------
-# C++ emulator generation and compilation.
-# -----------------------------------------------------------------------------
-
-# C++ emulator generation, build, executable locations.
-EMULATOR_SRC_DIR = $(EMULATOR_DIR)/generated-src/$(CORE_CONFIG)
-EMULATOR_BUILD_DIR = $(EMULATOR_DIR)/build/$(CORE_CONFIG)
-EMULATOR = $(EMULATOR_BUILD_DIR)/$(MODULE)
-
-# Must provide rules for generating and compiling C++ emulator $(EMULATOR)
-include $(EMULATOR_DIR)/emulator.mk
-
-emulator: $(EMULATOR) 
 
 # -----------------------------------------------------------------------------
 # FPGA
@@ -121,6 +107,20 @@ include $(TESTS_DIR)/$(PROG_DIR)/test.mk
 prog: $(PROG:%=$(PROG_BUILD_DIR)/%.inst.mem) $(PROG:%=$(PROG_BUILD_DIR)/%.data.mem)
 
 # -----------------------------------------------------------------------------
+# Emulator generation and compilation.
+# -----------------------------------------------------------------------------
+
+# Emulator/tester JAR file generation.
+#~ EMULATOR_SRC_DIR = $(EMULATOR_DIR)/generated-src/$(CORE_CONFIG)
+EMULATOR_BUILD_DIR = $(EMULATOR_DIR)/build/$(CORE_CONFIG)
+EMULATOR_JAR = $(EMULATOR_DIR)/$(MODULE)-emulator.jar
+
+# Must provide rules for generating and compiling the emulator $(EMULATOR)
+include $(EMULATOR_DIR)/emulator.mk
+
+emulator: $(EMULATOR_JAR)
+
+# -----------------------------------------------------------------------------
 # Running programs on targets.
 # -----------------------------------------------------------------------------
 
@@ -132,9 +132,9 @@ else
 SIM_DEBUG = --vcdstart=$(MAX_CYCLES)
 endif
 
-$(PROG:%=$(PROG_RESULTS_DIR)/%.out): $(PROG_RESULTS_DIR)/%.out: $(PROG_BUILD_DIR)/%.inst.mem $(PROG_BUILD_DIR)/%.data.mem $(EMULATOR)
+$(PROG:%=$(PROG_RESULTS_DIR)/%.out): $(PROG_RESULTS_DIR)/%.out: $(PROG_BUILD_DIR)/%.inst.mem $(PROG_BUILD_DIR)/%.data.mem $(EMULATOR_JAR)
 	mkdir -p $(PROG_RESULTS_DIR)
-	./$(EMULATOR) --maxcycles=$(MAX_CYCLES) --ispm=$(PROG_BUILD_DIR)/$*.inst.mem --dspm=$(PROG_BUILD_DIR)/$*.data.mem --vcd=$(@:.out=.vcd) $(SIM_DEBUG) $(EMULATOR_OPTS) > $@ 2>&1
+	java -jar ./$(EMULATOR_JAR) $(CORE_CONFIG) --maxcycles=$(MAX_CYCLES) --ispm=$(PROG_BUILD_DIR)/$*.inst.mem --dspm=$(PROG_BUILD_DIR)/$*.data.mem --vcd=$(@:.out=.vcd) $(SIM_DEBUG) $(EMULATOR_OPTS) > $@ 2>&1
 	echo $@ $^
 
 # Possible targets are emulator and fpga.
@@ -152,7 +152,7 @@ endif
 
 clean:
 	rm -rf $(CLEAN_TARGET)
-	
+
 
 # Clean for all configurations and targets.
 cleanall:
