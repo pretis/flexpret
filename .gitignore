@@ -2,4 +2,8 @@ build
 generated-src
 results
 
+target/
+
+test_run_dir
+fpga/firrtl.jar
 fpga/generated-src
