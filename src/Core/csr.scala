@@ -12,7 +12,7 @@ import chisel3.util._
 import FlexpretConstants._
 
 class CSR(implicit conf: FlexpretConfiguration) extends Module {
-  val io = IO(new Bundle {
+  val io = IO(new Bundle with WithDebugCSRBits {
     val rw = new Bundle {
       val addr = Input(UInt(12.W))
       val thread = Input(UInt(conf.threadBits.W))
@@ -458,5 +458,8 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   io.int_ext := int_ext
   io.priv_fault := priv_fault
 
+  // DEBUG DEBUG
+  io.reg_tmodes.wireUpToRegisters(reg_tmodes)
+  io.reg_slots.wireUpToRegisters(reg_slots)
 
 }

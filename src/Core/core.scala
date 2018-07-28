@@ -175,7 +175,94 @@ class GPIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val out = HeterogeneousBag(conf.gpoPortSizes.map(i => Output(UInt(i.W))).toSeq)
 }
 
-class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
+// Bundle to read, write, and freeze (vectors of) registers from the top-level.
+// TODO: for debug only. Ideally this should use Chisel aspects (CICL in FIRRTL or Chisel)...
+class DebugBundle[T <: Data](num: Int, gen: => T) extends Bundle {
+  def length: Int = num
+
+  def connectTo(otherBundle: DebugBundle[T]): Unit = {
+    read := otherBundle.read
+    otherBundle.freeze := freeze
+    otherBundle.write := write
+  }
+
+  def wireUpToRegisters(regs: Vec[UInt]): Unit = {
+    this.read := regs
+    for (idx <- 0 until this.length) {
+      when (this.write(idx).valid) {
+        regs(idx) := this.write(idx).bits
+      } .elsewhen (this.freeze(idx)) {
+        regs(idx) := regs(idx) // hold value
+      }
+    }
+  }
+
+  def wireUpToRegister(reg: UInt): Unit = {
+    assert (length == 1)
+    this.read(0) := reg
+    when (this.write(0).valid) {
+      reg := this.write(0).bits
+    } .elsewhen (this.freeze(0)) {
+      reg := reg // hold value
+    }
+  }
+
+  // Read the register values wired to this output
+  val read = Output(Vec(num, gen))
+  // Set to true to hold the value - set to false to allow this register to evolve normally
+  val freeze = Input(Vec(num, Bool()))
+  // Set valid to true along with bits to write the register value. Takes precedence over freeze.
+  val write = Vec(num, Flipped(chisel3.util.ValidIO(gen)))
+}
+
+trait DebugBitsBase {
+  def connectTo(otherIO: DebugBitsBase): Unit = {
+    connectFuncs.foreach { f =>
+      try {
+        f(this, otherIO)
+      } catch {
+        // e.g. if we are "with A with B" but are trying to connectTo just B
+        case e: java.lang.ClassCastException =>
+      }
+    }
+  }
+
+  val connectFuncs = scala.collection.mutable.ArrayBuffer[(DebugBitsBase,DebugBitsBase) => Unit]()
+}
+
+trait WithDebugCSRBits extends DebugBitsBase {
+  this: Bundle =>
+
+  val connectMe = (self: WithDebugCSRBits, otherIO: WithDebugCSRBits) => {
+    self.reg_tmodes.connectTo(otherIO.reg_tmodes)
+    self.reg_slots.connectTo(otherIO.reg_slots)
+  }
+  connectFuncs += connectMe.asInstanceOf[(Core.DebugBitsBase, Core.DebugBitsBase) => Unit]
+
+  // TODO: don't hardcode lengths and widths!
+
+  // TODO: for debug only. Ideally this should use Chisel aspects (CICL in FIRRTL or Chisel)...
+  val reg_tmodes = new DebugBundle(4, UInt(2.W))
+  val reg_slots = new DebugBundle(8, UInt(4.W))
+}
+
+trait WithDebugDatapathBits extends DebugBitsBase {
+  this: Bundle =>
+
+  private val connectMe = (self: WithDebugDatapathBits, otherIO: WithDebugDatapathBits) => {
+    self.datapath_exe_reg_pc.connectTo(otherIO.datapath_exe_reg_pc)
+    self.datapath_dec_reg_inst.connectTo(otherIO.datapath_dec_reg_inst)
+  }
+  connectFuncs += connectMe.asInstanceOf[(Core.DebugBitsBase, Core.DebugBitsBase) => Unit]
+
+  // TODO: don't hardcode lengths and widths!
+
+  // TODO: for debug only. Ideally this should use Chisel aspects (CICL in FIRRTL or Chisel)...
+  val datapath_exe_reg_pc = new DebugBundle(1, UInt(32.W))
+  val datapath_dec_reg_inst = new DebugBundle(1, UInt(32.W))
+}
+
+class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle with WithDebugCSRBits with WithDebugDatapathBits {
   val imem = new InstMemBusIO()
   val dmem = new DataMemBusIO()
   val bus = Flipped(new BusIO())
@@ -203,6 +290,9 @@ class Core(confIn: FlexpretConfiguration) extends Module {
   datapath.io.control <> control.io
   datapath.io.imem <> imem.io.core
   datapath.io.dmem <> dmem.io.core
+
+  // DEBUG DEBUG DEBUG
+  io.connectTo(datapath.io)
 
   // external
   io.imem <> imem.io.bus

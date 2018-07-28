@@ -12,7 +12,7 @@ import chisel3.util._
 import FlexpretConstants._
 
 class Datapath(implicit conf: FlexpretConfiguration) extends Module {
-  val io = IO(new Bundle {
+  val io = IO(new Bundle with WithDebugCSRBits with WithDebugDatapathBits {
     val control = Flipped(new ControlDatapathIO())
     val imem = Flipped(new InstMemCoreIO())
     val dmem = Flipped(new DataMemCoreIO())
@@ -300,6 +300,9 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
 
   // Control and Status Register (CSR) Unit
   val csr = Module(new CSR())
+  // DEBUG DEBUG DEBUG
+  io.connectTo(csr.io)
+
   val exe_csr_data = if (conf.dedicatedCsrData) exe_reg_csr_data else exe_alu_result
   // CSR modification
   csr.io.rw.addr := exe_reg_csr_addr
@@ -409,4 +412,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   io.control.wb_tid := wb_reg_tid
   io.control.wb_rd_addr := wb_reg_rd_addr
 
+  // DEBUG DEBUG DEBUG
+  io.datapath_exe_reg_pc.wireUpToRegister(exe_reg_pc)
+  io.datapath_dec_reg_inst.wireUpToRegister(dec_reg_inst)
 }
