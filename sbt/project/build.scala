@@ -15,8 +15,8 @@ object BuildSettings {
       scalaSource in Test := Path.absolute(file(testPath)),
       mainClass := Some(mainClassName),
       libraryDependencies ++= Seq(
-        "edu.berkeley.cs" %% "chisel3" % "3.1.+",
-        "edu.berkeley.cs" %% "chisel-iotesters" % "1.2.+"
+        "edu.berkeley.cs" %% "chisel3" % "3.1.2",
+        "edu.berkeley.cs" %% "chisel-iotesters" % "1.2.2"
       )
     ) ++ (if (includeTestSrcInCompile) {
       unmanagedSourceDirectories in Compile += Path.absolute(file(testPath))
