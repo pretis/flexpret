@@ -44,6 +44,8 @@ PROG_ALL= \
 #flex_gpio
 
 MAX_CYCLES = 150000
-EMULATOR_OPTS ?= --sweep
+# TODO: fix --sweep which seems to be broken right now...
+#~ EMULATOR_OPTS ?= --sweep
+EMULATOR_OPTS ?= ""
 
 $(DEFAULT_RULES)
