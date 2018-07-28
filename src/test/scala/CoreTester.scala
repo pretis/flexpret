@@ -280,10 +280,13 @@ object CoreTesterMain {
 
     // Remove them from the args passed to Chisel.
     // TODO: make this less redundant
-    val cleanedArgs = args.filterNot( s =>
+    val cleanedArgs = args.filterNot(s =>
       s == "--sweep" ||
-      s == "--trace" ||
-      s.startsWith("--maxcycles")
+        s == "--trace" ||
+        s.startsWith("--maxcycles") ||
+        s.startsWith("--ispm") ||
+        s.startsWith("--dspm") ||
+        s.startsWith("--vcd")
     )
 
     /*
