@@ -11,6 +11,10 @@ import chisel3._
 
 object CoreMain {
   def main(args: Array[String]): Unit = {
+    if (args.isEmpty) {
+      System.err.println("Usage: configuration_string [chisel arg] [chisel arg] [...]")
+      return
+    }
     val confString = args(0)
     val chiselArgs = args.slice(1, args.length)
     val coreConfig = FlexpretConfiguration.parseString(confString)
