@@ -12,7 +12,7 @@ import chisel3._
 object CoreMain {
   def main(args: Array[String]): Unit = {
     if (args.isEmpty) {
-      System.err.println("Usage: configuration_string [chisel arg] [chisel arg] [...]")
+      System.err.println("CoreMain usage: configuration_string [chisel arg] [chisel arg] [...]")
       return
     }
     val confString = args(0)

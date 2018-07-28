@@ -17,7 +17,7 @@ class CoreTester(c: Core) extends PeekPokeTester(c) {
 object CoreTesterMain {
   def main(args: Array[String]): Unit = {
     if (args.isEmpty) {
-      System.err.println("Usage: configuration_string")
+      System.err.println("CoreTesterMain usage: configuration_string")
       return
     }
     val confString = args(0)
