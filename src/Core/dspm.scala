@@ -31,7 +31,7 @@ class DSpm(implicit conf: FlexpretConfiguration) extends Module
     val bus = new DataMemBusIO()
   }
   
-  // memory for data SPM
+  // memory for data SPM (sequential read/write)
   val dspm = SeqMem(conf.dMemDepth, Bits(width = 32))
 
 
