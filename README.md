@@ -10,7 +10,7 @@ __FlexPRET__ is a 5-stage, fine-grained multithreaded [RISC-V*](http://riscv.org
 
 For more information on the processor architecture:  
 - Michael Zimmer, "[Predictable Processors for Mixed-Criticality Systems and Precision-Timed I/O](http://www2.eecs.berkeley.edu/Pubs/TechRpts/2015/EECS-2015-181.pdf)," Ph.D. Dissertation, EECS Department, University of California, Berkeley, UCB/EECS-2015-181, 2015.
-- Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Processor Platform for Mixed-Criticality Systems](http://chess.eecs.berkeley.edu/pubs/1048.html,). Proceedings of the 20th IEEE Real-Time and Embedded Technology and Application Symposium (RTAS), April, 2014.
+- Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Processor Platform for Mixed-Criticality Systems](http://chess.eecs.berkeley.edu/pubs/1048.html). Proceedings of the 20th IEEE Real-Time and Embedded Technology and Application Symposium (RTAS), April, 2014.
 
 *[RISC-V](http://riscv.org) is an ISA developed at UC Berkeley for computer architecture research and education.
 **[Chisel](https://chisel.eecs.berkeley.edu/) is an open-source hardware construction language developed at UC Berkeley that generates both Verilog and a C++ emulator.
