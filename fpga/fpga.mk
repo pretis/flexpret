@@ -7,17 +7,14 @@
 # FPGA_SRC_DIR: Generated Verilog directory
 # SRC_DIR: Chisel source code directory
 # CORE_CONFIG: Configuration string for Chisel
-# SBT: sbt command
-# SBT_TO_BASE: Relative directory location
 #
 # Michael Zimmer (mzimmer@eecs.berkeley.edu)
 
 #-------------------------------------------------------------------------------
 # Generate Verilog Code
 #-------------------------------------------------------------------------------
-$(VERILOG): $(SRC_DIR)/$(MODULE)/*.scala $(FIRRTL_JAR)
-	cd $(SBT_DIR) && \
-	$(SBT) "project Core" "run $(CORE_CONFIG) --compiler high --target-dir $(SBT_TO_BASE)/$(FPGA_SRC_DIR)"
+$(VERILOG): $(SRC_DIR)/$(MODULE)/*.scala $(FIRRTL_JAR) $(MILL_BIN)
+	$(MILL_BIN) flexpret.run "$(CORE_CONFIG)" --compiler high --target-dir "$(FPGA_SRC_DIR)"
 	# high-firrtl is dumped into $(FPGA_SRC_DIR)/$(MODULE).hi.fir
 
 	# Use FIRRTL to compile to Verilog

@@ -22,7 +22,7 @@
 
 # Source code location, where subdirectories contain either Chisel
 # (used for generating Verilog and C++ emulator) or Verilog code.
-SRC_DIR = src
+SRC_DIR = src/main/scala
 MODULE = Core
 
 # C++ emulator location, where subdirectories contain testbenches, generated C++,
@@ -36,11 +36,11 @@ TESTS_DIR = tests
 # FPGA
 FPGA_DIR = fpga
 
-# Simple build tool location, used for generating both C++ and Verilog from
-# Chisel source code.
-SBT_DIR = sbt
-SBT_TO_BASE = ..
-SBT = java -Xmx1024M -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
+# Mill build tool for compiling and running the Chisel generator.
+MILL_VERSION = 0.6.0
+MILL_BIN = ./mill
+$(MILL_BIN):
+	wget https://github.com/lihaoyi/mill/releases/download/$(MILL_VERSION)/$(MILL_VERSION) -O $(MILL_BIN) && chmod +x $(MILL_BIN)
 
 # Compiler options.
 CXX = g++

@@ -43,7 +43,7 @@ To simulate an assembly code test suite (first run may take a few minutes to dow
 make run
 ```
 
-This will simulate the execution of the program directory `tests/isa` on FlexPRET configured with 4 hardware threads. The default configuration is set in `config.mk` and can be [changed](#flexpret-configuration). The makefile will (if needed) install [SBT](http://www.scala-sbt.org/), download Chisel, generate a C++ emulator for the FlexPRET processor, compile the C++ emulator, excute the C++ emulator on each program in the test suite, and finally display the results.
+This will simulate the execution of the program directory `tests/isa` on FlexPRET configured with 4 hardware threads. The default configuration is set in `config.mk` and can be [changed](#flexpret-configuration). The makefile will (if needed) install [mill](http://www.lihaoyi.com/mill/), download Chisel, generate a C++ emulator for the FlexPRET processor, compile the C++ emulator, excute the C++ emulator on each program in the test suite, and finally display the results.
 
 See the [tests](#tests) section for information about running other programs.
 
@@ -53,7 +53,6 @@ Directory Structure
 --------------------------------------------------------------------------------
 - `emulator/` C++ emulator and testbench for generated processors
 - `fpga/` Generated Verilog code and scripts for FPGA deployment
-- `sbt/` [SBT](http://www.scala-sbt.org/) for compiling and running Chisel
 - `scripts/` Various scripts
 - `src/` Chisel and Verilog source files
   - `common/` Shared interfaces in Chisel
@@ -120,9 +119,9 @@ within `tests/include`. Look at other files within `tests/` for reference.
 
 Chisel
 --------------------------------------------------------------------------------
-We use Chisel version 3.1 via sbt.
+We use Chisel version 3.1 via mill.
 
-To learn more about Chisel, visit their [website](https://chisel.eecs.berkeley.edu/) and particularly their [documentation section](https://chisel.eecs.berkeley.edu/documentation.html).
+To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and particularly the [documentation section](https://chisel.eecs.berkeley.edu/documentation.html).
 
 C++ Emulator
 --------------------------------------------------------------------------------

@@ -2,4 +2,7 @@ build
 generated-src
 results
 
+mill
+firrtl.jar
 fpga/generated-src
+out/
