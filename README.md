@@ -36,6 +36,14 @@ Quickstart
 --------------------------------------------------------------------------------
 We've tried to make it quick and easy to both simulate program execution on the FlexPRET processor and generate Verilog code for FPGA! 
 
+To build a default configuration and generate Verilog, run:
+
+```
+make fpga
+```
+
+TODO(edwardw): fix the simulator workflow
+
 If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) and have `java` and `g++` installed.
 
 To simulate an assembly code test suite (first run may take a few minutes to download dependencies):
