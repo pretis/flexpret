@@ -117,8 +117,8 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   // check permission (if privileged)
   val priv_fault = WireInit(false.B) // default value
   if (conf.privilegedMode) {
-    val addr_read_only = io.rw.addr(11, 10) === UInt(3)
-    val addr_no_priv = (io.rw.addr(9, 8) != UInt(0)) && (reg_prv(io.rw.thread) === UInt(0, 2))
+    val addr_read_only = io.rw.addr(11, 10) === 3.U
+    val addr_no_priv = (io.rw.addr(9, 8) =/= 0.U) && (reg_prv(io.rw.thread) === 0.U(2.W))
     when(io.rw.write && (addr_read_only || addr_no_priv)) {
       priv_fault := true.B
     }
@@ -338,7 +338,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
       // Each value compared to current time
       expired(tid) := (reg_time(conf.timeBits - 1, 0) - reg_compare(tid)) (conf.timeBits - 1) === 0.U(1.W)
       if (conf.roundRobin) {
-        when(io.rw.thread != UInt(tid)) {
+        when(io.rw.thread =/= tid.U) {
           expired(tid) := false.B
         }
       }
@@ -411,10 +411,10 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
   // stats (not designed for performance)
   if (conf.stats) {
     when(io.cycle) {
-      reg_cycle(io.rw.thread) := reg_cycle(io.rw.thread) + UInt(1)
+      reg_cycle(io.rw.thread) := reg_cycle(io.rw.thread) + 1.U
     }
     when(io.instret) {
-      reg_instret(io.rw.thread) := reg_instret(io.rw.thread) + UInt(1)
+      reg_instret(io.rw.thread) := reg_instret(io.rw.thread) + 1.U
     }
   }
 
@@ -426,7 +426,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
       reg_ie1 := reg_ie
       // privileged mode with interrupts disabled
       reg_prv := 3.U(2.W)
-      reg_ie := Vec(Seq.fill(conf.threads) { false.B })
+      reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
     } .elsewhen (io.sret) {
       // restore
       reg_prv := reg_prv1
@@ -437,7 +437,6 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
       reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
     }
   }
-
 
   io.rw.data_out := data_out
   io.slots := reg_slots
