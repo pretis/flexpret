@@ -111,7 +111,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   // TODO: best way to handle 4t-rr w/ reg*?
   //val next_pc = if(conf.bypassing) next_pcs(next_tid) else if_reg_pcs(next_tid)
   io.imem.r.addr := next_pc(31, 2)
-  io.imem.r.enable := (if (conf.iMemForceEn) Bool(true) else io.control.next_valid)
+  io.imem.r.enable := (if (conf.iMemForceEn) true.B else io.control.next_valid)
 
   // Provide inputs to fetch stage registers. 'if_reg_pc' is redundant, but
   // prevents needing to demux all the PCs a 2nd time in the fetch stage.

@@ -81,7 +81,7 @@ emulator: $(EMULATOR)
 # -----------------------------------------------------------------------------
 
 # FIRRTL compiler
-FIRRTL_VERSION="1.1.2"
+FIRRTL_VERSION="1.2.2"
 FIRRTL_JAR = $(FPGA_DIR)/firrtl.jar
 
 $(FIRRTL_JAR):

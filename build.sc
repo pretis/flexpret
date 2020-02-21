@@ -17,7 +17,7 @@ trait HasXsource211 extends ScalaModule {
 
 trait HasChisel3 extends ScalaModule {
   override def ivyDeps = Agg(
-    ivy"edu.berkeley.cs::chisel3:3.1.+"
+    ivy"edu.berkeley.cs::chisel3:3.2.+"
  )
 }
 
@@ -36,6 +36,6 @@ trait HasMacroParadise extends ScalaModule {
 }
 
 object flexpret extends CrossSbtModule with HasChisel3 with HasChiselTests with HasXsource211 with HasMacroParadise {
-  def crossScalaVersion = "2.12.4"
+  def crossScalaVersion = "2.12.10"
   def mainClass = Some("Core.CoreMain")
 }

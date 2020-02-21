@@ -9,6 +9,7 @@ package Core
 
 import chisel3._
 import chisel3.util.log2Ceil
+import chisel3.util.MixedVec
 import FlexpretConstants._
 
 object FlexpretConfiguration {
@@ -156,23 +157,9 @@ class HostIO() extends Bundle {
   val to_host = Output(UInt(32.W))
 }
 
-// Stolen from rocket-chip. See chisel3#844.
-import scala.collection.immutable.ListMap
-final case class HeterogeneousBag[T <: Data](elts: Seq[T]) extends Record with collection.IndexedSeq[T] {
-  def apply(x: Int) = elts(x)
-  def length = elts.length
-
-  val elements = ListMap(elts.zipWithIndex.map { case (n,i) => (i.toString, n) }:_*)
-  override def cloneType: this.type = (new HeterogeneousBag(elts.map(_.chiselCloneType))).asInstanceOf[this.type]
-
-  // IndexedSeq has its own hashCode/equals that we must not use
-  override def hashCode: Int = super[Record].hashCode
-  override def equals(that: Any): Boolean = super[Record].equals(that)
-}
-
 class GPIO(implicit conf: FlexpretConfiguration) extends Bundle {
-  val in = HeterogeneousBag(conf.gpiPortSizes.map(i => Input(UInt(i.W))).toSeq)
-  val out = HeterogeneousBag(conf.gpoPortSizes.map(i => Output(UInt(i.W))).toSeq)
+  val in = MixedVec(conf.gpiPortSizes.map(i => Input(UInt(i.W))).toSeq)
+  val out = MixedVec(conf.gpoPortSizes.map(i => Output(UInt(i.W))).toSeq)
 }
 
 class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
