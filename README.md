@@ -127,7 +127,7 @@ within `tests/include`. Look at other files within `tests/` for reference.
 
 Chisel
 --------------------------------------------------------------------------------
-We use Chisel version 3.1 via mill.
+We use Chisel version 3.2 via mill.
 
 To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and particularly the [documentation section](https://chisel.eecs.berkeley.edu/documentation.html).
 
