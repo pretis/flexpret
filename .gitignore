@@ -2,6 +2,8 @@ build
 generated-src
 results
 
+test_run_dir/
+
 mill
 firrtl.jar
 fpga/generated-src
