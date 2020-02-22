@@ -1,4 +1,5 @@
 import mill._, scalalib._
+import coursier.maven.MavenRepository
 
 /**
  * Scala 2.12 module that is source-compatible with 2.11.
@@ -22,8 +23,12 @@ trait HasChisel3 extends ScalaModule {
 }
 
 trait HasChiselTests extends CrossSbtModule  {
+   def repositories() = super.repositories ++ Seq(
+    MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
+    MavenRepository("https://oss.sonatype.org/content/repositories/releases")
+  )
   object test extends Tests {
-    override def ivyDeps = Agg(ivy"org.scalatest::scalatest:3.0.4", ivy"edu.berkeley.cs::chisel-iotesters:1.2+")
+    override def ivyDeps = Agg(ivy"org.scalatest::scalatest:3.0.4", ivy"edu.berkeley.cs::chiseltest:0.2-SNAPSHOT")
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
 }
