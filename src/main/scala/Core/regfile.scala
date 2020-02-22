@@ -5,6 +5,7 @@ Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
 Contributors: 
 License: See LICENSE.txt
 ******************************************************************************/
+//package flexpret.core
 package Core
 
 import Chisel._
