@@ -66,6 +66,7 @@ Directory Structure
   - `common/` Shared interfaces in Chisel
   - `Core/` FlexPRET processor (and baseline processors) in Chisel
   - `uart/` Verilog code for UART
+- `test/` Unit testing scripts
 - `tests/` C and assembly programs and test suites
   - `include/` Libraries and macros
 
