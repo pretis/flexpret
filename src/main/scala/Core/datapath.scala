@@ -11,7 +11,7 @@ import chisel3._
 import chisel3.util._
 import FlexpretConstants._
 
-class Datapath(implicit conf: FlexpretConfiguration) extends Module {
+class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
     val control = Flipped(new ControlDatapathIO())
     val imem = Flipped(new InstMemCoreIO())
@@ -20,6 +20,20 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
     val host = new HostIO()
     val gpio = new GPIO()
     val int_exts = Input(Vec(conf.threads, Bool()))
+
+    // Debugging-only inputs.
+    val debugIO = if (!debug) None else Some(new Bundle {
+      // Mock register file I/Os for rs1.
+      val rs1_thread = Output(UInt())
+      val rs1_addr = Output(UInt())
+      val rs1_value = Input(UInt(32.W))
+      // Mock register file I/Os for rs2.
+      val rs2_thread = Output(UInt())
+      val rs2_addr = Output(UInt())
+      val rs2_value = Input(UInt(32.W))
+      // Other pipeline signals.
+      val exe_alu_result = Output(UInt())
+    })
   })
 
   // ************************************************************
@@ -27,7 +41,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
 
   // instruction fetch stage
   val if_reg_tid = Reg(UInt())
-  val if_reg_pc = if (conf.threads > 1) Reg(UInt()) else UInt() // PC
+  val if_reg_pc = if (conf.threads > 1) Reg(UInt()) else Wire(UInt()) // PC
   val if_reg_pcs = RegInit(VecInit(Seq.fill(conf.threads)(ADDR_PC_INIT))) // PC for each thread
 
   val if_pc_plus4 = Wire(UInt())
@@ -51,6 +65,7 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   val exe_reg_csr_data = Reg(UInt())
 
   val exe_alu_result = Wire(UInt())
+  io.debugIO.map { b => b.exe_alu_result := exe_alu_result }
   val exe_address = Wire(UInt())
   val exe_rd_data = Wire(UInt())
   val exe_evec = Wire(UInt()) // trap handler address
@@ -132,9 +147,13 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   // it can be done before instruction is decoded).
   val regfile = Module(new RegisterFile())
   regfile.io.rs1.thread := if_reg_tid
+  if (debug) io.debugIO.get.rs1_thread := regfile.io.rs1.thread
   regfile.io.rs1.addr := if_inst(19, 15)
+  if (debug) io.debugIO.get.rs1_addr := regfile.io.rs1.addr
   regfile.io.rs2.thread := if_reg_tid
+  if (debug) io.debugIO.get.rs2_thread := regfile.io.rs2.thread
   regfile.io.rs2.addr := if_inst(24, 20)
+  if (debug) io.debugIO.get.rs2_addr := regfile.io.rs2.addr
 
   // Provide data to control.
   io.control.if_tid := if_reg_tid
@@ -168,22 +187,24 @@ class Datapath(implicit conf: FlexpretConfiguration) extends Module {
   // forwarded from later stages.
   val dec_rs1_data = Wire(Bits())
   val dec_rs2_data = Wire(Bits())
+  val regfile_rs1_data = if (debug) io.debugIO.get.rs1_value else regfile.io.rs1.data
+  val regfile_rs2_data = if (debug) io.debugIO.get.rs2_value else regfile.io.rs2.data
   if (conf.bypassing) {
-    dec_rs1_data := MuxLookup(io.control.dec_rs1_sel, regfile.io.rs1.data, Array(
+    dec_rs1_data := MuxLookup(io.control.dec_rs1_sel, regfile_rs1_data, Array(
       RS1_EXE -> exe_rd_data,
       RS1_MEM -> mem_rd_data,
       RS1_WB -> wb_rd_data //,
-      //RS1_DEC -> regfile.io.rs1.data //FIXME: causes chisel verilog bug
+      //RS1_DEC -> regfile_rs1_data //FIXME: causes chisel verilog bug
     ))
-    dec_rs2_data := MuxLookup(io.control.dec_rs2_sel, regfile.io.rs2.data, Array(
+    dec_rs2_data := MuxLookup(io.control.dec_rs2_sel, regfile_rs2_data, Array(
       RS2_EXE -> exe_rd_data,
       RS2_MEM -> mem_rd_data,
       RS2_WB -> wb_rd_data //,
-      //RS2_DEC -> regfile.io.rs2.data //FIXME: causes chisel verilog bug
+      //RS2_DEC -> regfile_rs2_data //FIXME: causes chisel verilog bug
     ))
   } else {
-    dec_rs1_data := regfile.io.rs1.data
-    dec_rs2_data := regfile.io.rs2.data
+    dec_rs1_data := regfile_rs1_data
+    dec_rs2_data := regfile_rs2_data
   }
 
   // Generate immediate values.
