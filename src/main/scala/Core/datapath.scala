@@ -6,6 +6,8 @@
  * License: See LICENSE.txt
  * ******************************************************************************/
 package Core
+// TODO: remove this
+import flexpret.core.RegisterFile
 
 import chisel3._
 import chisel3.util._
