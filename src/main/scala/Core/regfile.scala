@@ -5,49 +5,44 @@ Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
 Contributors: 
 License: See LICENSE.txt
 ******************************************************************************/
-//package flexpret.core
-package Core
+package flexpret.core
 
-import Chisel._
-import FlexpretConstants._
+import chisel3._
+import chisel3.util.Cat
+import Core.FlexpretConfiguration
+import Core.FlexpretConstants._
 
-class RegisterFile(implicit conf: FlexpretConfiguration) extends Module
-{
-  val io = new Bundle {
+class RegisterFile(implicit conf: FlexpretConfiguration) extends Module {
+  val io = IO(new Bundle {
     val rs1 = new Bundle {
-      val thread = UInt(INPUT, conf.threadBits)
-      val addr = UInt(INPUT, REG_ADDR_BITS)
-      val data = Bits(OUTPUT, 32)
+      val thread = Input(UInt(conf.threadBits.W))
+      val addr = Input(UInt(REG_ADDR_BITS.W))
+      val data = Output(UInt(32.W))
     }
     val rs2 = new Bundle {
-      val thread = UInt(INPUT, conf.threadBits)
-      val addr = UInt(INPUT, REG_ADDR_BITS)
-      val data = Bits(OUTPUT, 32)
+      val thread = Input(UInt(conf.threadBits.W))
+      val addr = Input(UInt(REG_ADDR_BITS.W))
+      val data = Output(UInt(32.W))
     }
     val rd = new Bundle {
-      val thread = UInt(INPUT, conf.threadBits)
-      val addr = UInt(INPUT, REG_ADDR_BITS)
-      val data = Bits(INPUT, 32)
-      val enable = Bool(INPUT)
+      val thread = Input(UInt(conf.threadBits.W))
+      val addr = Input(UInt(REG_ADDR_BITS.W))
+      val data = Input(UInt(32.W))
+      val enable = Input(Bool())
     }
-  }
+  })
 
-  val regfile = SeqMem(conf.regDepth, Bits(width = 32))
+  // 1-cycle latency read and write
+  val regfile = SyncReadMem(conf.regDepth, UInt(32.W))
 
-  // infer sequential read
-  val dout1 = Reg(Bits(width = 32))
-  val dout2 = Reg(Bits(width = 32))
-  io.rs1.data := dout1
-  io.rs2.data := dout2
+  // Read ports
+  // We need to mux the registered addresses since we are returning
+  // last cycle's requests.
+  io.rs1.data := Mux(RegNext(io.rs1.addr) === 0.U, 0.U, regfile(Cat(io.rs1.addr, io.rs1.thread)))
+  io.rs2.data := Mux(RegNext(io.rs2.addr) === 0.U, 0.U, regfile(Cat(io.rs2.addr, io.rs2.thread)))
 
-  // read ports
-  dout1 := Mux(io.rs1.addr === UInt(0), Bits(0),
-               regfile(Cat(io.rs1.addr, io.rs1.thread)))
-  dout2 := Mux(io.rs2.addr === UInt(0), Bits(0),
-               regfile(Cat(io.rs2.addr, io.rs2.thread)))
-
-  // write port
-  when(io.rd.enable) {
+  // Write port
+  when(io.rd.enable && io.rd.addr =/= 0.U) {
     regfile(Cat(io.rd.addr, io.rd.thread)) := io.rd.data
   }
 }

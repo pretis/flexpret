@@ -16,8 +16,7 @@ import chiseltest.experimental.TestOptionBuilder._
 import Core.FlexpretConstants._
 import Core.FlexpretConfiguration
 
-//import flexpret.core.RegisterFile
-import Core.RegisterFile
+import flexpret.core.RegisterFile
 
 class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"
@@ -48,8 +47,6 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       c.io.rs1.addr.poke(addr.U)
       c.clock.step()
     }
-    // TODO(edwardw): 2 cycle read might be a bug
-    c.clock.step()
     c.io.rs1.data.peek().litValue
   }
   def read_rs2(c: RegisterFile, thread: Int, addr: Int) = {
@@ -60,8 +57,6 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       c.io.rs2.addr.poke(addr.U)
       c.clock.step()
     }
-    // TODO(edwardw): 2 cycle read might be a bug
-    c.clock.step()
     c.io.rs2.data.peek().litValue
   }
 
@@ -101,11 +96,10 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
         c.io.rs1.addr.poke(0.U)
         c.io.rs2.thread.poke(thread.U)
         c.io.rs2.addr.poke(addr.U)
-        c.clock.step()
       }
 
       // Read data from first set of reads
-      //c.io.rs1.data.expect(data) // <-- TODO(edwardw): fix this testcase
+      c.io.rs1.data.expect(data)
       c.io.rs2.data.expect(0.U)
     }
   }
