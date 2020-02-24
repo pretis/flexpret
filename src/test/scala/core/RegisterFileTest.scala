@@ -140,7 +140,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "operate read ports independently" in {
-    test(registerFile).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(registerFile) { c =>
       // Set a default register to read that is not 0 due to the bug above
       c.io.rs1.addr.poke(31.U)
       c.io.rs2.addr.poke(31.U)
@@ -168,7 +168,17 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
     }
   }
 
-  ignore should "read and write in the same cycle" in {
-    // ignore this until 2-cycle read is fixed
+  it should "read and write in the same cycle" in {
+    test(registerFile) { c =>
+      val thread = 0
+      val addr = 31
+      val data = "hf00df00d".U
+      fork {
+        write(c, thread, addr, data)
+      } .fork {
+        assert(read_rs1(c, thread, addr) == data.litValue)
+        assert(read_rs2(c, thread, addr) == data.litValue)
+      } .join
+    }
   }
 }
