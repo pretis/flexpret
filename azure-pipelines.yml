@@ -1,0 +1,17 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-18.04'
+
+steps:
+# Azure Pipelines has a weird bug where running tests from a fresh install
+# will cause the following error, which goes away upon running mill again.
+# We work around it by running the tests twice (!!!)
+# flexpret.test.compileClasspath java.util.NoSuchElementException: key not found: https://oss.sonatype.org/content/repositories/releases/com/lihaoyi/utest_2.12/maven-metadata.xml
+- script: |
+    ./test/run_tests.sh || true
+    ./test/run_tests.sh
+  displayName: 'Unit tests'
+- script: ./test/basic_build.sh
+  displayName: 'Basic build'
