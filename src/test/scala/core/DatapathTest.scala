@@ -28,7 +28,7 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
   val conf = FlexpretConfiguration(threads=threads, flex=false, iMemKB=512, dMemKB=512, mul=false, features="all")
   def datapath = new Datapath(debug=true)(conf=conf)
 
-  ignore should "read from the regfile correctly" in {
+  it should "read from the regfile correctly" in {
     // This test confirms that the datapath expects a 1-cycle latency regfile
     // as opposed to 2-cycle.
 
@@ -59,30 +59,26 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
       var lastCycleImem = false
 
       var lastCycleRS1_1 = -1
-      var lastCycleRS1_2 = -1
 
       var lastCycleRS2_1 = -1
-      var lastCycleRS2_2 = -1
       (0 until cycles).foreach { _ =>
-        // Simulate weird 2-cycle behaviour of register file
-
         lastCycleRS1_1 = c.debugIO.rs1_addr.peek.litValue().toInt
         // For upcoming cycle
-        if (lastCycleRS1_2 == 0) {
+        if (lastCycleRS1_1 == 0) {
           c.debugIO.rs1_value.poke(0.U)
-        } else if (lastCycleRS1_2 == 1) {
+        } else if (lastCycleRS1_1 == 1) {
           c.debugIO.rs1_value.poke("h1111_1111".U)
-        } else if (lastCycleRS1_2 == 2) {
+        } else if (lastCycleRS1_1 == 2) {
           c.debugIO.rs1_value.poke("h2222_2222".U)
         }
 
         lastCycleRS2_1 = c.debugIO.rs2_addr.peek.litValue().toInt
         // For upcoming cycle
-        if (lastCycleRS2_2 == 0) {
+        if (lastCycleRS2_1 == 0) {
           c.debugIO.rs2_value.poke(0.U)
-        } else if (lastCycleRS2_2 == 1) {
+        } else if (lastCycleRS2_1 == 1) {
           c.debugIO.rs2_value.poke("h1111_1111".U)
-        } else if (lastCycleRS2_2 == 2) {
+        } else if (lastCycleRS2_1 == 2) {
           c.debugIO.rs2_value.poke("h2222_2222".U)
         }
 
@@ -108,8 +104,6 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
 
         c.clock.step()
         lastCycleImem = false
-        lastCycleRS1_2 = lastCycleRS1_1
-        lastCycleRS2_2 = lastCycleRS2_1
       }
 
       assert(success, "Simulation should have read the correct value at the end")
