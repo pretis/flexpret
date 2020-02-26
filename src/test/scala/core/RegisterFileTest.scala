@@ -26,7 +26,6 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
 
   /* Write something to the register file */
   def write(c: RegisterFile, thread: Int, addr: Int, data: UInt): Unit = {
-    require(thread < threads)
     require(addr < 32)
     timescope {
       c.io.rd.enable.poke(true.B)
@@ -39,7 +38,6 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
 
   /* Read data from the register file */
   def read(c: Module, b: RegisterFileReadIO, thread: Int, addr: Int) = {
-    require(thread < threads)
     require(addr < 32)
     timescope {
       b.thread.poke(thread.U)
@@ -167,6 +165,46 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
         assert(read(c, c.io.rs1, thread, addr) == data.litValue)
         assert(read(c, c.io.rs2, thread, addr) == data.litValue)
       } .join
+    }
+  }
+
+  it should "not leak when reading/writing an invalid thread" in {
+    test(registerFile).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      val addr = 31
+      val data0 = "hf00df00d".U
+      val data1 = "hf00df11d".U
+      val data2 = "hf00df22d".U
+      write(c, thread=0, addr=addr, data0)
+      write(c, thread=1, addr=addr, data1)
+      write(c, thread=2, addr=addr, data2)
+
+      // Smoke test reading
+      assert(read(c, c.io.rs1, 0, addr) == data0.litValue)
+      assert(read(c, c.io.rs1, 1, addr) == data1.litValue)
+      assert(read(c, c.io.rs1, 2, addr) == data2.litValue)
+
+      // Check that the invalid thread doesn't leak
+      {
+        val read3 = read(c, c.io.rs1, 3, addr)
+        assert(read3 != data0.litValue)
+        assert(read3 != data1.litValue)
+        assert(read3 != data2.litValue)
+      }
+      // Try writing to an invalid thread
+      write(c, thread=3, addr=addr, "haaaaaaaa".U)
+
+      // Check that valid threads aren't affected
+      assert(read(c, c.io.rs1, 0, addr) == data0.litValue)
+      assert(read(c, c.io.rs1, 1, addr) == data1.litValue)
+      assert(read(c, c.io.rs1, 2, addr) == data2.litValue)
+
+      // Check that the invalid thread still doesn't leak
+      {
+        val read3 = read(c, c.io.rs1, 3, addr)
+        assert(read3 != data0.litValue)
+        assert(read3 != data1.litValue)
+        assert(read3 != data2.litValue)
+      }
     }
   }
 }

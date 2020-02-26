@@ -41,14 +41,25 @@ class RegisterFile(val threads: Int) extends Module {
     val rd = new RegisterFileWriteIO(threadBits)
   })
 
-  private def regfileAddress(thread: UInt, addr: UInt): UInt = Cat(thread, addr)
+  private def regfileAddress(thread: UInt, addr: UInt): UInt = {
+    Mux(thread <= (threads - 1).U, Cat(thread, addr), 0.U)
+  }
   val writeIndex = regfileAddress(addr=io.rd.addr, thread=io.rd.thread)
 
   // 1-cycle latency read and write
   // Note: default read-under-write behaviour is undefined!
+  // Also define reading invalid threads to return DontCare.
   val regfile = SyncReadMem(regDepth, UInt(32.W))
-  val rs1_read = Mux(RegNext(writeIndex) === RegNext(io.rs1.addr), RegNext(io.rd.data), regfile(regfileAddress(addr=io.rs1.addr, thread=io.rs1.thread)))
-  val rs2_read = Mux(RegNext(writeIndex) === RegNext(io.rs2.addr), RegNext(io.rd.data), regfile(regfileAddress(addr=io.rs2.addr, thread=io.rs2.thread)))
+  val regfile_rs1_read = Mux(RegNext(io.rs1.thread) <= (threads - 1).U,
+    regfile(regfileAddress(addr=io.rs1.addr, thread=io.rs1.thread)),
+    0.U
+  )
+  val regfile_rs2_read = Mux(RegNext(io.rs2.thread) <= (threads - 1).U,
+    regfile(regfileAddress(addr=io.rs2.addr, thread=io.rs2.thread)),
+    0.U
+  )
+  val rs1_read = Mux(RegNext(writeIndex) === RegNext(io.rs1.addr), RegNext(io.rd.data), regfile_rs1_read)
+  val rs2_read = Mux(RegNext(writeIndex) === RegNext(io.rs2.addr), RegNext(io.rd.data), regfile_rs2_read)
 
   // Read ports
   // We need to mux the registered addresses since we are returning
@@ -57,7 +68,7 @@ class RegisterFile(val threads: Int) extends Module {
   io.rs2.data := Mux(RegNext(io.rs2.addr) === 0.U, 0.U, rs2_read)
 
   // Write port
-  when(io.rd.enable && io.rd.addr =/= 0.U) {
+  when(io.rd.enable && io.rd.addr =/= 0.U && io.rd.thread <= (threads - 1).U) {
     regfile(writeIndex) := io.rd.data
   }
 }
