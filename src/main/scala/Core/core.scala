@@ -68,9 +68,6 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemK
   )
   val initialTmodes = (0 until threads).map(i => if (i != 0) TMODE_HZ else TMODE_HA)
 
-  // Register File
-  val regDepth = 32 * threads
-
   // I-Spm
   val iMemDepth = 256 * iMemKB // 32-bit entries
   val iMemAddrBits = log2Ceil(iMemDepth) // word addressable

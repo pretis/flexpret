@@ -147,7 +147,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
 
   // Provide rs1 and rs2 address to register file (bit location is constant so
   // it can be done before instruction is decoded).
-  val regfile = Module(new RegisterFile())
+  val regfile = Module(RegisterFile())
   regfile.io.rs1.thread := if_reg_tid
   if (debug) io.debugIO.get.rs1_thread := regfile.io.rs1.thread
   regfile.io.rs1.addr := if_inst(19, 15)
