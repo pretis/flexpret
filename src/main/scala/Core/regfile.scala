@@ -12,24 +12,24 @@ import chisel3.util.Cat
 import Core.FlexpretConfiguration
 import Core.FlexpretConstants._
 
+class RegisterFileReadIO(implicit conf: FlexpretConfiguration) extends Bundle {
+  val thread = Input(UInt(conf.threadBits.W))
+  val addr = Input(UInt(REG_ADDR_BITS.W))
+  val data = Output(UInt(32.W))
+}
+
+class RegisterFileWriteIO(implicit conf: FlexpretConfiguration) extends Bundle {
+  val thread = Input(UInt(conf.threadBits.W))
+  val addr = Input(UInt(REG_ADDR_BITS.W))
+  val data = Input(UInt(32.W))
+  val enable = Input(Bool())
+}
+
 class RegisterFile(implicit conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
-    val rs1 = new Bundle {
-      val thread = Input(UInt(conf.threadBits.W))
-      val addr = Input(UInt(REG_ADDR_BITS.W))
-      val data = Output(UInt(32.W))
-    }
-    val rs2 = new Bundle {
-      val thread = Input(UInt(conf.threadBits.W))
-      val addr = Input(UInt(REG_ADDR_BITS.W))
-      val data = Output(UInt(32.W))
-    }
-    val rd = new Bundle {
-      val thread = Input(UInt(conf.threadBits.W))
-      val addr = Input(UInt(REG_ADDR_BITS.W))
-      val data = Input(UInt(32.W))
-      val enable = Input(Bool())
-    }
+    val rs1 = new RegisterFileReadIO
+    val rs2 = new RegisterFileReadIO
+    val rd = new RegisterFileWriteIO
   })
 
   private def regfileAddress(thread: UInt, addr: UInt): UInt = Cat(thread, addr)
