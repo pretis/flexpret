@@ -16,7 +16,7 @@ import chiseltest.experimental.TestOptionBuilder._
 import Core.FlexpretConstants._
 import Core.FlexpretConfiguration
 
-import flexpret.core.RegisterFile
+import flexpret.core.{RegisterFile, RegisterFileReadIO}
 
 class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"
@@ -37,27 +37,16 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
     }
   }
 
-  /* Read something from the register file */
-  /* TODO(edwardw): DRY this by making the register read bundle a  */
-  def read_rs1(c: RegisterFile, thread: Int, addr: Int) = {
+  /* Read data from the register file */
+  def read(c: Module, b: RegisterFileReadIO, thread: Int, addr: Int) = {
     require(thread < threads)
     require(addr < 32)
     timescope {
-      c.io.rs1.thread.poke(thread.U)
-      c.io.rs1.addr.poke(addr.U)
+      b.thread.poke(thread.U)
+      b.addr.poke(addr.U)
       c.clock.step()
     }
-    c.io.rs1.data.peek().litValue
-  }
-  def read_rs2(c: RegisterFile, thread: Int, addr: Int) = {
-    require(thread < threads)
-    require(addr < 32)
-    timescope {
-      c.io.rs2.thread.poke(thread.U)
-      c.io.rs2.addr.poke(addr.U)
-      c.clock.step()
-    }
-    c.io.rs2.data.peek().litValue
+    b.data.peek().litValue
   }
 
   /* Write the given register data */
@@ -70,8 +59,8 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
     writeData(c, thread, addrDatas)
 
     addrDatas.foreach { case (k, v) =>
-      assert(read_rs1(c, thread, k) == v.U.litValue)
-      assert(read_rs2(c, thread, k) == v.U.litValue)
+      assert(read(c, c.io.rs1, thread, k) == v.U.litValue)
+      assert(read(c, c.io.rs2, thread, k) == v.U.litValue)
     }
   }
 
@@ -82,7 +71,6 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       val data = "hf00df00d".U
       write(c, thread, addr, data)
 
-      // TODO(edwardw): 2 cycle read might be a bug
       timescope {
         // The values we are going to check
         c.io.rs1.thread.poke(thread.U)
@@ -161,9 +149,9 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       // Read the data from the two ports in different orders
       val keys = addrDatas.keySet.toSeq
       fork {
-        keys.foreach { k => assert(read_rs1(c, thread, k) == addrDatas(k).U.litValue) }
+        keys.foreach { k => assert(read(c, c.io.rs1, thread, k) == addrDatas(k).U.litValue) }
       } .fork {
-        keys.reverse.foreach { k => assert(read_rs2(c, thread, k) == addrDatas(k).U.litValue) }
+        keys.reverse.foreach { k => assert(read(c, c.io.rs2, thread, k) == addrDatas(k).U.litValue) }
       } .join
     }
   }
@@ -176,8 +164,8 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       fork {
         write(c, thread, addr, data)
       } .fork {
-        assert(read_rs1(c, thread, addr) == data.litValue)
-        assert(read_rs2(c, thread, addr) == data.litValue)
+        assert(read(c, c.io.rs1, thread, addr) == data.litValue)
+        assert(read(c, c.io.rs2, thread, addr) == data.litValue)
       } .join
     }
   }
