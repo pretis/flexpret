@@ -22,7 +22,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"
 
   val threads = 3
-  def registerFile = new RegisterFile()(conf=FlexpretConfiguration(threads=threads, flex=false, iMemKB=1024, dMemKB=1024, mul=false, features="all"))
+  def registerFile = new RegisterFile(threads=threads)
 
   /* Write something to the register file */
   def write(c: RegisterFile, thread: Int, addr: Int, data: UInt): Unit = {
