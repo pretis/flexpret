@@ -147,15 +147,15 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
 
   // Provide rs1 and rs2 address to register file (bit location is constant so
   // it can be done before instruction is decoded).
-  val regfile = Module(RegisterFile())
-  regfile.io.rs1.thread := if_reg_tid
-  if (debug) io.debugIO.get.rs1_thread := regfile.io.rs1.thread
-  regfile.io.rs1.addr := if_inst(19, 15)
-  if (debug) io.debugIO.get.rs1_addr := regfile.io.rs1.addr
-  regfile.io.rs2.thread := if_reg_tid
-  if (debug) io.debugIO.get.rs2_thread := regfile.io.rs2.thread
-  regfile.io.rs2.addr := if_inst(24, 20)
-  if (debug) io.debugIO.get.rs2_addr := regfile.io.rs2.addr
+  val regfile = Module(RegisterFile(readPorts = 2, writePorts = 1))
+  regfile.io.read(0).thread := if_reg_tid
+  if (debug) io.debugIO.get.rs1_thread := regfile.io.read(0).thread
+  regfile.io.read(0).addr := if_inst(19, 15)
+  if (debug) io.debugIO.get.rs1_addr := regfile.io.read(0).addr
+  regfile.io.read(1).thread := if_reg_tid
+  if (debug) io.debugIO.get.rs2_thread := regfile.io.read(1).thread
+  regfile.io.read(1).addr := if_inst(24, 20)
+  if (debug) io.debugIO.get.rs2_addr := regfile.io.read(1).addr
 
   // Provide data to control.
   io.control.if_tid := if_reg_tid
@@ -189,8 +189,8 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // forwarded from later stages.
   val dec_rs1_data = Wire(Bits())
   val dec_rs2_data = Wire(Bits())
-  val regfile_rs1_data = if (debug) io.debugIO.get.rs1_value else regfile.io.rs1.data
-  val regfile_rs2_data = if (debug) io.debugIO.get.rs2_value else regfile.io.rs2.data
+  val regfile_rs1_data = if (debug) io.debugIO.get.rs1_value else regfile.io.read(0).data
+  val regfile_rs2_data = if (debug) io.debugIO.get.rs2_value else regfile.io.read(1).data
   if (conf.bypassing) {
     dec_rs1_data := MuxLookup(io.control.dec_rs1_sel, regfile_rs1_data, Array(
       RS1_EXE -> exe_rd_data,
@@ -401,10 +401,10 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
     ) //mul
 
   // Provide inputs to rd port of register file.
-  regfile.io.rd.thread := mem_reg_tid
-  regfile.io.rd.addr := mem_reg_rd_addr
-  regfile.io.rd.data := mem_rd_data
-  regfile.io.rd.enable := io.control.mem_rd_write
+  regfile.io.write(0).thread := mem_reg_tid
+  regfile.io.write(0).addr := mem_reg_rd_addr
+  regfile.io.write(0).data := mem_rd_data
+  regfile.io.write(0).enable := io.control.mem_rd_write
 
   io.control.mem_tid := mem_reg_tid
   io.control.mem_rd_addr := mem_reg_rd_addr
