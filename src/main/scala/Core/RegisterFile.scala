@@ -1,5 +1,5 @@
 /******************************************************************************
-File: regfile.scala
+File: RegisterFile.scala
 Description: Register file for all threads.
 Author: Michael Zimmer <mzimmer@eecs.berkeley.edu>
 Contributors: Edward Wang <edwardw@eecs.berkeley.edu>
