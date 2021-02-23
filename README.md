@@ -13,7 +13,7 @@ For more information on the processor architecture:
 - Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Processor Platform for Mixed-Criticality Systems](http://chess.eecs.berkeley.edu/pubs/1048.html). Proceedings of the 20th IEEE Real-Time and Embedded Technology and Application Symposium (RTAS), April, 2014.
 
 *[RISC-V](http://riscv.org) is an ISA developed at UC Berkeley for computer architecture research and education.
-**[Chisel](https://chisel.eecs.berkeley.edu/) is an open-source hardware construction language developed at UC Berkeley that generates both Verilog and a C++ emulator.
+**[Chisel](http://www.chisel-lang.org/) is an open-source hardware construction language developed at UC Berkeley that generates both Verilog and a C++ emulator.
 
 __Contributors:__  
 Michael Zimmer (mzimmer@eecs.berkeley.edu)  
@@ -34,8 +34,6 @@ Table of Contents:
 
 Quickstart
 --------------------------------------------------------------------------------
-We've tried to make it quick and easy to both simulate program execution on the FlexPRET processor and generate Verilog code for FPGA! 
-
 To build a default configuration and generate Verilog, run:
 
 ```
@@ -45,6 +43,12 @@ make fpga
 TODO(edwardw): fix the simulator workflow
 
 If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) and have `java` and `g++` installed.
+
+To run RTL tests:
+
+```
+mill flexpret.test
+```
 
 To simulate an assembly code test suite (first run may take a few minutes to download dependencies):
 ```
@@ -59,14 +63,16 @@ See the [tests](#tests) section for information about running other programs.
 
 Directory Structure
 --------------------------------------------------------------------------------
+- `src/main/scala/` Chisel and Verilog source files
+  - `Core/` FlexPRET processor (and baseline processors) in Chisel
+  - `uart/` Verilog code for UART
+- `src/test/scala/` Unit tests
+- `test/` Unit testing scripts
+
+(Outdated)
 - `emulator/` C++ emulator and testbench for generated processors
 - `fpga/` Generated Verilog code and scripts for FPGA deployment
 - `scripts/` Various scripts
-- `src/` Chisel and Verilog source files
-  - `common/` Shared interfaces in Chisel
-  - `Core/` FlexPRET processor (and baseline processors) in Chisel
-  - `uart/` Verilog code for UART
-- `test/` Unit testing scripts
 - `tests/` C and assembly programs and test suites
   - `include/` Libraries and macros
 
@@ -128,7 +134,7 @@ within `tests/include`. Look at other files within `tests/` for reference.
 
 Chisel
 --------------------------------------------------------------------------------
-We use Chisel version 3.2 via mill.
+We use Chisel version 3.4 via mill.
 
 To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and particularly the [documentation section](https://chisel.eecs.berkeley.edu/documentation.html).
 
