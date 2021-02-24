@@ -10,7 +10,7 @@ package Core
 
 import Chisel._
 import FlexpretConstants._
-import FlexpretConfiguration._
+import flexpret.core.FlexpretConfiguration
 
 // Higher priorities to lower indices of sequence.
 // (T, F, F, T) -> (T, F, F, F)

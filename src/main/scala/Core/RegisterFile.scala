@@ -9,7 +9,6 @@ package flexpret.core
 
 import chisel3._
 import chisel3.util.{Cat, log2Ceil, MuxLookup}
-import Core.FlexpretConfiguration
 import Core.FlexpretConstants._
 import chisel3.experimental.chiselName
 

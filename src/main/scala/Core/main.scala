@@ -9,6 +9,10 @@ package Core
 
 import chisel3._
 
+// Remove this eventually...
+import flexpret.core.Core
+import flexpret.core.FlexpretConfiguration
+
 object CoreMain {
   def main(args: Array[String]): Unit = {
     val confString = args(0)

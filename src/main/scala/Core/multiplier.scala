@@ -10,6 +10,9 @@ package Core
 import Chisel._
 import FlexpretConstants._
 
+// Remove this eventually
+import flexpret.core.FlexpretConfiguration
+
 class Multiplier(implicit conf: FlexpretConfiguration) extends Module {
   val io = new Bundle {
     val op1    = Bits(INPUT, 32)

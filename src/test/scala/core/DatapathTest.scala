@@ -14,10 +14,11 @@ import chiseltest._
 import chiseltest.experimental.TestOptionBuilder._
 
 import Core.FlexpretConstants._
-import Core.FlexpretConfiguration
 
 import flexpret.core.Control
 //import flexpret.core.Datapath
+import flexpret.core.FlexpretConfiguration
+import flexpret.core.InstMemConfiguration
 import Core.Datapath
 import Core.InstMemCoreIO
 
@@ -25,7 +26,9 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
   behavior of "Datapath"
 
   val threads = 1
-  val conf = FlexpretConfiguration(threads=threads, flex=false, iMemKB=512, dMemKB=512, mul=false, features="all")
+  val conf = FlexpretConfiguration(threads=threads, flex=false,
+    InstMemConfiguration(bypass=false, sizeKB=512),
+    dMemKB=512, mul=false, features="all")
   def datapath = new Datapath(debug=true)(conf=conf)
 
   it should "read from the regfile correctly" in {

@@ -14,9 +14,9 @@ import chiseltest._
 import chiseltest.experimental.TestOptionBuilder._
 
 import Core.FlexpretConstants._
-import Core.FlexpretConfiguration
 
 import flexpret.core.{RegisterFile, RegisterFileReadIO, RegisterFileWriteIO}
+import flexpret.core.FlexpretConfiguration
 
 class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"

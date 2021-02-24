@@ -10,6 +10,10 @@ package Core
 import Chisel._
 import FlexpretConstants._
 
+// Remove this eventually
+import flexpret.core.BusIO
+import flexpret.core.FlexpretConfiguration
+
 // Use byte address within word (lowest 2 bits) and type of load to correctly
 // format loaded data.
 object LoadFormat {

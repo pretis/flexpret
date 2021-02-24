@@ -14,7 +14,6 @@ import chisel3.util.BitPat
 // Remove this eventually
 import Core.Causes
 import Core.DecodeLogic
-import Core.FlexpretConfiguration
 import Core.Scheduler
 import Core.FlexpretConstants._
 import Core.Instructions._

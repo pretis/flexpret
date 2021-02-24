@@ -7,8 +7,12 @@
  * ******************************************************************************/
 package Core
 // TODO: remove this
+import flexpret.core.BusIO
 import flexpret.core.CSR
 import flexpret.core.ControlDatapathIO
+import flexpret.core.FlexpretConfiguration
+import flexpret.core.GPIO
+import flexpret.core.HostIO
 import flexpret.core.RegisterFile
 
 import chisel3._

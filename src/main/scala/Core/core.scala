@@ -5,15 +5,16 @@ Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
 Contributors: Edward Wang (edwardw@eecs.berkeley.edu)
 License: See LICENSE.txt
 ******************************************************************************/
-package Core
+package flexpret.core
 
 import chisel3._
 import chisel3.util.log2Ceil
 import chisel3.util.MixedVec
-import FlexpretConstants._
+import chisel3.experimental.chiselName
 
 // Remove this eventually
-import flexpret.core.Control
+import Core._
+import Core.FlexpretConstants._
 
 object FlexpretConfiguration {
   /**
@@ -24,7 +25,7 @@ object FlexpretConfiguration {
     new FlexpretConfiguration(
       parsed.get.group(1).toInt,
       !parsed.get.group(2).isEmpty,
-      parsed.get.group(3).toInt,
+      InstMemConfiguration(bypass=false, parsed.get.group(3).toInt),
       parsed.get.group(4).toInt,
       confString contains "mul",
       parsed.get.group(5)
@@ -32,7 +33,16 @@ object FlexpretConfiguration {
   }
 }
 
-case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemKB: Int, mul: Boolean, features: String) {
+case class InstMemConfiguration(
+  // Set to true to hook up instruction memory from outside the core
+  bypass: Boolean,
+  // If the above is false, size of the instruction memory (KB)
+  sizeKB: Int
+)
+
+case class FlexpretConfiguration(threads: Int, flex: Boolean,
+  imemConfig: InstMemConfiguration,
+  dMemKB: Int, mul: Boolean, features: String) {
   println("features: " + features)
   val mt = threads > 1
   val stats = features == "all"
@@ -72,7 +82,8 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean, iMemKB: Int, dMemK
   val initialTmodes = (0 until threads).map(i => if (i != 0) TMODE_HZ else TMODE_HA)
 
   // I-Spm
-  val iMemDepth = 256 * iMemKB // 32-bit entries
+
+  val iMemDepth = 256 * imemConfig.sizeKB // 32-bit entries
   val iMemAddrBits = log2Ceil(iMemDepth) // word addressable
   val iMemHighIndex = log2Ceil(4 * iMemDepth) - 1
   val iMemForceEn = false
@@ -162,8 +173,9 @@ class GPIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val out = MixedVec(conf.gpoPortSizes.map(i => Output(UInt(i.W))).toSeq)
 }
 
-class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
-  val imem = new InstMemBusIO()
+class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
+  val imem_core = if (conf.imemConfig.bypass) Some(Flipped(new InstMemCoreIO)) else None
+  val imem_bus = new InstMemBusIO
   val dmem = new DataMemBusIO()
   val bus = Flipped(new BusIO())
   val host = new HostIO()
@@ -174,25 +186,31 @@ class CoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
   override def cloneType = (new CoreIO).asInstanceOf[this.type]
 }
 
-class Core(confIn: FlexpretConfiguration) extends Module {
+@chiselName
+class Core(val confIn: FlexpretConfiguration) extends Module {
   implicit val conf = confIn
 
   val io = IO(new CoreIO)
 
   val control = Module(new Control())
   val datapath = Module(new Datapath())
-  val imem = Module(new ISpm())
-  //val imem = Module(new ISpm_BRAM())
+  val imem = if (conf.imemConfig.bypass) None else Some(Module(new ISpm()))
   val dmem = Module(new DSpm())
   //val dmem = Module(new DSpm_BRAM())
 
   // internal
   datapath.io.control <> control.io
-  datapath.io.imem <> imem.io.core
+  datapath.io.imem <> (imem match {
+    case Some(imem_module) => imem_module.io.core
+    case _ => io.imem_core.get
+  })
   datapath.io.dmem <> dmem.io.core
 
   // external
-  io.imem <> imem.io.bus
+  io.imem_bus <> (imem match {
+    case Some(imem_module) => imem_module.io.bus
+    case _ => DontCare
+  })
   io.dmem <> dmem.io.bus
   io.bus <> datapath.io.bus
   io.host <> datapath.io.host
