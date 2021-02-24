@@ -2,7 +2,7 @@
 File: MMIO.scala
 Description: Memory-mapped I/O.
 Author: Edward Wang (edwardw@eecs.berkeley.edu)
-Contributors: 
+Contributors:
 License: See LICENSE.txt
 ******************************************************************************/
 package flexpret
@@ -13,6 +13,9 @@ import chisel3._
 import chisel3.util.Decoupled
 import chisel3.util.MixedVec
 import chisel3.util.MuxLookup
+import chisel3.util.Queue
+
+import chisel3.experimental.BundleLiterals._
 
 // Can't define a type at the top level...
 package object core {
@@ -66,6 +69,20 @@ package object core {
       }
     }.flatten: _*)
 
+    // Read to an element by address.
+    def readByAddress(addr: UInt): UInt = {
+      val output = Wire(UInt())
+      output := DontCare
+
+      config.filter(_._4 != MMIOOutput).map { case (key, bits, offset, direction) =>
+        when (addr === offset.U) {
+          output := elements(key)
+        }
+      }
+
+      output
+    }
+
     override def cloneType: this.type = new MMIOIns(config).asInstanceOf[this.type]
   }
   /**
@@ -85,7 +102,7 @@ package object core {
 
     // Write to an element by address.
     def writeByAddress(addr: UInt, data: UInt): Unit = {
-      config.filter(_._4 != MMIOInput).map { case (key, bits, offset, direction) => 
+      config.filter(_._4 != MMIOInput).map { case (key, bits, offset, direction) =>
         when (addr === offset.U) {
           elements(key) := data
         }
@@ -97,6 +114,12 @@ package object core {
 
   // I/O bundle for making a write request.
   class MMIOWriteIO extends Bundle {
+    val addr = UInt(32.W)
+    val data = UInt(32.W)
+  }
+
+  // I/O bundle for the response to a read request.
+  class MMIOReadRespIO extends Bundle {
     val addr = UInt(32.W)
     val data = UInt(32.W)
   }
@@ -116,6 +139,11 @@ package object core {
       val ins = Input(new MMIOIns(config))
       val outs = Output(new MMIOOuts(config))
 
+      // Interface for making a read request.
+      // Address requested
+      val readReq = Flipped(Decoupled(UInt(32.W)))
+      val readResp = Decoupled(new MMIOReadRespIO)
+
       // Interface for making a write request.
       val write = Flipped(Decoupled(new MMIOWriteIO))
     })
@@ -126,12 +154,28 @@ package object core {
     // Connect them to the actual I/Os
     io.outs := output_regs
 
+    // Handle the reading interface
+    val readRespQueue = Module(new Queue(new MMIOReadRespIO, 4)) // parametrize?
+    io.readResp <> readRespQueue.io.deq
+    // We can handle incoming requests when we have space in the output queue
+    io.readReq.ready := readRespQueue.io.enq.ready
+    when (io.readReq.fire()) {
+      // Read from IO and enqueue into output queue.
+      val addr = io.readReq.bits
+      val resp = Wire(new MMIOReadRespIO)
+      resp.addr := addr
+      resp.data := io.ins.readByAddress(addr)
+
+      readRespQueue.io.enq.enq(resp)
+      assert(readRespQueue.io.enq.fire())
+    } .otherwise {
+      readRespQueue.io.enq.noenq()
+    }
+
     // Handle the writing interface
     io.write.ready := true.B
     when (io.write.valid) {
       output_regs.writeByAddress(io.write.bits.addr, io.write.bits.data)
-      //~ output_regs.getByAddress(io.write.bits.addr) := io.write.bits.data
-      //~ output_regs.elements("inout") := io.write.bits.data
     }
   }
 }
