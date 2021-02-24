@@ -323,17 +323,16 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   //val exe_brjmp = exe_valid && (exe_reg_jump || (exe_reg_branch && io.exe_br_cond))
 
   // Keep track of delay_until instruction.
-  val exe_du = Wire(Bool())
-  if(conf.delayUntil) {
+  val exe_du: Bool = if (conf.delayUntil) {
     val exe_reg_du = RegNext(dec_du.asBool)
     // If instruction is valid and compare time value has not expired, set PC:
     // DU: address of DU (branch to self)
     // WU: adress of WU+4 (branch to next instruction)
     // Assumes exception has higher PC priority than DU/WU
-    exe_du := exe_reg_valid && exe_reg_du && !io.exe_expire
+    exe_reg_valid && exe_reg_du && !io.exe_expire
     // Otherwise just keep executing.
   } else {
-    exe_du := false.B
+    false.B
   }
   // If DU or WU, put thread to sleep and set timer to wake on expiration
   val exe_sleep = exe_du && exe_valid
