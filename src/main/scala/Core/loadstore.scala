@@ -60,7 +60,7 @@ object StoreMask {
   }
 }
 
-class LoadStore(implicit conf: FlexpretConfiguration) extends Module
+class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
 {
   val io = new Bundle {
     // connections to memories and bus
