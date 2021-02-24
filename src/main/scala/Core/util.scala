@@ -5,12 +5,11 @@ Author: Edward Wang (edwardw@eecs.berkeley.edu)
 Contributors: 
 License: See LICENSE.txt
 ******************************************************************************/
-package Core
+package flexpret.util
 
-import Chisel._
+import chisel3._
+import chisel3.util.BitPat
 
-package object util {
-  object uintToBitPatObject {
-    implicit def uintToBitPat(x: UInt): BitPat = BitPat(x)
-  }
+object uintToBitPatObject {
+  implicit def uintToBitPat(x: UInt): BitPat = BitPat(x)
 }
