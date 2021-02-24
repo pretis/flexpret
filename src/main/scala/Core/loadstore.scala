@@ -41,20 +41,27 @@ object StoreFormat {
   }
 }
 
-// Use byte address within word (lowest 2 bits) and type of store to correctly
-// format store mask.
+/**
+ * Use byte address within word (lowest 2 bits) and type of store to
+ * correctly format the byte store mask (4 bits).
+ * e.g. 1111 means write all 4 bytes (32 bits).
+ * e.g. 0001 means only write lower byte.
+ */
 object StoreMask {
   def apply(address: UInt, memType: UInt): UInt = {
+    require(address.widthOption.get >= 2, "Byte address must be 2+ bits")
+    val addressLastTwo = address(1, 0)
+
     // Store mask for subword stores depends on address.
     // Byte store: 00->0001, 01->0010, 10->0100, 11->1000
     // Half-word store: 00->0011, 10->1100
     // Word store: 00->1111
     when (memType === MEM_SH) {
       // Half-word stores must have an LSB of 0
-      assert(address(0) === 0.U)
+      assert(addressLastTwo(0) === 0.U)
     }
-    Mux(memType === MEM_SB, (1.U(1.W) << address)(3, 0),
-    Mux(memType === MEM_SH, ("b11".U(2.W) << address)(3, 0),
+    Mux(memType === MEM_SB, (1.U(1.W) << addressLastTwo)(3, 0),
+    Mux(memType === MEM_SH, ("b11".U(2.W) << addressLastTwo)(3, 0),
     Mux(memType === MEM_SW, 15.U(4.W),
                             0.U(4.W))))
   }
