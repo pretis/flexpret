@@ -12,6 +12,9 @@ import chisel3.util.log2Ceil
 import chisel3.util.MixedVec
 import FlexpretConstants._
 
+// Remove this eventually
+import flexpret.core.Control
+
 object FlexpretConfiguration {
   /**
    * Parse a given configuration string into a FlexpretConfiguration.
