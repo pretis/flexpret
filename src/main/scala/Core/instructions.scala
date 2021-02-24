@@ -1,9 +1,9 @@
 /******************************************************************************
- * File: control.scala
- * Description: Control unit for decoding instructions and providing signals to
+ * File: instructions.scala
+ * Description: Instruction constants
  * datapath.
  * Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
- * Contributors: 
+ * Contributors: Edward Wang (edwardw@eecs.berkeley.edu)
  * License: See LICENSE.txt
  * ******************************************************************************/
 package Core
