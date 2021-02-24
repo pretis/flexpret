@@ -5,13 +5,19 @@ Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
 Contributors: Edward Wang (edwardw@eecs.berkeley.edu)
 License: See LICENSE.txt
 ******************************************************************************/
-package Core
+package flexpret.core
 
 import chisel3._
 import chisel3.util._
-import FlexpretConstants._
 
-class CSR(implicit conf: FlexpretConfiguration) extends Module {
+import Core.FlexpretConfiguration
+import Core.HostIO
+import Core.GPIO
+import Core.Causes
+import Core.CSRs
+import Core.FlexpretConstants._
+
+class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
     val rw = new Bundle {
       val addr = Input(UInt(12.W))
@@ -19,6 +25,7 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
       val csr_type = Input(UInt(CSR_WI.W))
       val write = Input(Bool())
       val data_in = Input(UInt(32.W))
+      // Note: data_out is read combinationally!
       val data_out = Output(UInt(32.W))
       val valid = Input(Bool())
     }
@@ -192,13 +199,13 @@ class CSR(implicit conf: FlexpretConfiguration) extends Module {
     }
     when(compare_addr(CSRs.status)) {
       if (conf.exceptions) {
-        reg_ie(io.rw.thread) := data_in(4).toBool
+        reg_ie(io.rw.thread) := data_in(4).asBool
       }
       if (conf.interruptExpire) {
-        reg_mtie(io.rw.thread) := data_in(26).toBool
+        reg_mtie(io.rw.thread) := data_in(26).asBool
       }
       if (conf.externalInterrupt) {
-        reg_msip(io.rw.thread) := data_in(3).toBool
+        reg_msip(io.rw.thread) := data_in(3).asBool
       }
     }
   }

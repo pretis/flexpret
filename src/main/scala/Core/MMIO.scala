@@ -1,6 +1,7 @@
 /******************************************************************************
 File: MMIO.scala
-Description: Memory-mapped I/O.
+Description: Memory-mapped I/O. This can connect (eventually) onto the bus
+independently from the CSR GPIOs.
 Author: Edward Wang (edwardw@eecs.berkeley.edu)
 Contributors:
 License: See LICENSE.txt

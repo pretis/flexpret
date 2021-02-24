@@ -7,6 +7,7 @@
  * ******************************************************************************/
 package Core
 // TODO: remove this
+import flexpret.core.CSR
 import flexpret.core.ControlDatapathIO
 import flexpret.core.RegisterFile
 
