@@ -91,4 +91,21 @@ class CSRTest extends FlatSpec with ChiselScalatestTester {
       }
     }
   }
+
+  it should "write tohost" in {
+    test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      timescope {
+        val csrVal = "habcd_ef88".U
+        c.writeCSR(CSRs.tohost, csrVal)
+        c.clock.step()
+        c.io.host.to_host.expect(csrVal)
+      }
+      timescope {
+        val csrVal = "h1234_5678".U
+        c.writeCSR(CSRs.tohost, csrVal)
+        c.clock.step()
+        c.io.host.to_host.expect(csrVal)
+      }
+    }
+  }
 }
