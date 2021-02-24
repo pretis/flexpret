@@ -14,10 +14,11 @@ import chiseltest._
 import chiseltest.experimental.TestOptionBuilder._
 
 import Core.FlexpretConstants._
-import Core.FlexpretConfiguration
 import Core.CSRs
 
 import flexpret.core.CSR
+import flexpret.core.FlexpretConfiguration
+import flexpret.core.InstMemConfiguration
 
 class CSRTestHelper(val c: CSR) {
   /**
@@ -49,7 +50,9 @@ class CSRTest extends FlatSpec with ChiselScalatestTester {
   behavior of "CSR"
 
   val threads = 1
-  val conf = FlexpretConfiguration(threads=threads, flex=false, iMemKB=512, dMemKB=512, mul=false, features="all")
+  val conf = FlexpretConfiguration(threads=threads, flex=false,
+    InstMemConfiguration(bypass=false, sizeKB=512),
+    dMemKB=512, mul=false, features="all")
   def csr = new CSR()(conf=conf)
 
   implicit def csrToHelper(c: CSR) = new CSRTestHelper(c)

@@ -9,6 +9,11 @@ package Core
 
 import Chisel._
 
+// Remove this eventually
+import flexpret.core.DataMemBusIO
+import flexpret.core.FlexpretConfiguration
+import flexpret.core.InstMemBusIO
+
 class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
 {
   val r = new Bundle {

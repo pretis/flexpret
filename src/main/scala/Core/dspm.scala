@@ -9,6 +9,10 @@ package Core
 
 import Chisel._
 
+// Remove this eventually
+import flexpret.core.DataMemBusIO
+import flexpret.core.FlexpretConfiguration
+
 class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
 {
   // read/write port

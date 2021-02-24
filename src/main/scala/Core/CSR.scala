@@ -10,9 +10,6 @@ package flexpret.core
 import chisel3._
 import chisel3.util._
 
-import Core.FlexpretConfiguration
-import Core.HostIO
-import Core.GPIO
 import Core.Causes
 import Core.CSRs
 import Core.FlexpretConstants._
