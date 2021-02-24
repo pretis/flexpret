@@ -27,9 +27,9 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
   )
 
   /*
-   * Wait for write to be ready.
+   * Wait a decoupled to be ready.
    */
-  def waitForWrite(c: Module, d: DecoupledIO[Data]): Unit = {
+  def waitForDecoupled(c: Module, d: DecoupledIO[Data]): Unit = {
     timescope {
       d.valid.poke(false.B)
       while(d.ready.peek().litValue() == 0) {
@@ -56,9 +56,46 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
     }
   }
 
+  it should "read inputs" in {
+    test(new MMIOCore(config)).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      timescope {
+        c.io.ins.elements("input").poke(3.U)
+        c.io.ins.elements("inout").poke(1.U)
+        c.io.readResp.ready.poke(false.B)
+
+        waitForDecoupled(c, c.io.readReq)
+
+        c.io.readReq.valid.poke(true.B)
+        c.io.readReq.bits.poke(2.U)
+        c.clock.step()
+
+        waitForDecoupled(c, c.io.readReq)
+
+        c.io.readReq.valid.poke(true.B)
+        c.io.readReq.bits.poke(0.U)
+        c.clock.step()
+      }
+
+      timescope {
+        c.io.readResp.ready.poke(true.B)
+        while(c.io.readResp.valid.peek().litValue() == 0) {
+          c.clock.step()
+        }
+        c.io.readResp.bits.addr.expect(2.U)
+        c.io.readResp.bits.data.expect(1.U)
+        c.clock.step()
+        while(c.io.readResp.valid.peek().litValue() == 0) {
+          c.clock.step()
+        }
+        c.io.readResp.bits.addr.expect(0.U)
+        c.io.readResp.bits.data.expect(3.U)
+      }
+    }
+  }
+
   it should "write outputs" in {
     test(new MMIOCore(config)).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
-      waitForWrite(c, c.io.write)
+      waitForDecoupled(c, c.io.write)
 
       timescope {
         c.io.write.valid.poke(true.B)
@@ -67,7 +104,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
         c.clock.step()
       }
 
-      waitForWrite(c, c.io.write)
+      waitForDecoupled(c, c.io.write)
 
       timescope {
         c.io.write.valid.poke(true.B)
@@ -76,7 +113,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
         c.clock.step()
       }
 
-      waitForWrite(c, c.io.write)
+      waitForDecoupled(c, c.io.write)
 
       timescope {
         c.io.write.valid.poke(true.B)
@@ -84,7 +121,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
         c.io.write.bits.data.poke(1.U)
         c.clock.step()
       }
-      waitForWrite(c, c.io.write)
+      waitForDecoupled(c, c.io.write)
 
       c.io.outs.elements("output").expect(2.U)
       c.io.outs.elements("inout").expect(1.U)
@@ -95,7 +132,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
         c.io.write.bits.data.poke(3.U)
         c.clock.step()
       }
-      waitForWrite(c, c.io.write)
+      waitForDecoupled(c, c.io.write)
       c.io.outs.elements("inout").expect(3.U)
     }
   }
