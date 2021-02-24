@@ -27,7 +27,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
   )
 
   /*
-   * Wait a decoupled to be ready.
+   * Wait for a decoupled to be ready.
    */
   def waitForDecoupled(c: Module, d: DecoupledIO[Data]): Unit = {
     timescope {
@@ -56,84 +56,101 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "read inputs" in {
-    test(new MMIOCore(config)).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
-      timescope {
-        c.io.ins.elements("input").poke(3.U)
-        c.io.ins.elements("inout").poke(1.U)
-        c.io.readResp.ready.poke(false.B)
+  /**
+   * Test that reading inputs works.
+   */
+  def testReads(c: MMIOCore): Unit = {
+    timescope {
+      c.io.ins.elements("input").poke(3.U)
+      c.io.ins.elements("inout").poke(1.U)
+      c.io.readResp.ready.poke(false.B)
 
-        waitForDecoupled(c, c.io.readReq)
+      waitForDecoupled(c, c.io.readReq)
 
-        c.io.readReq.valid.poke(true.B)
-        c.io.readReq.bits.poke(2.U)
-        c.clock.step()
+      c.io.readReq.valid.poke(true.B)
+      c.io.readReq.bits.poke(2.U)
+      c.clock.step()
 
-        waitForDecoupled(c, c.io.readReq)
+      waitForDecoupled(c, c.io.readReq)
 
-        c.io.readReq.valid.poke(true.B)
-        c.io.readReq.bits.poke(0.U)
+      c.io.readReq.valid.poke(true.B)
+      c.io.readReq.bits.poke(0.U)
+      c.clock.step()
+    }
+
+    timescope {
+      c.io.readResp.ready.poke(true.B)
+      while(c.io.readResp.valid.peek().litValue() == 0) {
         c.clock.step()
       }
-
-      timescope {
-        c.io.readResp.ready.poke(true.B)
-        while(c.io.readResp.valid.peek().litValue() == 0) {
-          c.clock.step()
-        }
-        c.io.readResp.bits.addr.expect(2.U)
-        c.io.readResp.bits.data.expect(1.U)
+      c.io.readResp.bits.addr.expect(2.U)
+      c.io.readResp.bits.data.expect(1.U)
+      c.clock.step()
+      while(c.io.readResp.valid.peek().litValue() == 0) {
         c.clock.step()
-        while(c.io.readResp.valid.peek().litValue() == 0) {
-          c.clock.step()
-        }
-        c.io.readResp.bits.addr.expect(0.U)
-        c.io.readResp.bits.data.expect(3.U)
       }
+      c.io.readResp.bits.addr.expect(0.U)
+      c.io.readResp.bits.data.expect(3.U)
     }
   }
 
+  def testWrites(c: MMIOCore): Unit = {
+    waitForDecoupled(c, c.io.write)
+
+    timescope {
+      c.io.write.valid.poke(true.B)
+      c.io.write.bits.addr.poke(0.U)
+      c.io.write.bits.data.poke(3.U)
+      c.clock.step()
+    }
+
+    waitForDecoupled(c, c.io.write)
+
+    timescope {
+      c.io.write.valid.poke(true.B)
+      c.io.write.bits.addr.poke(1.U)
+      c.io.write.bits.data.poke(2.U)
+      c.clock.step()
+    }
+
+    waitForDecoupled(c, c.io.write)
+
+    timescope {
+      c.io.write.valid.poke(true.B)
+      c.io.write.bits.addr.poke(2.U)
+      c.io.write.bits.data.poke(1.U)
+      c.clock.step()
+    }
+    waitForDecoupled(c, c.io.write)
+
+    c.io.outs.elements("output").expect(2.U)
+    c.io.outs.elements("inout").expect(1.U)
+
+    timescope {
+      c.io.write.valid.poke(true.B)
+      c.io.write.bits.addr.poke(2.U)
+      c.io.write.bits.data.poke(3.U)
+      c.clock.step()
+    }
+    waitForDecoupled(c, c.io.write)
+    c.io.outs.elements("inout").expect(3.U)
+  }
+
+  it should "read inputs" in {
+    test(new MMIOCore(config)).withAnnotations(Seq(treadle.WriteVcdAnnotation)).apply(testReads)
+  }
+
   it should "write outputs" in {
+    test(new MMIOCore(config)).withAnnotations(Seq(treadle.WriteVcdAnnotation)).apply(testWrites)
+  }
+
+  it should "read and write at the same time" in {
     test(new MMIOCore(config)).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
-      waitForDecoupled(c, c.io.write)
-
-      timescope {
-        c.io.write.valid.poke(true.B)
-        c.io.write.bits.addr.poke(0.U)
-        c.io.write.bits.data.poke(3.U)
-        c.clock.step()
-      }
-
-      waitForDecoupled(c, c.io.write)
-
-      timescope {
-        c.io.write.valid.poke(true.B)
-        c.io.write.bits.addr.poke(1.U)
-        c.io.write.bits.data.poke(2.U)
-        c.clock.step()
-      }
-
-      waitForDecoupled(c, c.io.write)
-
-      timescope {
-        c.io.write.valid.poke(true.B)
-        c.io.write.bits.addr.poke(2.U)
-        c.io.write.bits.data.poke(1.U)
-        c.clock.step()
-      }
-      waitForDecoupled(c, c.io.write)
-
-      c.io.outs.elements("output").expect(2.U)
-      c.io.outs.elements("inout").expect(1.U)
-
-      timescope {
-        c.io.write.valid.poke(true.B)
-        c.io.write.bits.addr.poke(2.U)
-        c.io.write.bits.data.poke(3.U)
-        c.clock.step()
-      }
-      waitForDecoupled(c, c.io.write)
-      c.io.outs.elements("inout").expect(3.U)
+      fork {
+        testReads(c)
+      } .fork {
+        testWrites(c)
+      } .join
     }
   }
 }
