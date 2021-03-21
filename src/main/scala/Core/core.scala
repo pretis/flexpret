@@ -36,9 +36,11 @@ object FlexpretConfiguration {
 case class InstMemConfiguration(
   // Set to true to hook up instruction memory from outside the core
   bypass: Boolean,
-  // If the above is false, size of the instruction memory (KB)
+  // Size of the instruction memory (KB) - for memory mapping purposes
   sizeKB: Int
-)
+) {
+  require(sizeKB >= 0)
+}
 
 case class FlexpretConfiguration(threads: Int, flex: Boolean,
   imemConfig: InstMemConfiguration,
