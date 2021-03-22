@@ -96,7 +96,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   //               legal                                                           exe_rd_data_sel                              load
   //               |  imm_sel                                                      |           mem_type                         |  store
   //               |  |      op1_sel                                               |           |        mem_rd_data_sel         |  |  fence
-  //               |  |      |        op1_sel                                      |           |        |           rd_en       |  |  |  fence_i
+  //               |  |      |        op2_sel                                      |           |        |           rd_en       |  |  |  fence_i
   //               |  |      |        |        alu_type                            |           |        |           |  branch   |  |  |  |  scall
   //               |  |      |        |        |         br_type                   |           |        |           |  |  jump  |  |  |  |  |  sret
   //               |  |      |        |        |         |       csr_type          |           |        |           |  |  |  csr|  |  |  |  |  |  du ie
