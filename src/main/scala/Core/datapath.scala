@@ -58,7 +58,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val dec_reg_tid = Reg(UInt())
   val dec_reg_pc = Reg(UInt()) // alu op1, exception address
   val dec_reg_pc4 = Reg(UInt()) // rd for JAL*
-  val dec_reg_inst = Reg(Bits()) // decoded by control unit
+  val dec_reg_inst = Reg(UInt()) // decoded by control unit
 
   // execute stage
   val exe_reg_tid = Reg(UInt())
