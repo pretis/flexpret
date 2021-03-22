@@ -52,22 +52,30 @@ object StoreFormat {
  * e.g. 0001 means only write lower byte.
  */
 object StoreMask {
-  def apply(address: UInt, memType: UInt): UInt = {
-    require(address.widthOption.get >= 2, "Byte address must be 2+ bits")
-    val addressLastTwo = address(1, 0)
+  def apply(address: UInt, memType: UInt, enable: Bool): UInt = {
+    val result = Wire(UInt(4.W))
+    result := chisel3.DontCare
 
-    // Store mask for subword stores depends on address.
-    // Byte store: 00->0001, 01->0010, 10->0100, 11->1000
-    // Half-word store: 00->0011, 10->1100
-    // Word store: 00->1111
-    when (memType === MEM_SH) {
-      // Half-word stores must have an LSB of 0
-      assert(addressLastTwo(0) === 0.U)
+    // Use a when structure to only enable the assert if enabled.
+    // Otherwise return a DontCare.
+    when (enable) {
+      require(address.widthOption.get >= 2, "Byte address must be 2+ bits")
+      val addressLastTwo = address(1, 0)
+
+      // Store mask for subword stores depends on address.
+      // Byte store: 00->0001, 01->0010, 10->0100, 11->1000
+      // Half-word store: 00->0011, 10->1100
+      // Word store: 00->1111
+      when (memType === MEM_SH) {
+        // Half-word stores must have an LSB of 0
+        assert(addressLastTwo(0) === 0.U)
+      }
+      result := Mux(memType === MEM_SB, (1.U(1.W) << addressLastTwo)(3, 0),
+      Mux(memType === MEM_SH, ("b11".U(2.W) << addressLastTwo)(3, 0),
+      Mux(memType === MEM_SW, 15.U(4.W),
+                              0.U(4.W))))
     }
-    Mux(memType === MEM_SB, (1.U(1.W) << addressLastTwo)(3, 0),
-    Mux(memType === MEM_SH, ("b11".U(2.W) << addressLastTwo)(3, 0),
-    Mux(memType === MEM_SW, 15.U(4.W),
-                            0.U(4.W))))
+    result
   }
 }
 
@@ -161,10 +169,9 @@ class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
   // data memory input
   io.dmem.addr := io.addr(conf.dMemAddrBits-1, 2) // assumes aligned
   io.dmem.data_in := StoreFormat(io.data_in, io.mem_type)
-  io.dmem.enable := (if(conf.dMemForceEn) Bool(true)
-                    else dmem_op && (io.load || io.store))
-  io.dmem.byte_write := (StoreMask(io.addr(1, 0), io.mem_type) &
-                        Fill(4, write.asUInt)).toBools
+  val dmem_enable: Bool = if(conf.dMemForceEn) Bool(true) else (dmem_op && (io.load || io.store))
+  io.dmem.enable := dmem_enable
+  io.dmem.byte_write := (StoreMask(io.addr(1, 0), io.mem_type, enable=dmem_enable) & Fill(4, write.asUInt)).toBools
 
 
   // instruction memory input
