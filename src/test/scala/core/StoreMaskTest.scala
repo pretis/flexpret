@@ -26,7 +26,7 @@ class StoreMaskTest extends FlatSpec with ChiselScalatestTester {
     val address = IO(Input(UInt(4.W)))
     val memType = IO(Input(UInt(4.W)))
     val mask = IO(Output(UInt(4.W)))
-    mask := StoreMask(address, memType)
+    mask := StoreMask(address, memType, enable=true.B)
   }
 
   it should "store bytes correctly" in {
