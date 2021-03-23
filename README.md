@@ -15,10 +15,7 @@ To build a default configuration and generate Verilog, run:
 make fpga
 ```
 
-TODO(edwardw): fix the simulator workflow
-
-If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) and have `java` and `g++` installed.
-
+# Unit tests
 To run all unit tests:
 
 ```
@@ -31,14 +28,21 @@ To run a specific unit test (e.g. SimpleCoreTest):
 mill flexpret.test.testOnly flexpret.core.test.SimpleCoreTest
 ```
 
+Unit tests are found under `src/test/scala/core/`.
+
+# Simulation
+
+If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) and have `java` and `g++` installed.
+
+TODO(edwardw): sim instructions
+
 This will simulate the execution of the program directory `tests/isa` on FlexPRET configured with 4 hardware threads. The default configuration is set in `config.mk` and can be [changed](#flexpret-configuration). The makefile will (if needed) install [mill](http://www.lihaoyi.com/mill/), download Chisel, generate a C++ emulator for the FlexPRET processor, compile the C++ emulator, excute the C++ emulator on each program in the test suite, and finally display the results.
 
 See the [tests](#tests) section for information about running other programs.
 
 `make clean` will remove files associated with current configuration and `make cleanall` will remove files associated with all configurations.
 
-Directory Structure
---------------------------------------------------------------------------------
+# Directory Structure
 - `src/main/scala/` Chisel and Verilog source files
   - `Core/` FlexPRET processor (and baseline processors) in Chisel
   - `uart/` Verilog code for UART
