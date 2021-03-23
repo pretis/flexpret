@@ -1,18 +1,6 @@
-# Generic Makefile fragment for generating FPGA Verilog code from Chisel code.
-#
-# The following variables must be defined by the Makefile that includes this
-# fragment ([...] contains default value):
-# VERILOG: Path to generated verilog code
-# MODULE: Chisel top-level component
-# FPGA_SRC_DIR: Generated Verilog directory
-# SRC_DIR: Chisel source code directory
-# CORE_CONFIG: Configuration string for Chisel
-#
-# Michael Zimmer (mzimmer@eecs.berkeley.edu)
+# Helper fragment for FPGA Verilog.
+# Copyright 2021 Edward Wang <edwardw@eecs.berkeley.edu>
 
-#-------------------------------------------------------------------------------
-# Generate Verilog Code
-#-------------------------------------------------------------------------------
 $(VERILOG_FPGA): $(VERILOG_RAW)
 	mkdir -p $(FPGA_DIR)/generated-src
 	cp $(VERILOG_RAW) $(VERILOG_FPGA)

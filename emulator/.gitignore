@@ -1,0 +1,4 @@
+obj_dir/
+flexpret-emulator
+*.v
+*.vcd
