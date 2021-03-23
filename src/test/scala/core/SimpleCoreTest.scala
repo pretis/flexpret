@@ -20,7 +20,7 @@ import flexpret.core.Core
 import flexpret.core.FlexpretConfiguration
 import flexpret.core.InstMemConfiguration
 import Core.Datapath
-import Core.InstMemCoreIO
+import flexpret.core.InstMemCoreIO
 
 class SimpleCoreTest extends FlatSpec with ChiselScalatestTester {
   behavior of "Core (simple config)"

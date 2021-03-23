@@ -12,6 +12,8 @@ import FlexpretConstants._
 
 // Remove this eventually
 import flexpret.core.BusIO
+import flexpret.core.DataMemCoreIO
+import flexpret.core.InstMemCoreIO
 import flexpret.core.FlexpretConfiguration
 
 // Use byte address within word (lowest 2 bits) and type of load to correctly
