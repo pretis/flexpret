@@ -30,6 +30,8 @@ TESTS_DIR = tests
 # FPGA
 FPGA_DIR = fpga
 
+EMULATOR_DIR = emulator
+
 # Mill build tool for compiling and running the Chisel generator.
 MILL_VERSION = 0.6.0
 MILL_BIN = ./mill
@@ -99,6 +101,12 @@ include $(FPGA_DIR)/fpga.mk
 
 fpga: $(VERILOG_FPGA)
 
+# Provide rules for simulator
+include $(EMULATOR_DIR)/emulator.mk
+
+# Alias
+emulator: $(EMULATOR_BIN)
+
 # -----------------------------------------------------------------------------
 # Program compilation.
 # -----------------------------------------------------------------------------
@@ -134,4 +142,4 @@ cleanall:
 	find $(TESTS_DIR) -type d -name "results" -exec rm -rf {} \; \
 		find $(TESTS_DIR) -type d -name "build" -exec rm -rf {} \;
 
-.PHONY: run fpga firrtl_raw verilog_raw prog clean cleanall
+.PHONY: run fpga emulator firrtl_raw verilog_raw prog clean cleanall
