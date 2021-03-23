@@ -95,4 +95,77 @@ class SimpleCoreTest extends FlatSpec with ChiselScalatestTester {
       } .join
     }
   }
+
+  it should "run a simple recursive program" in {
+    test(core).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      val imemSim = new ImemSimulator(
+        // Generate with ./scripts/parse_disasm.py
+        /**
+  // set stack pointer
+  li sp, 0x20001000
+
+  csrwi 0x51e, 18
+
+  li a0, 10 // 2^10
+  call poww
+  csrw 0x51e, a0 // tohost
+loop:
+  j loop
+
+  int poww(uint32_t n) {
+      if (n == 0) {
+          return 1;
+      } else {
+          return 2 * poww(n-1);
+      }
+  }
+         */
+        prog=scala.collection.immutable.Vector(
+  /* 0 */ "h20001137", // lui sp,0x20001
+  /* 4 */ "h51e95073", // csrwi 0x51e,18
+  /* 8 */ "h00a00513", // li a0,10
+  /* c */ "h00c000ef", // jal ra,18 <poww>
+  /* 10 */ "h51e51073", // csrw 0x51e,a0
+  /* 14 */ "h0000006f", // j 14 <loop>
+  /* 18 */ "hfe010113", // addi sp,sp,-32 # 20000fe0 <__global_pointer$+0x1ffff738>
+  /* 1c */ "h00112e23", // sw ra,28(sp)
+  /* 20 */ "h00812c23", // sw s0,24(sp)
+  /* 24 */ "h02010413", // addi s0,sp,32
+  /* 28 */ "hfea42623", // sw a0,-20(s0)
+  /* 2c */ "hfec42783", // lw a5,-20(s0)
+  /* 30 */ "h00079663", // bnez a5,3c <poww+0x24>
+  /* 34 */ "h00100793", // li a5,1
+  /* 38 */ "h01c0006f", // j 54 <poww+0x3c>
+  /* 3c */ "hfec42783", // lw a5,-20(s0)
+  /* 40 */ "hfff78793", // addi a5,a5,-1
+  /* 44 */ "h00078513", // mv a0,a5
+  /* 48 */ "hfd1ff0ef", // jal ra,18 <poww>
+  /* 4c */ "h00050793", // mv a5,a0
+  /* 50 */ "h00179793", // slli a5,a5,0x1
+  /* 54 */ "h00078513", // mv a0,a5
+  /* 58 */ "h01c12083", // lw ra,28(sp)
+  /* 5c */ "h01812403", // lw s0,24(sp)
+  /* 60 */ "h02010113", // addi sp,sp,32
+  /* 64 */ "h00008067", // ret
+        ),
+        defaultInstr="h00000067", // jr x0
+        clk=c.clock,
+        memIO=c.io.imem_core.get
+      )
+
+      var seen1024: Boolean = false
+
+      val cycles=335
+      fork {
+        imemSim.sim(cycles=cycles)
+      } .fork {
+        for (i <- 0 to cycles) {
+          c.clock.step()
+          if (c.io.host.to_host.peek.litValue == 1024) seen1024 = true
+        }
+      } .join
+
+      assert(seen1024, "Should compute correct result for 2^10")
+    }
+  }
 }
