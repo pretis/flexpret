@@ -4,40 +4,6 @@
 #include "encoding.h"
 #include "flexpret_const.h"
 
-// GPO ports, if port width < 32, then upper bits ignored
-// CSR_GPO_*
-// Write all GPO bits
-static inline void gpo_write_0(uint32_t val) { write_csr(uarch4, val); }
-static inline void gpo_write_1(uint32_t val) { write_csr(uarch5, val); }
-static inline void gpo_write_2(uint32_t val) { write_csr(uarch6, val); }
-static inline void gpo_write_3(uint32_t val) { write_csr(uarch7, val); }
-
-// For each '1' bit in mask, set corresponding GPO bit to '1'
-static inline void gpo_set_0(uint32_t mask) { set_csr(uarch4, mask); }
-static inline void gpo_set_1(uint32_t mask) { set_csr(uarch5, mask); }
-static inline void gpo_set_2(uint32_t mask) { set_csr(uarch6, mask); }
-static inline void gpo_set_3(uint32_t mask) { set_csr(uarch7, mask); }
-
-// For each '1' bit in mask, set corresponding GPO bit to '0'
-static inline void gpo_clear_0(uint32_t mask) { clear_csr(uarch4, mask); }
-static inline void gpo_clear_1(uint32_t mask) { clear_csr(uarch5, mask); }
-static inline void gpo_clear_2(uint32_t mask) { clear_csr(uarch6, mask); }
-static inline void gpo_clear_3(uint32_t mask) { clear_csr(uarch7, mask); }
-
-// Read GPO bits
-static inline uint32_t gpo_read_0() { return read_csr(uarch4); }
-static inline uint32_t gpo_read_1() { return read_csr(uarch5); }
-static inline uint32_t gpo_read_2() { return read_csr(uarch6); }
-static inline uint32_t gpo_read_3() { return read_csr(uarch7); }
-
-// GPI ports, if port width < 32, then upper bits are zero
-// Read GPI bits
-// CSR_GPI_*
-static inline uint32_t gpi_read_0() { return read_csr(uarch0); }
-static inline uint32_t gpi_read_1() { return read_csr(uarch1); }
-static inline uint32_t gpi_read_2() { return read_csr(uarch2); }
-static inline uint32_t gpi_read_3() { return read_csr(uarch3); }
-
 // TODO: move to flexpret_debug?
 // Some should be in .c file...
 
