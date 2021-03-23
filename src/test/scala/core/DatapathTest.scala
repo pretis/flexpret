@@ -15,12 +15,8 @@ import chiseltest.experimental.TestOptionBuilder._
 
 import Core.FlexpretConstants._
 
-import flexpret.core.Control
-//import flexpret.core.Datapath
-import flexpret.core.FlexpretConfiguration
-import flexpret.core.InstMemConfiguration
+import flexpret.core._
 import Core.Datapath
-import Core.InstMemCoreIO
 
 class DatapathTest extends FlatSpec with ChiselScalatestTester {
   behavior of "Datapath"

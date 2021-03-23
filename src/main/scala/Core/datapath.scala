@@ -10,6 +10,8 @@ package Core
 import flexpret.core.BusIO
 import flexpret.core.CSR
 import flexpret.core.ControlDatapathIO
+import flexpret.core.DataMemCoreIO
+import flexpret.core.InstMemCoreIO
 import flexpret.core.FlexpretConfiguration
 import flexpret.core.GPIO
 import flexpret.core.HostIO

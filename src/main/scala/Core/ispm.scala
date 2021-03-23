@@ -1,88 +1,77 @@
 /******************************************************************************
 File: ispm.scala
 Description: Instruction scratchpad memory
-Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
-Contributors: 
+Author: Edward Wang (edwardw@eecs.berkeley.edu)
+Contributors:
 License: See LICENSE.txt
 ******************************************************************************/
-package Core
+package flexpret.core
 
-import Chisel._
+import chisel3._
 
-// Remove this eventually
-import flexpret.core.DataMemBusIO
-import flexpret.core.FlexpretConfiguration
-import flexpret.core.InstMemBusIO
-
-class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
-{
+class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val r = new Bundle {
     // read port
-    val addr = UInt(INPUT, conf.iMemAddrBits)
-    val enable = Bool(INPUT)
-    val data_out = Bits(OUTPUT, 32)
+    val addr = Input(UInt(conf.iMemAddrBits.W))
+    val enable = Input(Bool())
+    val data_out = Output(UInt(32.W))
   }
   val rw = new Bundle {
     // read/write port
-    val addr = UInt(INPUT, conf.iMemAddrBits)
-    val enable = Bool(INPUT)
-    val data_out = Bits(OUTPUT, 32)
-    val write = Bool(INPUT)
-    val data_in = Bits(INPUT, 32)
+    val addr = Input(UInt(conf.iMemAddrBits.W))
+    val enable = Input(Bool())
+    val data_out = Output(UInt(32.W))
+    val write = Input(Bool())
+    val data_in = Input(UInt(32.W))
   }
 
   override def cloneType = (new InstMemCoreIO).asInstanceOf[this.type]
 }
 
-// TODO: interal module for Blackbox
-//class ISpm(implicit conf: FlexpretConfiguration) extends BlackBox
-class ISpm(implicit conf: FlexpretConfiguration) extends Module
-{
-  val io = new Bundle {
+class ISpm(implicit conf: FlexpretConfiguration) extends Module {
+  val io = IO(new Bundle {
     val core = new InstMemCoreIO()
     val bus = new InstMemBusIO()
-  }
+  })
+
+  // NOTE: this might be dubious. Need to double-check this later.
+  io.bus.ready := DontCare
 
   // memory for instruction SPM
-  val ispm = SeqMem(conf.iMemDepth, Bits(width = 32))
+  // sync read, sync write
+  val ispm = SyncReadMem(conf.iMemDepth, UInt(32.W))
 
   // read port
-  // infer sequential read
-  val dout_r = Reg(Bits(width = 32))
-  io.core.r.data_out := dout_r
+  io.core.r.data_out := ispm.read(io.core.r.addr, io.core.r.enable)
 
-  // Read port connected to core for instruction fetch.
-  when(io.core.r.enable) {
-    dout_r := ispm(io.core.r.addr)
-  }
-
-  if(conf.iMemCoreRW || conf.iMemBusRW) {
+  if (conf.iMemCoreRW || conf.iMemBusRW) {
     // read/write port
-    // infer sequential read
-    val dout_rw = Reg(Bits(width = 32))
+    val busRwPort = ispm(io.bus.addr)
 
-    if(conf.iMemBusRW) {
-      io.bus.data_out := dout_rw
-      io.bus.ready := Bool(true)
+    if (conf.iMemBusRW) {
+      io.bus.data_out := busRwPort
+      io.bus.ready := true.B
       when(io.bus.enable) {
         when(io.bus.write) {
-          ispm(io.bus.addr) := io.bus.data_in
+          busRwPort := io.bus.data_in
         }
-        dout_rw := ispm(io.bus.addr)
       }
+    } else {
+      io.bus.data_out := DontCare
     }
 
     // Core has priority over bus
-    if(conf.iMemCoreRW) {
-      io.core.rw.data_out := dout_rw
+    val coreRwPort = ispm(io.core.rw.addr)
+    if (conf.iMemCoreRW) {
+      io.core.rw.data_out := coreRwPort
       when(io.core.rw.enable) {
-        if(conf.iMemBusRW) io.bus.ready := Bool(false)
+        if(conf.iMemBusRW) io.bus.ready := false.B
         when(io.core.rw.write) {
-          ispm(io.core.rw.addr) := io.core.rw.data_in
+          coreRwPort := io.core.rw.data_in
         }
-        dout_rw := ispm(io.core.rw.addr)
       }
     }
-
+  } else {
+    io.bus.ready := false.B
   }
 }

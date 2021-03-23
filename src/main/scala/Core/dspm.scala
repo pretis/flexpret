@@ -1,74 +1,55 @@
 /******************************************************************************
 File: dspm.scala
 Description: Data scratchpad memory
-Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
+Author: Edward Wang (edwardw@eecs.berkeley.edu)
 Contributors: 
 License: See LICENSE.txt
 ******************************************************************************/
-package Core
+package flexpret.core
 
-import Chisel._
+import chisel3._
 
-// Remove this eventually
-import flexpret.core.DataMemBusIO
-import flexpret.core.FlexpretConfiguration
-
-class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle
-{
+class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
   // read/write port
-  val addr = UInt(INPUT, conf.dMemAddrBits-2) // assume word aligned
-  val enable = Bool(INPUT)
-  val data_out = Bits(OUTPUT, 32)
-  val byte_write = Vec(4, Bool(INPUT))
-  val data_in = Bits(INPUT, 32)
+  val addr = Input(UInt((conf.dMemAddrBits-2).W)) // assume word aligned
+  val enable = Input(Bool())
+  val data_out = Output(UInt(32.W))
+  val byte_write = Input(Vec(4, Bool()))
+  val data_in = Input(UInt(32.W))
 
   override def cloneType = (new DataMemCoreIO).asInstanceOf[this.type]
 }
 
-
-// TODO: interal module for Blackbox
-//class DSpm(implicit conf: FlexpretConfiguration) extends BlackBox
-class DSpm(implicit conf: FlexpretConfiguration) extends Module
-{
-  val io = new Bundle {
+class DSpm(implicit conf: FlexpretConfiguration) extends Module {
+  val io = IO(new Bundle {
     val core = new DataMemCoreIO()
     val bus = new DataMemBusIO()
-  }
-  
-  // memory for data SPM
-  val dspm = SeqMem(conf.dMemDepth, Bits(width = 32))
+  })
 
-
-  // read/write port for core
-  val dout = Reg(Bits(width = 32)) // infer sequential read
-  io.core.data_out := dout
-
-  when(io.core.enable) {
-    val current = dspm(io.core.addr)
-    dout := current
-    dspm(io.core.addr) := Cat(
-      Mux(io.core.byte_write(3), io.core.data_in(31, 24), current(31, 24)),
-      Mux(io.core.byte_write(2), io.core.data_in(23, 16), current(23, 16)),
-      Mux(io.core.byte_write(1), io.core.data_in(15,  8), current(15,  8)),
-      Mux(io.core.byte_write(0), io.core.data_in( 7,  0), current( 7,  0))
+  def split(in: UInt): Vec[UInt] = {
+    VecInit(
+      in(7, 0),
+      in(15, 8),
+      in(23, 16),
+      in(31, 24)
     )
   }
-  
+
+  // memory for data SPM
+  // Sequential-read, sequential-write
+  val dspm = SyncReadMem(conf.dMemDepth, Vec(4, UInt(8.W)))
+
+  // read/write port for core
+  val corePort = dspm.read(io.core.addr, io.core.enable)
+  io.core.data_out := corePort.asUInt
+  dspm.write(io.core.addr, split(io.core.data_in), io.core.byte_write)
+
   if(conf.dMemBusRW) { 
     // read/write port for bus
-    val dout_2 = Reg(Bits(width = 32)) // infer sequential read
-    io.bus.data_out := dout_2
-  
-    when(io.bus.enable) {
-      val current_2 = dspm(io.bus.addr)
-      dout := current_2
-      dspm(io.bus.addr) := Cat(
-        Mux(io.bus.byte_write(3), io.bus.data_in(31, 24), current_2(31, 24)),
-        Mux(io.bus.byte_write(2), io.bus.data_in(23, 16), current_2(23, 16)),
-        Mux(io.bus.byte_write(1), io.bus.data_in(15,  8), current_2(15,  8)),
-        Mux(io.bus.byte_write(0), io.bus.data_in( 7,  0), current_2( 7,  0))
-      )
-    }
+    val busPort = dspm.read(io.bus.addr, io.bus.enable)
+    io.bus.data_out := busPort.asUInt
+    dspm.write(io.bus.addr, split(io.bus.data_in), io.bus.byte_write)
+  } else {
+    io.bus.data_out := 0.U
   }
-
 }
