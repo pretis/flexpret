@@ -13,17 +13,10 @@
 #-------------------------------------------------------------------------------
 # Generate Verilog Code
 #-------------------------------------------------------------------------------
-$(VERILOG): $(SRC_DIR)/$(MODULE)/*.scala $(FIRRTL_JAR) $(MILL_BIN)
-	$(MILL_BIN) flexpret.run "$(CORE_CONFIG)" --compiler high --target-dir "$(FPGA_SRC_DIR)"
-	# high-firrtl is dumped into $(FPGA_SRC_DIR)/$(MODULE).hi.fir
-
-	# Use FIRRTL to compile to Verilog
-	java -cp $(FIRRTL_JAR) firrtl.stage.FirrtlMain --compiler verilog \
-		--input-file $(FPGA_SRC_DIR)/$(MODULE).hi.fir \
-		--target-dir $(FPGA_SRC_DIR)
+$(VERILOG_FPGA): $(VERILOG_RAW)
+	mkdir -p $(FPGA_DIR)/generated-src
+	cp $(VERILOG_RAW) $(VERILOG_FPGA)
 
 	# TODO: do these in FIRRTL or use the new memory-loading feature of Chisel
-	sed -i -e '/^module ISpm/,/^endmodule/ s/\(reg \[31:0\] ispm \[[0-9]*:\([0-9]*\)\];\)/\1  initial $$readmemh(\"ispmfile\", ispm, 0, \2);/g' $(VERILOG)
-	sed -i -e '/^module DSpm/,/^endmodule/ s/\(reg \[31:0\] dspm \[[0-9]*:\([0-9]*\)\];\)/\1  initial $$readmemh(\"dspmfile\", dspm, 0, \2);/g' $(VERILOG)
-
-	cp $(VERILOG) fpga/generated-src/Core.v
+	sed -i -e '/^module ISpm/,/^endmodule/ s/\(reg \[31:0\] ispm \[[0-9]*:\([0-9]*\)\];\)/\1  initial $$readmemh(\"ispmfile\", ispm, 0, \2);/g' $(VERILOG_FPGA)
+	sed -i -e '/^module DSpm/,/^endmodule/ s/\(reg \[31:0\] dspm \[[0-9]*:\([0-9]*\)\];\)/\1  initial $$readmemh(\"dspmfile\", dspm, 0, \2);/g' $(VERILOG_FPGA)
