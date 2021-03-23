@@ -7,8 +7,6 @@
 #   (either emulator or fpga) FlexPRET core with $(CORE_CONFIG) configuration.
 # 
 # Optional Usage:
-# make emulator: Generate and compile C++ emulator for FlexPRET core with
-#   $(CORE_CONFIG) configuration.
 # make fpga: ---
 # make all: Same as make $(TARGET)
 #
@@ -21,13 +19,9 @@
 # -----------------------------------------------------------------------------
 
 # Source code location, where subdirectories contain either Chisel
-# (used for generating Verilog and C++ emulator) or Verilog code.
+# (used for generating Verilog) or Verilog code.
 SRC_DIR = src/main/scala
 MODULE = Core
-
-# C++ emulator location, where subdirectories contain testbenches, generated C++,
-# and build files.
-EMULATOR_DIR = emulator
 
 # C or ASM test location, where subdirectories contain sets of tests with
 # identical compilation configurations.
@@ -61,20 +55,6 @@ CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)-$(ISPM_KBYTES)
 
 # Default will build target and selected programs.
 all: $(TARGET)
-
-# -----------------------------------------------------------------------------
-# C++ emulator generation and compilation.
-# -----------------------------------------------------------------------------
-
-# C++ emulator generation, build, executable locations.
-EMULATOR_SRC_DIR = $(EMULATOR_DIR)/generated-src/$(CORE_CONFIG)
-EMULATOR_BUILD_DIR = $(EMULATOR_DIR)/build/$(CORE_CONFIG)
-EMULATOR = $(EMULATOR_BUILD_DIR)/$(MODULE)
-
-# Must provide rules for generating and compiling C++ emulator $(EMULATOR)
-include $(EMULATOR_DIR)/emulator.mk
-
-emulator: $(EMULATOR) 
 
 # -----------------------------------------------------------------------------
 # FPGA
@@ -121,32 +101,6 @@ include $(TESTS_DIR)/$(PROG_DIR)/test.mk
 prog: $(PROG:%=$(PROG_BUILD_DIR)/%.inst.mem) $(PROG:%=$(PROG_BUILD_DIR)/%.data.mem)
 
 # -----------------------------------------------------------------------------
-# Running programs on targets.
-# -----------------------------------------------------------------------------
-
-ifeq ($(TARGET),emulator)
-
-MAX_CYCLES ?= 20000000
-ifeq ($(DEBUG), true)
-else
-SIM_DEBUG = --vcdstart=$(MAX_CYCLES)
-endif
-
-$(PROG:%=$(PROG_RESULTS_DIR)/%.out): $(PROG_RESULTS_DIR)/%.out: $(PROG_BUILD_DIR)/%.inst.mem $(PROG_BUILD_DIR)/%.data.mem $(EMULATOR)
-	mkdir -p $(PROG_RESULTS_DIR)
-	./$(EMULATOR) --maxcycles=$(MAX_CYCLES) --ispm=$(PROG_BUILD_DIR)/$*.inst.mem --dspm=$(PROG_BUILD_DIR)/$*.data.mem --vcd=$(@:.out=.vcd) $(SIM_DEBUG) $(EMULATOR_OPTS) > $@ 2>&1
-	echo $@ $^
-
-# Possible targets are emulator and fpga.
-run: $(PROG:%=$(PROG_RESULTS_DIR)/%.out)
-	@echo; perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.*)\*{3}(.*)/' \
-	$^; echo;
-
-CLEAN_TARGET = $(EMULATOR_SRC_DIR) $(EMULATOR_BUILD_DIR) $(PROG_RESULTS_DIR) $(PROG_BUILD_DIR)
-
-endif
-
-# -----------------------------------------------------------------------------
 #  Cleanup
 # -----------------------------------------------------------------------------
 
@@ -156,10 +110,8 @@ clean:
 
 # Clean for all configurations and targets.
 cleanall:
-	rm -rf $(EMULATOR_DIR)/generated-src
-	rm -rf $(EMULATOR_DIR)/build
 	rm -rf $(FGPA_DIR)/generated-src
 	find $(TESTS_DIR) -type d -name "results" -exec rm -rf {} \; \
 		find $(TESTS_DIR) -type d -name "build" -exec rm -rf {} \;
 
-.PHONY: run emulator fpga prog clean cleanall
+.PHONY: run fpga prog clean cleanall
