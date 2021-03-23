@@ -9,6 +9,7 @@ For more information on the processor architecture:
 * Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Processor Platform for Mixed-Criticality Systems](http://chess.eecs.berkeley.edu/pubs/1048.html). Proceedings of the 20th IEEE Real-Time and Embedded Technology and Application Symposium (RTAS), April, 2014.
 
 # Quickstart
+
 To build a default configuration and generate Verilog, run:
 
 ```
@@ -32,15 +33,37 @@ Unit tests are found under `src/test/scala/core/`.
 
 # Simulation
 
-If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) and have `java` and `g++` installed.
+If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) (in particular, `riscv32-unknown-elf-*`), and have `verilator` installed.
+Note that a modern version of Verilator is required (e.g. Verilator 4.038+).
 
-TODO(edwardw): sim instructions
+To build the simulator, run:
 
-This will simulate the execution of the program directory `tests/isa` on FlexPRET configured with 4 hardware threads. The default configuration is set in `config.mk` and can be [changed](#flexpret-configuration). The makefile will (if needed) install [mill](http://www.lihaoyi.com/mill/), download Chisel, generate a C++ emulator for the FlexPRET processor, compile the C++ emulator, excute the C++ emulator on each program in the test suite, and finally display the results.
+```
+make emulator
+```
 
-See the [tests](#tests) section for information about running other programs.
+See the instructions printed after running the above, or read them in `emulator/emulator.mk` on how to use the simulator.
 
-`make clean` will remove files associated with current configuration and `make cleanall` will remove files associated with all configurations.
+To run a basic Fibonnaci example, run:
+
+```
+(cd programs && ./run-sim.sh)
+```
+
+To run a simulation manually:
+
+```
+cd programs
+
+# Compile the program
+./compile.sh fib fib.c
+
+# Generate hex file of the program for simulation
+../scripts/parse_disasm.py fib.dump.txt readmemh > imem.hex.txt
+
+# Run the simulation
+../emulator/flexpret-emulator
+```
 
 # Directory Structure
 - `src/main/scala/` Chisel and Verilog source files

@@ -8,3 +8,5 @@ mill
 firrtl.jar
 fpga/generated-src
 out/
+
+.DS_Store
