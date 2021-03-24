@@ -66,18 +66,16 @@ cd programs
 ```
 
 # Directory Structure
-- `src/main/scala/` Chisel and Verilog source files
+- `build/` Temporary folder used as part of the build
+- `fpga/` Generated Verilog code and scripts for FPGA deployment
+- `programs/` C and assembly programs and test suites
+  - `include/` Libraries and macros
+- `scripts/` Various scripts
+- `src/main/scala/` RTL source files
   - `Core/` FlexPRET processor (and baseline processors) in Chisel
   - `uart/` Verilog code for UART
 - `src/test/scala/` Unit tests
 - `test/` Unit testing scripts
-
-(Outdated)
-- `fpga/` Generated Verilog code and scripts for FPGA deployment
-- `scripts/` Various scripts
-- `tests/` C and assembly programs and test suites
-  - `include/` Libraries and macros
-
 
 # Makefile Configuration
 
