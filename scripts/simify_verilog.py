@@ -42,16 +42,31 @@ $dumpfile("{filename}");
 $dumpvars;
 end
 
-reg [31:0] io_host_to_host_prev;
+// Previous value of tohost (NOT the previous CYCLE's value)
+reg [31:0] prev_tohost = 32'h0;
+
+// Previous CYCLE's value; used for change detection.
+// P.S. Verilog sucks. Easier to do RegNext() in Chisel.
+reg [31:0] lastCycle_tohost = 32'h0;
 
 always @(posedge clock) begin
-  io_host_to_host_prev <= io_host_to_host;
+  lastCycle_tohost <= io_host_to_host;
+
+  // If the value changed this cycle, update prev_tohost
+  if (io_host_to_host != lastCycle_tohost) begin
+    prev_tohost <= io_host_to_host;
+    // Since the value changed, check the previous value and print
+    // if need be.
+    if (prev_tohost == 32'hbaaabaaa) begin
+      $display("tohost = %0d", io_host_to_host);
+      //$display("tohost_p = 0x%H", prev_tohost);
+    end
+  end else begin
+    prev_tohost <= prev_tohost;
+  end
+
   if (io_host_to_host == 32'hdeaddead) begin
     $finish;
-  end
-  if (io_host_to_host_prev == 32'hbaaabaaa) begin
-    $display("tohost = %0d", io_host_to_host);
-    //$display("tohost_p = 0x%H", io_host_to_host_prev);
   end
 end
 """
