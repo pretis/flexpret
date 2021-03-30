@@ -11,6 +11,12 @@ set -euo pipefail
 # Run the simulation
 ../emulator/flexpret-emulator | tee tmp-output.txt
 
+# Check that exactly two things are printed
+if [ "$(grep tohost tmp-output.txt | wc -l)" -ne 2 ]; then
+  echo "Found different # of prints than expected!"
+  exit 1
+fi
+
 # Check that the output is correct
 if grep -q "tohost = 987" "tmp-output.txt"; then
   echo "fib(16) OK!"
