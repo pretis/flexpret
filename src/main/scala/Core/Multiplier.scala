@@ -13,7 +13,7 @@ import chisel3.util._
 
 import Core.FlexpretConstants._
 
-class Multiplier(implicit conf: FlexpretConfiguration) extends Module {
+class Multiplier extends Module {
   val io = IO(new Bundle {
     val op1    = Input(UInt(32.W))
     val op2    = Input(UInt(32.W))
