@@ -16,10 +16,9 @@ import chiseltest.experimental.TestOptionBuilder._
 import Core.FlexpretConstants._
 
 import flexpret.core.Core
-//import flexpret.core.Datapath
+import flexpret.core.Datapath
 import flexpret.core.FlexpretConfiguration
 import flexpret.core.InstMemConfiguration
-import Core.Datapath
 import flexpret.core.InstMemCoreIO
 
 class SimpleCoreTest extends FlatSpec with ChiselScalatestTester {

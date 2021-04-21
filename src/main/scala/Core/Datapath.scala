@@ -1,25 +1,18 @@
 /******************************************************************************
- * File: datapath.scala
+ * File: Datapath.scala
  * Description: Datapath
  * Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
- * Contributors: Edward Wang (edwardw@eecs.berkeley.edu)
+ * Author: Edward Wang (edwardw@eecs.berkeley.edu)
  * License: See LICENSE.txt
  * ******************************************************************************/
-package Core
-// TODO: remove this
-import flexpret.core.BusIO
-import flexpret.core.CSR
-import flexpret.core.ControlDatapathIO
-import flexpret.core.DataMemCoreIO
-import flexpret.core.InstMemCoreIO
-import flexpret.core.FlexpretConfiguration
-import flexpret.core.GPIO
-import flexpret.core.HostIO
-import flexpret.core.RegisterFile
+package flexpret.core
 
 import chisel3._
 import chisel3.util._
-import FlexpretConstants._
+
+import Core.Causes
+import Core.FlexpretConstants._
+import Core.LoadStore
 
 class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
@@ -179,7 +172,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   if (conf.causes.contains(Causes.fault_fetch)) {
     // PC should be in memory space of I-SPM
     //spike: rm
-    io.control.if_exc_fault := if_reg_pc(31, conf.iMemAddrBits + 2) != Cat(ADDR_ISPM_VAL, 0.U((30 - ADDR_ISPM_BITS - conf.iMemAddrBits).W))
+    io.control.if_exc_fault := if_reg_pc(31, conf.iMemAddrBits + 2) =/= Cat(ADDR_ISPM_VAL, 0.U((30 - ADDR_ISPM_BITS - conf.iMemAddrBits).W))
   } else {
     io.control.if_exc_fault := false.B
   }
