@@ -68,7 +68,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val exe_reg_csr_addr = Reg(UInt())
   val exe_reg_csr_data = Reg(UInt())
 
-  val exe_alu_result = Wire(UInt())
+  val exe_alu_result = Wire(UInt(32.W))
   io.debugIO.map { b => b.exe_alu_result := exe_alu_result }
   val exe_address = Wire(UInt())
   val exe_rd_data = Wire(UInt())
@@ -263,20 +263,12 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // Execute Stage
 
   // ALU
-  val exe_alu_shift = exe_reg_op2(4, 0)
-  val def_exe_alu_result = exe_reg_op1 + exe_reg_op2
-  exe_alu_result := MuxLookup(io.control.exe_alu_type, def_exe_alu_result, Array(
-    ALU_ADD -> (exe_reg_op1 + exe_reg_op2),
-    ALU_SLL -> (exe_reg_op1 << exe_alu_shift) (32 - 1, 0),
-    ALU_XOR -> (exe_reg_op1 ^ exe_reg_op2),
-    ALU_SRL -> (exe_reg_op1 >> exe_alu_shift),
-    ALU_OR -> (exe_reg_op1 | exe_reg_op2),
-    ALU_AND -> (exe_reg_op1 & exe_reg_op2),
-    ALU_SUB -> (exe_reg_op1 - exe_reg_op2),
-    ALU_SLT -> (exe_reg_op1.asSInt < exe_reg_op2.asSInt).asUInt,
-    ALU_SLTU -> (exe_reg_op1 < exe_reg_op2),
-    ALU_SRA -> (exe_reg_op1.asSInt >> exe_alu_shift).asUInt
-  ))
+  val alu = Module(new ALU)
+  alu.io.op1 := exe_reg_op1
+  alu.io.op2 := exe_reg_op2
+  alu.io.shift := exe_reg_op2(4, 0)
+  alu.io.func := io.control.exe_alu_type
+  exe_alu_result := alu.io.result
   // ALU is used to calculate address for L*, S*, J*, B*
   exe_address := exe_alu_result
 

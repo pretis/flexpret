@@ -11,6 +11,8 @@ package flexpret.core
 import chisel3._
 import chisel3.util.BitPat
 
+import ALUBitPats._
+
 // Remove this eventually
 import Core.Causes
 import Core.DecodeLogic
@@ -27,7 +29,7 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
   val dec_imm_sel     = Output(UInt(IMM_WI.W))
   val dec_op1_sel     = Output(UInt(OP1_WI.W))
   val dec_op2_sel     = Output(UInt(OP2_WI.W))
-  val exe_alu_type    = Output(UInt(ALU_WI.W))
+  val exe_alu_type    = Output(ALUTypes())
   val exe_br_type     = Output(UInt(BR_WI.W))
   val exe_csr_type    = Output(UInt(CSR_WI.W))
   val exe_mul_type    = Output(UInt(MUL_WI.W))
@@ -123,19 +125,19 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     SH     -> List(Y, IMM_S, OP1_RS1, OP2_IMM, ALU_ADD,  BR_X,   CSR_X,   MUL_X,   EXE_RD_X,   MEM_SH,  MEM_RD_X  , N, N, N, N, N, Y, N, N, N, N, N, N),
     SW     -> List(Y, IMM_S, OP1_RS1, OP2_IMM, ALU_ADD,  BR_X,   CSR_X,   MUL_X,   EXE_RD_X,   MEM_SW,  MEM_RD_X  , N, N, N, N, N, Y, N, N, N, N, N, N),
     ADDI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_ADD,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
-    SLTI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_SLT,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
-    SLTIU  -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_SLTU, BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
+    SLTI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_LTS,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
+    SLTIU  -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_LTU,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     XORI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_XOR,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     ORI    -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_OR,   BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     ANDI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_AND,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
-    SLLI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_SLL,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
+    SLLI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_SL,   BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     SRLI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_SRL,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     SRAI   -> List(Y, IMM_I, OP1_RS1, OP2_IMM, ALU_SRA,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     ADD    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_ADD,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     SUB    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SUB,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
-    SLL    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SLL,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
-    SLT    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SLT,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
-    SLTU   -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SLTU, BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
+    SLL    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SL,   BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
+    SLT    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_LTS,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
+    SLTU   -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_LTU,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     XOR    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_XOR,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     SRL    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SRL,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
     SRA    -> List(Y, IMM_X, OP1_RS1, OP2_RS2, ALU_SRA,  BR_X,   CSR_X,   MUL_X,   EXE_RD_ALU, MEM_X,   MEM_RD_REG, Y, N, N, N, N, N, N, N, N, N, N, N),
@@ -181,7 +183,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
 
   // decoded information
 
-  val dec_legal :: dec_imm_sel :: dec_op1_sel :: dec_op2_sel :: dec_alu_type :: dec_br_type :: dec_csr_type :: dec_mul_type :: dec_exe_rd_data_sel :: dec_mem_type :: dec_mem_rd_data_sel :: Nil = decoded_inst.slice(0,11)
+  val dec_legal :: dec_imm_sel :: dec_op1_sel :: dec_op2_sel :: ALUTypes(dec_alu_type) :: dec_br_type :: dec_csr_type :: dec_mul_type :: dec_exe_rd_data_sel :: dec_mem_type :: dec_mem_rd_data_sel :: Nil = decoded_inst.slice(0,11)
   val dec_rd_en :: dec_branch :: dec_jump :: dec_csr :: dec_load :: dec_store :: dec_fence :: dec_fence_i :: dec_scall :: dec_sret :: dec_du :: dec_ie :: Nil = decoded_inst.slice(11,23)
 
   // ************************************************************

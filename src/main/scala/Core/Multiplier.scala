@@ -2,7 +2,7 @@
 File: Multiplier.scala:
 Description:  Multi-stage multiplier.
 Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
-Author: Author: Edward Wang (edwardw@eecs.berkeley.edu)
+Author: Edward Wang (edwardw@eecs.berkeley.edu)
 Contributors:
 License: See LICENSE.txt
 ******************************************************************************/
