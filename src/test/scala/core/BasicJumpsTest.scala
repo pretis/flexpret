@@ -16,7 +16,6 @@ import chiseltest.experimental.TestOptionBuilder._
 import Core.FlexpretConstants._
 
 import flexpret.core._
-import Core.Datapath
 
 class BasicJumpsTest extends FlatSpec with ChiselScalatestTester {
   behavior of "Basic jumps"

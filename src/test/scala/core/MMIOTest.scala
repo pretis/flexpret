@@ -39,7 +39,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "prohibit duplicate keys" in {
-    intercept[ChiselException] {
+    intercept[java.lang.IllegalArgumentException] {
       ChiselStage.elaborate { new MMIOCore(Seq(
         ("dup", 2, 0, MMIOInput),
         ("dup", 2, 1, MMIOOutput)
@@ -48,7 +48,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "prohibit duplicate offsets" in {
-    intercept[ChiselException] {
+    intercept[java.lang.IllegalArgumentException] {
       ChiselStage.elaborate { new MMIOCore(Seq(
         ("a", 4, 0, MMIOInput),
         ("b", 8, 0, MMIOOutput)

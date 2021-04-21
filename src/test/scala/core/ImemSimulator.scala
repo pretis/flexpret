@@ -16,7 +16,6 @@ import chiseltest.experimental.TestOptionBuilder._
 import Core.FlexpretConstants._
 
 import flexpret.core._
-import Core.Datapath
 
 /**
  * Simulate an instruction memory module on a InstMemCoreIO.
