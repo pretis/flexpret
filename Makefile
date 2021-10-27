@@ -112,8 +112,11 @@ clean:
 
 # Clean for all configurations and targets.
 cleanall:
-	rm -rf $(FPGA_DIR)/generated-src
-	rm -rf $(FPGA_DIR)/build
-	rm $(EMULATOR_BIN)
+	rm -rf $(FPGA_DIR)/generated-src; \
+	rm -rf $(FPGA_DIR)/build; \
+	rm $(EMULATOR_BIN); \
+	rm -rf ./build; \
+	rm -rf emulator/obj_dir; \
+	rm emulator/Core.sim.v
 
 .PHONY: run fpga emulator firrtl_raw verilog_raw clean cleanall
