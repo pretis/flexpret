@@ -61,7 +61,6 @@ class RegisterFile(val threads: Int, val readPorts: Int = 2, val writePorts: Int
       0.U
     )
 
-    // FIXME: Shaokai: Looks suspicious.
     // Account for read-under-write.
     // If there was read-under-write, use the write port's value.
     // We also need to register the data and addresses since we are returning
