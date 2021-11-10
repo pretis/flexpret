@@ -26,6 +26,7 @@ MODULE = Core
 FPGA_DIR = fpga
 
 EMULATOR_DIR = emulator
+SCRIPTS_DIR = scripts
 
 # Mill build tool for compiling and running the Chisel generator.
 MILL_VERSION = 0.6.0
@@ -101,6 +102,10 @@ include $(EMULATOR_DIR)/emulator.mk
 
 # Alias
 emulator: $(EMULATOR_BIN)
+
+# -----------------------------------------------------------------------------
+#  RISCV tests
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 #  Cleanup
