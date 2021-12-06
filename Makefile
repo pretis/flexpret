@@ -112,7 +112,13 @@ emulator: $(EMULATOR_BIN)
 # -----------------------------------------------------------------------------
 
 clean:
-	rm -rf $(CLEAN_TARGET)
+	rm -rf $(FPGA_DIR)/generated-src
+	rm -rf $(FPGA_DIR)/build
+	rm -f $(EMULATOR_BIN)
+	rm -rf ./build
+	rm -rf emulator/obj_dir
+	rm -f emulator/Core.sim.v
+	rm -rf out
 	
 
 # Clean for all configurations and targets.
@@ -123,5 +129,8 @@ cleanall:
 	rm -rf ./build
 	rm -rf emulator/obj_dir
 	rm -f emulator/Core.sim.v
+	rm -f fpga/firrtl.jar
+	rm -f mill
+	rm -rf out
 
 .PHONY: run fpga emulator firrtl_raw verilog_raw clean cleanall
