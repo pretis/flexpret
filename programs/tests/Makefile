@@ -16,13 +16,16 @@ $(info $$sim_dir value -- ${sim_dir})
 
 # Test dir
 tests_dir = $(base_dir)/programs/tests
-riscv_tests_dir = $(tests_dir)/riscv
-c_tests_dir = $(tests_dir)/c
+riscv_tests_dir = $(tests_dir)/riscv-tests
+c_tests_dir = $(tests_dir)/c-tests
 $(info $$tests_dir value -- ${tests_dir})
 
 # Test output dir
 output_dir = $(sim_dir)/output
 $(info $$output_dir value -- ${output_dir})
+
+# FlexPRET scripts dir
+scripts_dir = $(base_dir)/scripts
 
 # check RISCV environment variable
 ifndef RISCV
@@ -42,24 +45,36 @@ flexpret-emulator:
 # Compile the tests and benchmarks 
 #--------------------------------------------------------------------
 
-riscv-benchmarks:
-#	cd $(riscv_tests_dir) && $(MAKE) benchmarks
-
-riscv-isa:
-#	cd $(riscv_tests_dir) && $(MAKE) isa
-
-riscv-tests: riscv-benchmarks riscv-isa
+riscv-tests:
+	cd $(riscv_tests_dir) \
+	&& git submodule update --init --recursive \
+	&& autoconf \
+	&& ./configure --prefix=${RISCV}/target \
+	&& make
 
 c-tests:
 	# Call the compile script.
+	# FIXME: Compile all the source code in the subdirectories.
+	# Reference Rocket chip for implementation
+	$(scripts_dir)/c/riscv_build.sh $(c_tests_dir)/bin/fib $(c_tests_dir)/fib/fib.c
+	
 
 #--------------------------------------------------------------------
 # Run assembly tests and benchmarks
 #--------------------------------------------------------------------
 
+# FIXME
+$(output_dir)/riscv-tests/%.out:
+$(output_dir)/c-tests/%.out:
+
+
 all: flexpret-emulator
-	@echo "hello"
+	@echo "Building everything"
 
 clean:
+	cd $(riscv_tests_dir) && $(MAKE) clean
+
+clean-all:
 	cd $(base_dir) && $(MAKE) clean
 
+.PHONY: riscv-tests
