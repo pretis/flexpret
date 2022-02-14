@@ -80,8 +80,8 @@ end
     return contents.replace(orig_str, f"{orig_str} {vcd_blob}")
 
 def main(args: List[str]) -> int:
-    if len(args) < 4:
-        print(f"Usage: {args[0]} Core.v <hex file> <vcd file>", file=sys.stderr)
+    if len(args) < 2:
+        print(f"Usage: {args[0]} Core.v", file=sys.stderr)
         return 1
 
     with open(args[1], 'r') as f:
