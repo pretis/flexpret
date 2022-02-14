@@ -6,7 +6,7 @@ HDL_SCRIPTS = $(SCRIPTS_DIR)/hdl
 
 $(EMULATOR_BIN): $(VERILOG_RAW) $(EMULATOR_DIR)/main.cpp $(HDL_SCRIPTS)/simify_verilog.py
 	# Inject the right simulation constructs
-	$(HDL_SCRIPTS)/simify_verilog.py $(VERILOG_RAW) imem.hex.txt Core.vcd > $(EMULATOR_DIR)/Core.sim.v
+	$(HDL_SCRIPTS)/simify_verilog.py $(VERILOG_RAW) > $(EMULATOR_DIR)/Core.sim.v
 
 	(cd $(EMULATOR_DIR) && verilator --cc Core.sim.v --exe --trace --build main.cpp)
 
