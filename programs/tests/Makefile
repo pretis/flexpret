@@ -11,8 +11,9 @@ $(info $$generated_dir value -- ${generated_dir})
 # generated_dir_debug = $(abspath ./generated-src-debug)
 
 # Verilator C++ emulator
-sim_dir = $(base_dir)/emulator
-$(info $$sim_dir value -- ${sim_dir})
+emu = flexpret-emulator
+emu_dir = $(base_dir)/emulator
+$(info $$emu_dir value -- ${emu_dir})
 
 # Test dir
 tests_dir = $(base_dir)/programs/tests
@@ -20,11 +21,7 @@ riscv_tests_dir = $(tests_dir)/riscv-tests
 c_tests_dir = $(tests_dir)/c-tests
 $(info $$tests_dir value -- ${tests_dir})
 
-# Test output dir
-output_dir = $(sim_dir)/output
-$(info $$output_dir value -- ${output_dir})
-
-# FlexPRET scripts dir
+# Scripts dir
 scripts_dir = $(base_dir)/scripts
 
 # check RISCV environment variable
@@ -37,14 +34,16 @@ endif
 # Build emulator
 #--------------------------------------------------------------------
 
-flexpret-emulator:
+$(emu):
 	cd $(base_dir) && $(MAKE) emulator
 
 
 #--------------------------------------------------------------------
-# Compile the tests and benchmarks 
+# Run assembly tests and benchmarks
 #--------------------------------------------------------------------
 
+
+# FIXME: To remove and replaced by a hex target. 
 riscv-tests:
 	cd $(riscv_tests_dir) \
 	&& git submodule update --init --recursive \
@@ -52,23 +51,42 @@ riscv-tests:
 	&& ./configure --prefix=${RISCV}/target \
 	&& make
 
+# FIXME: To remove and replaced by a hex target. 
 c-tests:
 	# Call the compile script.
 	# FIXME: Compile all the source code in the subdirectories.
 	# Reference Rocket chip for implementation
 	$(scripts_dir)/c/riscv_build.sh $(c_tests_dir)/bin/fib $(c_tests_dir)/fib/fib.c
+
+basic-c-tests = \
+	fib \
+	fib2
+
+$(addprefix $(c_tests_dir)/, $(addsuffix .hex, $(basic-c-tests))): $(c_tests_dir)/%.hex
+	@echo "Hii: $< $@ $(addsuffix .hex, $(basic-c-tests))"
+	# FIXME: How to get individual c test name?
+	$(scripts_dir)/c/riscv_build.sh $(c_tests_dir)/$(basic-c-tests) $(c_tests_dir)/fib/fib.c
 	
+# FIXME: to complete running RISCV tests.
+# $(output_dir)/riscv-tests/%.out: $(output_dir)/% $(emu)
+#	./$(emu) +max-cycles=$(timeout_cycles) $< 2> /dev/null 2> $@ && [ $$PIPESTATUS -eq 0 ]
+
+# FIXME: .out contains the printf via the tohost csr,
+# instead of the cycle-by-cycle info, which is implemented in Rocketchip.
+$(c_tests_dir)/%.out: $(c_tests_dir)/%.hex $(emu_dir)/$(emu)
+	@echo "Running $<"
+	$(emu_dir)/$(emu) $< 2> /dev/null 2> $@
+
+run-c-tests: $(addprefix $(c_tests_dir)/, $(addsuffix .out, $(basic-c-tests)))
+	@echo "Hi: $^"
+
+
 
 #--------------------------------------------------------------------
-# Run assembly tests and benchmarks
+# General 
 #--------------------------------------------------------------------
 
-# FIXME
-$(output_dir)/riscv-tests/%.out:
-$(output_dir)/c-tests/%.out:
-
-
-all: flexpret-emulator
+all: $(emu)
 	@echo "Building everything"
 
 clean:
@@ -77,4 +95,4 @@ clean:
 clean-all:
 	cd $(base_dir) && $(MAKE) clean
 
-.PHONY: riscv-tests
+.PHONY: run-c-tests
