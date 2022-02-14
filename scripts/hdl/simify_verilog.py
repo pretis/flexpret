@@ -12,7 +12,7 @@ import re
 import sys
 from typing import List
 
-def add_ispm(contents: str, filename: str) -> str:
+def add_ispm(contents: str) -> str:
     """
     Add the given hex filename as a loadmemh to the ispm.
     initial $readmemh("instr_mem.hex.txt", ispm);
@@ -21,11 +21,17 @@ def add_ispm(contents: str, filename: str) -> str:
     assert m is not None
 
     orig_str = m.group()
-    new_str = f"{orig_str} initial $readmemh(\"{filename}\", ispm);"
+    new_str = f"""
+initial begin
+  $value$plusargs("ispm=%s", hex_file_name);
+  $readmemh(hex_file_name, ispm);
+end
+{orig_str} 
+    """
 
     return contents.replace(orig_str, new_str)
 
-def add_vcd(contents: str, filename: str) -> str:
+def add_vcd(contents: str) -> str:
     """
     Add the given filename as a VCD target dump.
     Also adds some magic values to:
@@ -36,9 +42,9 @@ def add_vcd(contents: str, filename: str) -> str:
     assert m is not None
 
     orig_str = m.group()
-    vcd_blob = f"""
+    vcd_blob = """
 initial begin
-$dumpfile("{filename}");
+$dumpfile({hex_file_name, ".vcd"});
 $dumpvars;
 end
 
@@ -81,8 +87,9 @@ def main(args: List[str]) -> int:
     with open(args[1], 'r') as f:
         contents = str(f.read())
 
-    contents = add_ispm(contents, args[2])
-    contents = add_vcd(contents, args[3])
+    contents = "string hex_file_name;\n" + contents
+    contents = add_ispm(contents)
+    contents = add_vcd(contents)
 
     print(contents)
 
