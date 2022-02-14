@@ -62,6 +62,8 @@ basic-c-tests = \
 	fib \
 	fib2
 
+# Compile the test and produce .riscv and .riscv.hex.
+# (Urgent) FIXME: not sure how to pass the correct binary name into the build script. Might need a few more rules.
 $(addprefix $(c_tests_dir)/, $(addsuffix .hex, $(basic-c-tests))): $(c_tests_dir)/%.hex
 	@echo "Hii: $< $@ $(addsuffix .hex, $(basic-c-tests))"
 	# FIXME: How to get individual c test name?
