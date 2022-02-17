@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm *.vcd *txt
+rm -f *.vcd *.txt
 ls | grep -v "\." | xargs rm
