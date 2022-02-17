@@ -25,10 +25,10 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   def registerFile = new RegisterFile(threads=threads)
 
   /* Write something to the register file */
-  def write(c: Module, w: RegisterFileWriteIO, thread: Int, addr: Int, data: UInt): Unit = {
+  def write(c: Module, w: RegisterFileWriteIO, enable: Bool, thread: Int, addr: Int, data: UInt): Unit = {
     require(addr < 32)
     timescope {
-      w.enable.poke(true.B)
+      w.enable.poke(enable)
       w.thread.poke(thread.U)
       w.addr.poke(addr.U)
       w.data.poke(data)
@@ -49,7 +49,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
 
   /* Write the given register data */
   def writeData(c: RegisterFile, thread: Int, addrDatas: Map[Int, String]): Unit = {
-    addrDatas.foreach { case (k, v) => write(c, c.io.write(0), thread, k, v.U) }
+    addrDatas.foreach { case (k, v) => write(c, c.io.write(0), enable=true.B, thread, k, v.U) }
   }
 
   /* Test a thread */
@@ -67,7 +67,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       val thread = 0
       val addr = 31
       val data = "hf00df00d".U
-      write(c, c.io.write(0), thread, addr, data)
+      write(c, c.io.write(0), enable=true.B, thread, addr, data)
 
       timescope {
         // The values we are going to check
@@ -154,16 +154,32 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "read and write in the same cycle" in {
+  it should "read and write in the same cycle when enabled" in {
     test(registerFile) { c =>
+      val enable = true.B
       val thread = 0
       val addr = 31
       val data = "hf00df00d".U
       fork {
-        write(c, c.io.write(0), thread, addr, data)
+        write(c, c.io.write(0), enable, thread, addr, data)
       } .fork {
         assert(read(c, c.io.read(0), thread, addr) == data.litValue)
         assert(read(c, c.io.read(1), thread, addr) == data.litValue)
+      } .join
+    }
+  }
+
+  it should "not read and write in the same cycle when disabled" in {
+    test(registerFile) { c =>
+      val enable = false.B
+      val thread = 0
+      val addr = 31
+      val data = "hf00df00d".U
+      fork {
+        write(c, c.io.write(0), enable, thread, addr, data)
+      } .fork {
+        assert(read(c, c.io.read(0), thread, addr) != data.litValue)
+        assert(read(c, c.io.read(1), thread, addr) != data.litValue)
       } .join
     }
   }
@@ -174,9 +190,9 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
       val data0 = "hf00df00d".U
       val data1 = "hf00df11d".U
       val data2 = "hf00df22d".U
-      write(c, c.io.write(0), thread=0, addr=addr, data0)
-      write(c, c.io.write(0), thread=1, addr=addr, data1)
-      write(c, c.io.write(0), thread=2, addr=addr, data2)
+      write(c, c.io.write(0), enable=true.B, thread=0, addr=addr, data0)
+      write(c, c.io.write(0), enable=true.B, thread=1, addr=addr, data1)
+      write(c, c.io.write(0), enable=true.B, thread=2, addr=addr, data2)
 
       // Smoke test reading
       assert(read(c, c.io.read(0), 0, addr) == data0.litValue)
@@ -191,7 +207,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
         assert(read3 != data2.litValue)
       }
       // Try writing to an invalid thread
-      write(c, c.io.write(0), thread=3, addr=addr, "haaaaaaaa".U)
+      write(c, c.io.write(0), enable=true.B, thread=3, addr=addr, "haaaaaaaa".U)
 
       // Check that valid threads aren't affected
       assert(read(c, c.io.read(0), 0, addr) == data0.litValue)
