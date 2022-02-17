@@ -108,7 +108,7 @@ all: $(emu)
 
 clean:
 	cd $(riscv_tests_dir) && $(MAKE) clean
-	cd $(c_tests_dir) && rm *.out *.dump.txt *.riscv *.hex *.vcd
+	cd $(c_tests_dir) && rm -f *.out *.dump.txt *.riscv *.hex *.vcd
 
 clean-all: clean
 	cd $(base_dir) && $(MAKE) clean
