@@ -94,7 +94,7 @@ $(addprefix $(c_tests_dir)/, $(addsuffix .hex, $(basic-c-tests))): $(c_tests_dir
 	
 # .out files contains the printf via the tohost csr,
 # instead of the cycle-by-cycle info, which is implemented in Rocketchip.
-$(c_tests_dir)/%.out: $(c_tests_dir)/%.hex $(emu_dir)/$(emu)
+$(addprefix $(c_tests_dir)/, $(addsuffix .out, $(basic-c-tests))): $(c_tests_dir)/%.out: $(c_tests_dir)/%.hex $(emu_dir)/$(emu)
 	@echo "Running $<"
 	$(emu_dir)/$(emu) +ispm=$< > $@ 2>&1
 
