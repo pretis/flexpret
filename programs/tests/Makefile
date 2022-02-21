@@ -50,7 +50,7 @@ objs  :=
 # Build emulator
 #--------------------------------------------------------------------
 
-$(emu):
+$(base_dir)/emulator/$(emu):
 	cd $(base_dir) && $(MAKE) emulator
 
 
