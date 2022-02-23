@@ -10,9 +10,8 @@ set -euo pipefail
 SCRIPT_DIR=$(dirname "$0")
 LIB_DIR=$SCRIPT_DIR/../../programs/lib
 LINKER_SCRIPT=$SCRIPT_DIR/../../programs/lib/linker-scripts/flexpret.ld
+# CC=riscv64-unknown-elf-gcc
+CC=riscv-none-embed-gcc
 
-BIN="$1"
-shift
-
-riscv64-unknown-elf-gcc -I$LIB_DIR/include -T $LINKER_SCRIPT -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles -Wl,-Ttext=0x00000000 -o $BIN $LIB_DIR/start.S $@
-riscv64-unknown-elf-objdump -S -d $BIN > $BIN.dump.txt
+$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles -o $1 $LIB_DIR/start.S "${@:2}"
+riscv64-unknown-elf-objdump -S -d $1 > $1.dump.txt

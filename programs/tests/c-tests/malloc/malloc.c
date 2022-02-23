@@ -1,31 +1,26 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <flexpret_io.h>
-
-void *
-_sbrk (incr)
-     int incr;
-{
-   extern char   end; /* Set by linker.  */
-   static char * heap_end;
-   char *        prev_heap_end;
-
-   if (heap_end == 0)
-     heap_end = & end;
-
-   prev_heap_end = heap_end;
-   heap_end += incr;
-
-   return (void *) prev_heap_end;
-}
+#include "tinyalloc.h"
 
 int main() {
-    _fp_print(1111);
-    uint32_t* p = malloc(sizeof(uint32_t));
-    *p = 100;
-    _fp_print(1112);
-    _fp_print(*p);
-    free(p);
+    extern char end; // Set by linker.
+
+    // Allocate 128 bits (16 bytes) for the heap.
+    ta_init(&end, &end+128, 3, 16, 4);
+
+    uint32_t* a = ta_alloc(sizeof(uint32_t));
+    uint32_t* b = ta_alloc(sizeof(uint32_t));
+    uint32_t* c = ta_alloc(sizeof(uint32_t));
+    *a = 100;
+    *b = 200;
+    *c = *a + *b;
+
+    _fp_print(*c);
+
+    ta_free(a);
+    ta_free(b);
+    ta_free(c);
 
     // Terminate the simulation
     _fp_finish();
