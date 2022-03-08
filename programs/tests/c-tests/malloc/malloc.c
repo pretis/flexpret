@@ -6,21 +6,33 @@
 int main() {
     extern char end; // Set by linker.
 
-    // Allocate 128 bits (16 bytes) for the heap.
-    ta_init(&end, &end+128, 3, 16, 4);
+    // Byte-addressable.
+    // Assign 19 4-byte words for the heap.
+    ta_init(&end,       // start of the heap space
+            &end+4*19,  // end of the heap space >= &end + 4 * (max heap block * alignment + 3)
+            4,          // maximum heap blocks: 4, since we call ta_alloc() 4 times. 
+            4,          // split_thresh: 4 bytes (Only used when reusing blocks.)
+            4);         // alignment: 4 bytes (FlexPRET is a 32-bit architecture.)
 
     uint32_t* a = ta_alloc(sizeof(uint32_t));
     uint32_t* b = ta_alloc(sizeof(uint32_t));
     uint32_t* c = ta_alloc(sizeof(uint32_t));
+    uint32_t* d = ta_alloc(sizeof(uint32_t));
+
     *a = 100;
     *b = 200;
-    *c = *a + *b;
+    *c = 300;
+    *d = *a + *b + *c;
 
+    _fp_print(*a);
+    _fp_print(*b);
     _fp_print(*c);
+    _fp_print(*d);
 
     ta_free(a);
     ta_free(b);
     ta_free(c);
+    ta_free(d);
 
     // Terminate the simulation
     _fp_finish();
