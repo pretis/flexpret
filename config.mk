@@ -6,7 +6,7 @@
 # THREADS=[1-8]: Specify number of hardware threads
 # FLEXPRET=[true/false]: Use flexible thread scheduling
 # ISPM_KBYTES=[]: Size of instruction scratchpad memory (32 bit words)
-# DSPM_KBYTES=[]: Size of instruction scratchpad memory (32 bit words)
+# DSPM_KBYTES=[]: Size of data scratchpad memory (32 bit words)
 # MUL=[true/false]: multiplier
 # SUFFIX=[min,ex,ti,all]:
 # 	min: base RV32I
@@ -16,8 +16,10 @@
 
 THREADS ?= 1
 FLEXPRET ?= false
-ISPM_KBYTES ?= 16
-DSPM_KBYTES ?= 16
+# ISPM_KBYTES ?= 16
+# DSPM_KBYTES ?= 16
+ISPM_KBYTES ?= 128
+DSPM_KBYTES ?= 128
 MUL ?= false
 SUFFIX ?= ti
 

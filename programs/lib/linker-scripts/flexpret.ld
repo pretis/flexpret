@@ -10,6 +10,7 @@ SECTIONS
 	}
 
 	__global_pointer$ = .;
+    text_end = .;
 
 	. = 0x20000000;
 	.data :
@@ -24,6 +25,7 @@ SECTIONS
 	.bss :
 	{
 		*(.bss*);
+		*(.sbss*);
 	}
 	end = .;
 	bss_size = end - bss_start;
