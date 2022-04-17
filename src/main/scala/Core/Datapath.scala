@@ -45,6 +45,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // instruction fetch stage
   val if_reg_tid = Reg(UInt())
   val if_reg_pc = if (conf.threads > 1) Reg(UInt()) else Wire(UInt()) // PC
+  printf(p"if_reg_pc = $if_reg_pc\n")
   val if_reg_pcs = RegInit(VecInit(Seq.fill(conf.threads)(ADDR_PC_INIT))) // PC for each thread
 
   val if_pc_plus4 = Wire(UInt())
@@ -54,6 +55,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val dec_reg_pc = Reg(UInt()) // alu op1, exception address
   val dec_reg_pc4 = Reg(UInt()) // rd for JAL*
   val dec_reg_inst = Reg(UInt(32.W)) // decoded by control unit
+  printf(p"dec_reg_inst = $dec_reg_inst\n\n\n\n\n")
 
   // execute stage
   val exe_reg_inst = RegNext(dec_reg_inst) // for debugging
