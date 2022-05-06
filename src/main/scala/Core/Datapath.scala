@@ -45,31 +45,21 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // instruction fetch stage
   val if_reg_tid = Reg(UInt())
   val if_reg_pc = if (conf.threads > 1) Reg(UInt()) else Wire(UInt()) // PC
-  //printf(p"if_reg_pc = $if_reg_pc\n")
   val if_reg_pcs = RegInit(VecInit(Seq.fill(conf.threads)(ADDR_PC_INIT))) // PC for each thread
-  //printf(p"if_reg_pcs = $if_reg_pc\n") // same result with PC
-
   val if_pc_plus4 = Wire(UInt())
 
   // decode stage
   val dec_reg_tid = Reg(UInt())
   val dec_reg_pc = Reg(UInt()) // alu op1, exception address
-  //printf(p"dec_reg_pc = $dec_reg_pc\n")
   val dec_reg_pc4 = Reg(UInt()) // rd for JAL*
   val dec_reg_inst = Reg(UInt(32.W)) // decoded by control unit
-  //printf(p"dec_reg_inst = $dec_reg_inst\n")
 
   // execute stage
   val exe_reg_inst = RegNext(dec_reg_inst) // for debugging
-  //printf(p"exe_reg_inst = $exe_reg_inst\n")
   val exe_reg_tid = Reg(UInt())
-  //printf(p"exe_reg_tid = $exe_reg_tid\n")
   val exe_reg_rd_addr = Reg(UInt())
-  //printf(p"exe_reg_rd_addr = $exe_reg_rd_addr\n")
   val exe_reg_op1 = Reg(UInt()) // either rs1, PC, or 0
-  //printf(p"exe_reg_op1 = $exe_reg_op1\n")
   val exe_reg_op2 = Reg(UInt()) // either rs2, immediate, 0, or 4
-  //printf(p"exe_reg_op2 = $exe_reg_op2\n\n\n\n\n")
   val exe_reg_rs1_data = Reg(Bits()) // branch check
   val exe_reg_rs2_data = Reg(Bits()) // branch check, store data
   val exe_reg_pc = Reg(UInt()) // exception address
@@ -77,9 +67,8 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val exe_reg_csr_addr = Reg(UInt())
   val exe_reg_csr_data = Reg(UInt())
 
-  //printf(p"[$exe_reg_tid] pc = [0x${Hexadecimal(exe_reg_pc)}] inst = [0x${Hexadecimal(exe_reg_inst)}] [0x${Hexadecimal(exe_reg_op1)}] [0x${Hexadecimal(exe_reg_op2)}]\n")
+  // cycle-by-cycle information (spike-dasm)
   printf(p"[$exe_reg_tid] pc = [0x${Hexadecimal(exe_reg_pc)}] inst = [0x${Hexadecimal(exe_reg_inst)}] DASM(0x${Hexadecimal(exe_reg_inst)})\n")
-  //printf("DASM(%x)\n",exe_reg_inst)
 
   val exe_alu_result = Wire(UInt(32.W))
   io.debugIO.map { b => b.exe_alu_result := exe_alu_result }
@@ -285,8 +274,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // ALU is used to calculate address for L*, S*, J*, B*
   exe_address := exe_alu_result
 
-  //printf(p"pc = [0x${Hexadecimal(exe_reg_pc)}] alu = [$alu.io.func]")
-  //printf(p"pc = [0x${Hexadecimal(exe_reg_pc)}] alu = [0x${Hexadecimal(exe_alu_result)}] \n")
   // Check branch condition.
   val exe_br_cond = Wire(Bool())
   val exe_lt = exe_reg_rs1_data.asSInt < exe_reg_rs2_data.asSInt
@@ -440,6 +427,5 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
 
   io.control.wb_tid := wb_reg_tid
   io.control.wb_rd_addr := wb_reg_rd_addr
-  //printf(p"[$wb_reg_tid] pc = [0x${Hexadecimal(exe_reg_pc)}] alu = [0x${Hexadecimal(exe_alu_result)}] \n")
 
 }
