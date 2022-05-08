@@ -4,7 +4,8 @@
 
 _start:
   // set stack pointer
-  li sp, 0x20001000
+  // li sp, 0x20001000	// Only works for 16KB w/o large data section.
+  li sp, 0x2001F200		// Adjust for 128KB DSPM (up to 0x2001F400).
 
   .option push
   .option norelax
