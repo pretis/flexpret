@@ -68,6 +68,9 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val exe_reg_csr_addr = Reg(UInt())
   val exe_reg_csr_data = Reg(UInt())
 
+  // cycle-by-cycle information (spike-dasm)
+  printf(p"[$exe_reg_tid] pc = [0x${Hexadecimal(exe_reg_pc)}] inst = [0x${Hexadecimal(exe_reg_inst)}] DASM(0x${Hexadecimal(exe_reg_inst)})\n")
+
   val exe_alu_result = Wire(UInt(32.W))
   io.debugIO.map { b => b.exe_alu_result := exe_alu_result }
   val exe_address = Wire(UInt())
