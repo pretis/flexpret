@@ -21,8 +21,6 @@ $(info $$emu_dir value -- ${emu_dir})
 tests_dir = $(base_dir)/programs/tests
 $(info $$tests_dir value -- ${tests_dir})
 riscv_tests_dir = $(tests_dir)/riscv-tests
-isa_riscv_tests_dir = $(riscv_tests_dir)/isa
-bmark_riscv_tests_dir = $(riscv_tests_dir)/benchmarks
 c_tests_dir = $(tests_dir)/c-tests
 
 # Scripts dir
@@ -58,7 +56,7 @@ $(base_dir)/emulator/$(emu):
 
 
 #--------------------------------------------------------------------
-# Run assembly tests and benchmarks
+# Run C tests
 #--------------------------------------------------------------------
 
 include $(tests_dir)/Makefrag-tests
