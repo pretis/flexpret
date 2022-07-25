@@ -1,0 +1,35 @@
+#--------------------------------------------------------------------
+# Basic C tests 
+#--------------------------------------------------------------------
+basic-c-tests = \
+	add \
+	fib \
+	malloc \
+	calloc
+
+# param1: test name
+# param2: parent directory
+define compile_template
+$(2)/$(1).riscv: $(wildcard $(2)/$(1)/*) $(wildcard $$(clib_dir)/*)
+	# Compile the program into .riscv.
+	$$(RISCV_GCC) $$(incs) $$(RISCV_GCC_OPTS) -o $$@ $$(clib_dir)/start.S $(wildcard $(2)/$(1)/*.c) $$(RISCV_LINK_OPTS)
+endef
+
+# Expand .riscv targets.
+$(foreach test,$(basic-c-tests),$(eval $(call compile_template,$(test),$(c_tests_dir))))
+
+# Create .dump.txt files.
+$(addprefix $(c_tests_dir)/, $(addsuffix .dump.txt, $(basic-c-tests))): $(c_tests_dir)/%.dump.txt: $(c_tests_dir)/%.riscv
+	$(RISCV_OBJDUMP) $< > $@
+
+# Generate .hex files
+$(addprefix $(c_tests_dir)/, $(addsuffix .hex, $(basic-c-tests))): $(c_tests_dir)/%.hex: $(c_tests_dir)/%.dump.txt 
+	$(scripts_dir)/c/parse_disasm.py $< readmemh > $@
+	
+# .out files contains the printf via the tohost csr,
+# instead of the cycle-by-cycle info, which is implemented in Rocketchip.
+$(addprefix $(c_tests_dir)/, $(addsuffix .out, $(basic-c-tests))): $(c_tests_dir)/%.out: $(c_tests_dir)/%.hex $(emu_dir)/$(emu)
+	@echo "Running $<"
+	$(emu_dir)/$(emu) +ispm=$< > $@ 2>&1
+
+run-c-tests: $(addprefix $(c_tests_dir)/, $(addsuffix .out, $(basic-c-tests)))

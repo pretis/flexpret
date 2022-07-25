@@ -28,5 +28,5 @@ steps:
   displayName: 'Unit tests'
 - script: ./test/basic_build.sh
   displayName: 'Basic build'
-- script: (export PATH="$HOME/riscv-embed-gcc/bin:$PATH" && ./test/basic_sim.sh)
-  displayName: 'Basic simulation'
+- script: (export PATH="$HOME/riscv-embed-gcc/bin:$PATH" && cd ./programs/tests/ && make XLEN=32 run-c-tests)
+  displayName: 'Run C tests'

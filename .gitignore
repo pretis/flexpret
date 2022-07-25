@@ -10,3 +10,11 @@ fpga/generated-src
 out/
 
 .DS_Store
+
+# Generated files
+**/*.hex
+**/*.out
+**/*.dump.txt
+**/*.vcd
+**/*.riscv
+**/*.map
