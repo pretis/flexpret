@@ -1,7 +1,7 @@
 # Helper fragment to help run flexpret with verilator.
 # Copyright 2021 Edward Wang <edwardw@eecs.berkeley.edu>
 
-EMULATOR_BIN = $(EMULATOR_DIR)/flexpret-emulator
+EMULATOR_BIN = $(EMULATOR_DIR)/fp-emu
 HDL_SCRIPTS = $(SCRIPTS_DIR)/hdl
 
 $(EMULATOR_BIN): $(VERILOG_RAW) $(EMULATOR_DIR)/main.cpp $(HDL_SCRIPTS)/simify_verilog.py
