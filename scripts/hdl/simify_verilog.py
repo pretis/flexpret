@@ -40,14 +40,10 @@ def add_cycle(contents: str) -> str:
 
     orig_str = m.group()
     new_str = f"""
-initial begin
-  $value$plusargs("cycle=%s", cycle);
-  // $display("+cycle = %s", cycle);
-end
 
 always @(posedge clock) begin
 
-  if (cycle == "true") begin
+  if (1'($test$plusargs("cycle"))) begin
     // the default tid is 0
     $display("[0] pc = [0x%h] inst = [0x%h] DASM(0x%h)", exe_reg_pc, dec_reg_inst, dec_reg_inst);
   end
