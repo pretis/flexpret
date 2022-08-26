@@ -17,15 +17,9 @@ uint32_t fib(uint32_t n) {
 }
 
 int main() {
-    // Print an equivalent of "hello world"
-    // FIXME: bug #25. For unknown reasons this causes the next print to
-    // fail.
-    //~ _fp_print(888168);
 
     const uint32_t x = fib(16);
     _fp_print(x);
-
-    _fp_print(888168);
 
     // Terminate the simulation.
     // Put a while loop to make sure no unwanted side effects.
