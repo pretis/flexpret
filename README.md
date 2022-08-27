@@ -56,7 +56,7 @@ cd programs/tests/c-tests/fib/
 ../../../../emulator/fp-emu +ispm=fib.hex
 ```
 
-We recommend adding `scripts/c/` and `emulator/` to PATH.
+We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv_build.sh` and `fp-emu` become directly accessible.
 
 # Directory Structure
 - `build/` Temporary folder used as part of the build
