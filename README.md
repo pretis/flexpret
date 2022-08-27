@@ -33,7 +33,7 @@ Unit tests are found under `src/test/scala/core/`.
 
 # Simulation
 
-If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler), and have `verilator` installed.
+If you would like to execute your own programs you will still need to [install the RISC-V compiler](#risc-v-compiler) (in particular, `riscv32-unknown-elf-*`), and have `verilator` installed.
 Note that a modern version of Verilator is required (e.g. Verilator 4.038+).
 
 To build the simulator, run:
@@ -95,6 +95,15 @@ Not all combinations are valid.
 ### Target Configuration
 - `TARGET=[emulator/fpga]` Select default target
 - `DEBUG=[true/false]` Generate waveform dump.
+
+### RISC-V Compiler
+We use the Newlib installation of the [RISC-V GCC compiler](https://github.com/riscv-collab/riscv-gnu-toolchain).
+
+To install the 32-bit version of the GCC compiler:
+1. Clone and `cd` into the `riscv-gnu-toolchain` repository;
+2. Install the necessary [prerequisites](https://github.com/riscv-collab/riscv-gnu-toolchain#prerequisites);
+3. Run `./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32` (assuming your preferred installation directory is `/opt/riscv`);
+4. Run `make`.
 
 ### Program Configuration
 - `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run. This is the test program that is executed when running command 'make run'. The default value 'isa' means that an assembler test suite is executed.
