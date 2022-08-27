@@ -97,9 +97,9 @@ Not all combinations are valid.
 - `DEBUG=[true/false]` Generate waveform dump.
 
 ### RISC-V Compiler
-We use the Newlib installation of the [RISC-V GCC compiler](https://github.com/riscv-collab/riscv-gnu-toolchain).
+We use the Newlib installation of the [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
 
-To install the 32-bit version of the GCC compiler:
+To install the 32-bit version of the GCC compiler (Newlib):
 1. Clone and `cd` into the `riscv-gnu-toolchain` repository;
 2. Install the necessary [prerequisites](https://github.com/riscv-collab/riscv-gnu-toolchain#prerequisites);
 3. Run `./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32` (assuming your preferred installation directory is `/opt/riscv`);
