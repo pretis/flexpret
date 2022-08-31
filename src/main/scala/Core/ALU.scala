@@ -61,7 +61,7 @@ class ALU extends Module {
   val io = IO(new Bundle {
     val op1    = Input(UInt(32.W))
     val op2    = Input(UInt(32.W))
-    val shift  = Input(UInt(4.W)) // used only for io.shifting operations
+    val shift  = Input(UInt(5.W)) // used only for io.shifting operations. SRLI requires 5 bits.
     val func   = Input(ALUTypes())
     val result = Output(UInt(32.W))
   })

@@ -1,4 +1,4 @@
-XLEN ?= 64
+XLEN ?= 32
 
 default: all
 
@@ -32,8 +32,7 @@ $(Error: Please set environment variable RISCV to the installation path of RISCV
 endif
 
 # Compilation
-# RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
-RISCV_PREFIX ?= riscv-none-embed-
+RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
 RISCV_GCC_OPTS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -specs=nosys.specs -nostartfiles -Wl,-Ttext=0x00000000
 RISCV_LINK ?= $(RISCV_GCC) -T $(src_dir)/common/test.ld $(incs)
@@ -63,7 +62,6 @@ include $(tests_dir)/Makefrag-tests
 #--------------------------------------------------------------------
 
 all: $(base_dir)/emulator/$(emu) run-c-tests
-
 
 clean:
 	cd $(c_tests_dir) && rm -f *.out *.dump.txt *.riscv *.hex *.vcd *.map

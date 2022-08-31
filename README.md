@@ -44,33 +44,30 @@ make emulator
 
 See the instructions printed after running the above, or read them in `emulator/emulator.mk` on how to use the simulator.
 
-To run a basic Fibonnaci example, run:
+To run a basic Fibonnaci example in simulation, run:
 
 ```
-(cd programs && ./run-sim.sh)
-```
-
-To run a simulation manually:
-
-```
-cd programs
+cd programs/tests/c-tests/fib/
 
 # Compile the program
-./compile.sh fib fib.c
-
-# Generate hex file of the program for simulation
-../scripts/parse_disasm.py fib.dump.txt readmemh > imem.hex.txt
+../../../../scripts/c/riscv_build.sh fib fib.c
 
 # Run the simulation
-../emulator/flexpret-emulator
+../../../../emulator/fp-emu +ispm=fib.hex
 ```
+
+We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv_build.sh` and `fp-emu` become directly accessible.
 
 # Directory Structure
 - `build/` Temporary folder used as part of the build
 - `fpga/` Generated Verilog code and scripts for FPGA deployment
 - `programs/` C and assembly programs and test suites
-  - `include/` Libraries and macros
+  - `lib/` Libraries, linker scripts, and startup scripts
+  - `tests/` C test cases
 - `scripts/` Various scripts
+  - `c/` Scripts for compiling C programs
+  - `hdl/` Scripts for processing HDL programs
+  - `fpga/` Scripts for configuring programs on an FPGA
 - `src/main/scala/` RTL source files
   - `Core/` FlexPRET processor (and baseline processors) in Chisel
   - `uart/` Verilog code for UART
@@ -79,13 +76,9 @@ cd programs
 
 # Makefile Configuration
 
-**Out of date**
-
 Change configuration in `config.mk` or by providing argument to make:
 
 ### FlexPRET Configuration
-
-**Out of date**
 
 - `THREADS=[1-8]` Specify number of hardware threads
 - `FLEXPRET=[true/false]` Use flexible thread scheduling
@@ -103,43 +96,25 @@ Not all combinations are valid.
 - `TARGET=[emulator/fpga]` Select default target
 - `DEBUG=[true/false]` Generate waveform dump.
 
+### RISC-V Compiler
+We use the Newlib installation of the [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+
+To install the 32-bit version of the GCC compiler (Newlib):
+1. Clone and `cd` into the `riscv-gnu-toolchain` repository;
+2. Install the necessary [prerequisites](https://github.com/riscv-collab/riscv-gnu-toolchain#prerequisites);
+3. Run `./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32` (assuming your preferred installation directory is `/opt/riscv`);
+4. Run `make`.
+
 ### Program Configuration
 - `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run. This is the test program that is executed when running command 'make run'. The default value 'isa' means that an assembler test suite is executed.
 - `PROG_CONFIG=[]` Program configuration, start with target name
 
 ### Regression Test
-To run a regression test for many processor configurations
+To run a C regression test for the current processor configurations
 ```
-./run-tests.py
+cd programs/tests/
+make run-c-tests
 ```
-
-# RISC-V Programs
-
-**Out of date**
-
-`PROG_DIR` needs to be modified to execute different programs on the emulator (e.g. `PROG_DIR=simple-mc`)
-
-`tests/simple-mc`: A simple mixed-criticality example with 4 periodic tasks to demonstrate differences between hard real-time threads (HRTTs) and soft real-time threads (SRTTs) ([More info](tests/simple-mc/README.md))  
-`tests/complex-mc`: A complex mixed-criticality example with 21 periodic tasks on 8 hardware threads to demonstrate a methodology for task mapping and thread scheduling ([More info](tests/complex-mc/README.md))  
-`tests/dev/*`: Programs that are out-of-date, unsupported, or under development  
-
-# RISC-V Compiler
-
-**Out of date**
-
-We use the RISC-V GCC compiler, see [riscv.org](http://riscv.org/) for more information.
-
-RISC-V toolchain version this branch is developed against:
-https://github.com/riscv/riscv-gnu-toolchain/commit/9a8a0aa98571c97291702e2e283fc1056f3ce2e2
-
-A docker image with the compiler version installed can be created by using or modifying `docker/Dockerfile`.
-
-# Program Compilation
-
-To compile new programs, create a directory in `tests/` and a `test.mk` file within that directory. Within `test.mk`, define `PROG` with the names of the source C (also do `define C=1`) or assembly files, then add `$(DEFAULT_RULES)` at the botton. This will generate default compilation rules for the source files (located in `tests/tests.mk`).
-
-To use timing instructions or other FlexPRET-specific constructs, look at files
-within `tests/include`. Look at other files within `tests/` for reference.
 
 # Chisel
 We use Chisel version 3.4 via mill.
@@ -152,3 +127,4 @@ To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and
 * Hokeun Kim (hokeunkim@eecs.berkeley.edu)  
 * David Broman (broman@eecs.berkeley.edu) 
 * Edward Wang (edwardw@eecs.berkeley.edu)
+* Shaokai Lin (shaokai@berkeley.edu)
