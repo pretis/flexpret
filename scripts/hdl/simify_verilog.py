@@ -101,9 +101,6 @@ end
 
     return contents.replace(orig_str, f"{orig_str} {vcd_blob}")
 
-'''
-args = ['scripts/hdl/simify_verilog.py', 'build/Core.raw.v']
-'''
 def main(args: List[str]) -> int:
     if len(args) < 2:
         print(f"Usage: {args[0]} Core.v", file=sys.stderr)
