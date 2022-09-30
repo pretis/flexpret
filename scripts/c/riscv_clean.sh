@@ -1,4 +1,3 @@
 #!/bin/bash
 
-rm -f *.vcd *.txt *.hex *.riscv *.map *.out *.dump
-ls | grep -v "\." | xargs rm
+rm -f *.vcd *.mem *.riscv *.map *.out *.dump

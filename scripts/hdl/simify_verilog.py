@@ -14,8 +14,8 @@ from typing import List
 
 def add_ispm(contents: str) -> str:
     """
-    Add the given hex filename as a loadmemh to the ispm.
-    initial $readmemh("instr_mem.hex.txt", ispm);
+    Add the given .mem filename as a loadmemh to the ispm.
+    initial $readmemh("instr_mem.mem", ispm);
     """
     m = re.search(r'reg \[\d+:0\] ispm \[0:\d+\];', contents, re.MULTILINE)
     assert m is not None
@@ -23,10 +23,10 @@ def add_ispm(contents: str) -> str:
     orig_str = m.group()
     new_str = f"""
 initial begin
-  $value$plusargs("ispm=%s", hex_file_name);
-  $readmemh(hex_file_name, ispm);
+  $value$plusargs("ispm=%s", mem_file_name);
+  $readmemh(mem_file_name, ispm);
 end
-{orig_str} 
+{orig_str}
     """
 
     return contents.replace(orig_str, new_str)
@@ -44,7 +44,7 @@ def add_vcd(contents: str) -> str:
     orig_str = m.group()
     vcd_blob = """
 initial begin
-$dumpfile({hex_file_name, ".vcd"});
+$dumpfile({mem_file_name, ".vcd"});
 $dumpvars;
 end
 
@@ -87,7 +87,7 @@ def main(args: List[str]) -> int:
     with open(args[1], 'r') as f:
         contents = str(f.read())
 
-    contents = "string hex_file_name;\n" + contents
+    contents = "string mem_file_name;\n" + contents
     contents = add_ispm(contents)
     contents = add_vcd(contents)
 

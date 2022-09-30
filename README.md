@@ -53,7 +53,7 @@ cd programs/tests/c-tests/fib/
 ../../../../scripts/c/riscv_build.sh fib fib.c
 
 # Run the simulation
-../../../../emulator/fp-emu +ispm=fib.hex
+../../../../emulator/fp-emu +ispm=fib.mem
 ```
 
 We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv_build.sh` and `fp-emu` become directly accessible.
