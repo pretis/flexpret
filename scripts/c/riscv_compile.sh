@@ -12,5 +12,5 @@ LIB_DIR=$SCRIPT_DIR/../../programs/lib
 LINKER_SCRIPT=$SCRIPT_DIR/../../programs/lib/linker-scripts/flexpret.ld
 CC=riscv32-unknown-elf-gcc
 
-$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $1 $LIB_DIR/start.S "${@:2}"
-riscv32-unknown-elf-objdump -S -d $1 > $1.dump.txt
+$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $1.riscv $LIB_DIR/start.S "${@:2}"
+riscv32-unknown-elf-objdump -S -d $1.riscv > $1.dump

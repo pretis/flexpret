@@ -9,4 +9,4 @@ set -euxo pipefail
 SCRIPT_DIR=$(dirname "$0")
 
 $SCRIPT_DIR/riscv_compile.sh $@
-$SCRIPT_DIR/parse_disasm.py $1.dump.txt readmemh > $1.hex
+$SCRIPT_DIR/parse_disasm.py $1.dump readmemh > $1.hex

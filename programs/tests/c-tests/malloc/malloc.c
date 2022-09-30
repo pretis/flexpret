@@ -7,9 +7,8 @@ int main() {
     extern char end; // Set by linker.
 
     // Byte-addressable.
-    // Assign 19 4-byte words for the heap.
     ta_init(&end,       // start of the heap space
-            &end+4*19,  // end of the heap space >= &end + 4 * (max heap block * alignment + 3)
+            &end+4*20,  // end of the heap space >= &end + 4 * (max heap block * alignment + 4)
             4,          // maximum heap blocks: 4, since we call ta_alloc() 4 times. 
             4,          // split_thresh: 4 bytes (Only used when reusing blocks.)
             4);         // alignment: 4 bytes (FlexPRET is a 32-bit architecture.)

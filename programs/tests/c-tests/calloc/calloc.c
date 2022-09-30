@@ -1,46 +1,40 @@
+#define TA_MAX_HEAP_BLOCK   10
+#define TA_ALIGNMENT        4
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <flexpret_io.h>
 #include "tinyalloc.h"
 
 int main() {
-    extern char end; // Set by linker.
+    extern char end;    // Set by linker.
 
+    _fp_print(111);     // Marks the start of the execution.
     _fp_print((uint32_t)&end); // 0x20000014
 
     // Byte-addressable.
-    // Assign 19 4-byte words for the heap.
-    ta_init(
-        // start of the heap space
-        &end,
-        // end of the heap space >= &end + 4 *
-        // (max heap block * alignment + 3)
-        (void*)(0x20000000+0x3E80),
-        // maximum heap blocks: 4, since we call ta_alloc() 4 times.
-        50,
-        // split_thresh: 16 bytes (Only used when reusing blocks.)
-        16, 
-        // alignment: 4 bytes (FlexPRET is a 32-bit architecture.)
-        4
+    ta_init( 
+        &end, // start of the heap space
+        // Magic formula that seems to work:
+        // heap limit >= &end + 4 * (max heap block * alignment + 4)
+        &end + 4 * (TA_MAX_HEAP_BLOCK * TA_ALIGNMENT + 4),
+        TA_MAX_HEAP_BLOCK, 
+        16, // split_thresh: 16 bytes (Only used when reusing blocks.)
+        TA_ALIGNMENT
     );
 
     // Allocate an array
-    int length = 100;
+    int length = TA_MAX_HEAP_BLOCK;
     uint32_t *arr = ta_calloc(length, sizeof(uint32_t));
-    for (int j = 0; j < length; j++) {
-        arr[j] = j;
+    for (uint32_t i = 0; i < length; i++) {
+        arr[i] = i;
     }
-    for (int i = 0; i < length; i++) {
-        _fp_print(arr[i]);
+    for (uint32_t j = 0; j < length; j++) {
+        _fp_print(arr[j]);
     }
 
-    uint32_t *arr2 = ta_calloc(length, sizeof(uint32_t));
-    for (int j = 0; j < length; j++) {
-        arr[j] = j;
-    }
-    for (int i = 0; i < length; i++) {
-        _fp_print(arr[i]);
-    }
+    // Free the memory.
+    ta_free(arr);
 
     // Terminate the simulation
     _fp_print(999);
