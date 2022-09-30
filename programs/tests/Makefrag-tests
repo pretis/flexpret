@@ -6,7 +6,7 @@ basic-c-tests = \
 	fib \
 	malloc \
 	calloc \
-    lbu
+	lbu
 
 # FIXME: For some reason, compilation fails when there are artifacts
 # in the program directory (e.g. if riscv_compile.sh is called within
