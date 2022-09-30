@@ -18,3 +18,5 @@ out/
 **/*.vcd
 **/*.riscv
 **/*.map
+
+**/fp-emu
