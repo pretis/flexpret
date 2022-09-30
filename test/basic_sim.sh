@@ -12,4 +12,4 @@ set -euo pipefail
 make emulator
 
 # Run the test program
-(cd programs && ./run-sim.sh)
+(cd programs/tests/c-tests/fib/ && ../../../../scripts/c/riscv_build.sh fib fib.c && fp-emu +ispm=fib.mem && ../../../../scripts/c/riscv_clean.sh)
