@@ -19,7 +19,7 @@ FLEXPRET ?= false
 ISPM_KBYTES ?= 128
 DSPM_KBYTES ?= 128
 MUL ?= false
-SUFFIX ?= ti
+SUFFIX ?= all
 
 # Target
 # TARGET=[emulator/fpga]: Select target
