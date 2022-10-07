@@ -21,11 +21,6 @@ int main() {
     const uint32_t x = fib(16);
     _fp_print(x);
 
-    // Terminate the simulation.
-    // Put a while loop to make sure no unwanted side effects.
-    _fp_finish();
-    while(1) {}
-    // Not strictly required; just wanted to let the compiler know.
-    __builtin_unreachable();
+    return 0;
 }
 

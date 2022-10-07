@@ -33,8 +33,5 @@ int main() {
     ta_free(c);
     ta_free(d);
 
-    // Terminate the simulation
-    _fp_finish();
-    while(1) {}
-    __builtin_unreachable();
+    return 0;
 }

@@ -34,10 +34,13 @@ endif
 # Compilation
 RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -specs=nosys.specs -nostartfiles
+RISCV_GCC_OPTS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles -specs=nosys.specs
 RISCV_LINK ?= -T ../lib/linker/flexpret.ld
 RISCV_LINK_OPTS ?= 
-RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump -S -d
+RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
+RISCV_OBJDUMP_OPTS ?= -S -d
+RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy
+RISCV_OBJCOPY_OPTS ?= -O binary
 
 INCS  += -I$(clib_dir)/include
 OBJS  :=

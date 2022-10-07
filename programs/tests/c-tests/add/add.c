@@ -15,11 +15,6 @@ int main() {
     uint32_t z = add(x, y);
     _fp_print(z);
 
-    // Terminate the simulation.
-    // Put a while loop to make sure no unwanted side effects.
-    _fp_finish();
-    while(1) {}
-    // Not strictly required; just wanted to let the compiler know.
-    __builtin_unreachable();
+    return 0;
 }
 

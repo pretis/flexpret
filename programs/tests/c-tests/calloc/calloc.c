@@ -36,9 +36,5 @@ int main() {
     // Free the memory.
     ta_free(arr);
 
-    // Terminate the simulation
-    _fp_print(999);
-    _fp_finish();
-    while(1) {}
-    __builtin_unreachable();
+    return 0;
 }
