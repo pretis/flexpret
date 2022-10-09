@@ -16,9 +16,9 @@ OBJCOPY=riscv32-unknown-elf-objcopy
 EMU=fp-emu
 
 # Compile a C program into a riscv ELF file.
-$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $1.riscv $LIB_DIR/start.S $LIB_DIR/startup.c "${@:2}"
+$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $1.riscv $LIB_DIR/start.S $LIB_DIR/syscalls.c $LIB_DIR/startup.c "${@:2}"
 
-# Generate dump file
+# Generate dump file.
 $OBJDUMP -S -d $1.riscv > $1.dump
 
 # Extract a binary file from the ELF file.
@@ -26,6 +26,7 @@ $OBJCOPY -O binary $1.riscv $1.binary.txt
 
 # Generate a hex file (with a .mem extension) from the binary file.
 xxd -c 4 -e $1.binary.txt | cut -c11-18 > $1.mem
+xxd -c 4 -e $1.binary.txt > $1.mem.orig
 
 # Delete the binary file.
 rm $1.binary.txt
