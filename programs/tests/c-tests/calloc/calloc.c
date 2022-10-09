@@ -9,9 +9,6 @@
 int main() {
     extern char end;    // Set by linker.
 
-    _fp_print(111);     // Marks the start of the execution.
-    _fp_print((uint32_t)&end); // 0x20000014
-
     // Byte-addressable.
     ta_init( 
         &end, // start of the heap space

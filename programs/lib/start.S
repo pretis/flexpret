@@ -4,7 +4,7 @@
 
 _start:
     // set stack pointer
-    li sp, 0x2001F200		// Adjust for 128KB DSPM (up to 0x2001F400).
+    li sp, 0x2003E800		// Adjust for a 256KB DSPM (up to 0x2003E800).
 
     // Set the global pointer
     .option push

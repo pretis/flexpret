@@ -1,3 +1,4 @@
+#include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <stdint.h>
 #include <flexpret_io.h>
 
@@ -13,10 +14,9 @@ int main(void);
 
 void Reset_Handler(void) {
     // Copy .data section into the RAM
-    uint32_t size = &__data_end__ - &__data_start__;
-
-    uint32_t *pDst = (uint32_t*)&__data_start__;  // RAM
-    uint32_t *pSrc = (uint32_t*)&__etext;         // ROM
+    uint32_t size   = &__data_end__ - &__data_start__;
+    uint32_t *pDst  = (uint32_t*)&__data_start__;       // RAM
+    uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
 
     for (uint32_t i = 0; i < size; i++) {
         *pDst++ = *pSrc++;
@@ -32,10 +32,6 @@ void Reset_Handler(void) {
     // Call main().
     main();
 
-    // Terminate the simulation.
-    // Put a while loop to make sure no unwanted side effects.
-    _fp_finish();
-    while(1) {}
-    // Not strictly required; just wanted to let the compiler know.
-    __builtin_unreachable();
+    // Exit by calling the _exit() syscall.
+    _exit(0);
 }
