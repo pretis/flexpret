@@ -8,7 +8,8 @@ basic-c-tests = \
 	calloc \
 	lbu \
 	global \
-	syscall
+	syscall \
+    gpio
 
 # FIXME: For some reason, compilation fails when there are artifacts
 # in the program directory (e.g. if riscv_compile.sh is called within
