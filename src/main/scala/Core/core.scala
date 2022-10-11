@@ -85,7 +85,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
 
   // I-Spm
   val iMemDepth     = 256 * imemConfig.sizeKB   // 32-bit entries
-  val iMemAddrBits  = log2Ceil(4 * iMemDepth)   // word addressable
+  val iMemAddrBits  = log2Ceil(4 * iMemDepth)   // byte addressable
   val iMemHighIndex = log2Ceil(4 * iMemDepth) - 1
   val iMemForceEn   = false
   val iMemBusRW     = false
