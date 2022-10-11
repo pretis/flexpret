@@ -2,9 +2,12 @@
 .globl _start
 .type _start,@function
 
+.macro setStackPointer 
+    li sp, 0x2003E800 // 0x3E800 = 256K
+.endm
+
 _start:
-    // set stack pointer
-    li sp, 0x2003E800		// Adjust for a 256KB DSPM (up to 0x2003E800).
+    setStackPointer	
 
     // Set the global pointer
     .option push

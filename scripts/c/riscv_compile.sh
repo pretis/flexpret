@@ -16,7 +16,7 @@ OBJCOPY=riscv32-unknown-elf-objcopy
 EMU=fp-emu
 
 # Compile a C program into a riscv ELF file.
-$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $1.riscv $LIB_DIR/start.S $LIB_DIR/syscalls.c $LIB_DIR/startup.c "${@:2}"
+$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $1.riscv $LIB_DIR/start.S $LIB_DIR/syscalls.c $LIB_DIR/tinyalloc/tinyalloc.c $LIB_DIR/startup.c "${@:2}"
 
 # Generate dump file.
 $OBJDUMP -S -d $1.riscv > $1.dump
