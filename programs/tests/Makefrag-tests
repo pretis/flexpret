@@ -5,30 +5,42 @@ basic-c-tests = \
 	add \
 	fib \
 	malloc \
-	calloc
+	calloc \
+	lbu \
+	global \
+	syscall \
+    gpio
 
+# FIXME: For some reason, compilation fails when there are artifacts
+# in the program directory (e.g. if riscv_compile.sh is called within
+# c-tests/add directory, then `make run-c-tests` fails).
 # param1: test name
 # param2: parent directory
 define compile_template
 $(2)/$(1).riscv: $(wildcard $(2)/$(1)/*) $(wildcard $$(clib_dir)/*)
 	# Compile the program into .riscv.
-	$$(RISCV_GCC) $$(incs) $$(RISCV_GCC_OPTS) -o $$@ $$(clib_dir)/start.S $(wildcard $(2)/$(1)/*.c) $$(RISCV_LINK_OPTS)
+	$$(RISCV_GCC) $$(INCS) $$(RISCV_GCC_OPTS) $$(RISCV_LINK) $$(RISCV_LINK_OPTS) -o $$@ $$(clib_dir)/start.S $$(clib_dir)/syscalls.c $$(clib_dir)/tinyalloc/tinyalloc.c $$(clib_dir)/startup.c $(wildcard $(2)/$(1)/*.c)
 endef
 
 # Expand .riscv targets.
 $(foreach test,$(basic-c-tests),$(eval $(call compile_template,$(test),$(c_tests_dir))))
 
-# Create .dump.txt files.
-$(addprefix $(c_tests_dir)/, $(addsuffix .dump.txt, $(basic-c-tests))): $(c_tests_dir)/%.dump.txt: $(c_tests_dir)/%.riscv
-	$(RISCV_OBJDUMP) $< > $@
+# Create .dump files.
+$(addprefix $(c_tests_dir)/, $(addsuffix .dump, $(basic-c-tests))): $(c_tests_dir)/%.dump: $(c_tests_dir)/%.riscv
+	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) $< > $@
 
-# Generate .hex files
-$(addprefix $(c_tests_dir)/, $(addsuffix .hex, $(basic-c-tests))): $(c_tests_dir)/%.hex: $(c_tests_dir)/%.dump.txt 
-	$(scripts_dir)/c/parse_disasm.py $< readmemh > $@
-	
+# Generate .mem files
+$(addprefix $(c_tests_dir)/, $(addsuffix .mem, $(basic-c-tests))): $(c_tests_dir)/%.mem: $(c_tests_dir)/%.riscv 
+	# Extract a binary file from the ELF file.
+	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_OPTS) $< $<.binary.txt
+	# Generate a hex file (with a .mem extension) from the binary file.
+	xxd -c 4 -e $<.binary.txt | cut -c11-18 > $@
+	# Delete the binary file.
+	rm $<.binary.txt
+
 # .out files contains the printf via the tohost csr,
 # instead of the cycle-by-cycle info, which is implemented in Rocketchip.
-$(addprefix $(c_tests_dir)/, $(addsuffix .out, $(basic-c-tests))): $(c_tests_dir)/%.out: $(c_tests_dir)/%.hex $(emu_dir)/$(emu)
+$(addprefix $(c_tests_dir)/, $(addsuffix .out, $(basic-c-tests))): $(c_tests_dir)/%.out: $(c_tests_dir)/%.mem $(c_tests_dir)/%.dump $(emu_dir)/$(emu)
 	@echo "Running $<"
 	$(emu_dir)/$(emu) +ispm=$< > $@ 2>&1
 

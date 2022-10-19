@@ -2,19 +2,18 @@
 .globl _start
 .type _start,@function
 
+.macro setStackPointer 
+    li sp, 0x2003E800 // 0x3E800 = 256K
+.endm
+
 _start:
-  // set stack pointer
-  // li sp, 0x20001000	// Only works for 16KB w/o large data section.
-  li sp, 0x2001F200		// Adjust for 128KB DSPM (up to 0x2001F400).
+    setStackPointer	
 
-  .option push
-  .option norelax
-  la gp, __global_pointer$
-  .option pop
+    // Set the global pointer
+    .option push
+    .option norelax
+    la gp, __global_pointer$
+    .option pop
 
-  // set argc, argv
-  li a0, 0
-  li a1, 0
-
-  // jump to main
-  call main
+    // jump to Reset_Handler
+    call Reset_Handler

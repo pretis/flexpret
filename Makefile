@@ -133,6 +133,7 @@ cleanall:
 	rm -f fpga/firrtl.jar
 	rm -f mill
 	rm -rf out
+	rm -rf test_run_dir
 	cd $(TEST_DIR) && $(MAKE) clean
 
 .PHONY: run fpga emulator firrtl_raw verilog_raw clean cleanall

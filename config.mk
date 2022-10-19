@@ -16,10 +16,10 @@
 
 THREADS ?= 1
 FLEXPRET ?= false
-ISPM_KBYTES ?= 128
-DSPM_KBYTES ?= 128
+ISPM_KBYTES ?= 256
+DSPM_KBYTES ?= 256
 MUL ?= false
-SUFFIX ?= ti
+SUFFIX ?= all
 
 # Target
 # TARGET=[emulator/fpga]: Select target

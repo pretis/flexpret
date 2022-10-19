@@ -14,4 +14,4 @@ $(EMULATOR_BIN): $(VERILOG_RAW) $(EMULATOR_DIR)/main.cpp $(HDL_SCRIPTS)/simify_v
 
 	cp $(EMULATOR_DIR)/obj_dir/VCore $(EMULATOR_BIN)
 
-	echo "Emulator usage: Run '$(EMULATOR_BIN) +ispm=<name>.hex'. A hex file can be generated using 'scripts/c/riscv_build.sh <binary name> <C files...>'. The emulation will generate a VCD in Core.vcd. Writing 0xbaaabaaa will cause the next value to be printed. Writing 0xdeaddead to the tohost CSR will terminate the simulation."
+	echo "Emulator usage: Run '$(EMULATOR_BIN) +ispm=<name>.mem'. A .mem file can be generated using 'scripts/c/riscv_build.sh <binary name> <C files...>'. The emulation will generate a VCD in Core.vcd. Use flexpret_io.h to print or to terminate simulation."

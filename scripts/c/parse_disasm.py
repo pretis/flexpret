@@ -3,7 +3,7 @@
 #
 #  parse_disasm.py
 #  Parse the output of riscv32-unknown-elf-objdump and put it into a Scala
-#  array constant, or readmemh hex file.
+#  array constant, or readmemh .mem file.
 #
 #  Copyright 2021 Edward Wang <edwardw@eecs.berkeley.edu>
 

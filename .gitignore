@@ -12,9 +12,12 @@ out/
 .DS_Store
 
 # Generated files
-**/*.hex
+**/*.mem
 **/*.out
 **/*.dump.txt
 **/*.vcd
 **/*.riscv
 **/*.map
+**/*.orig
+
+**/fp-emu

@@ -34,14 +34,16 @@ endif
 # Compilation
 RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -specs=nosys.specs -nostartfiles -Wl,-Ttext=0x00000000
-RISCV_LINK ?= $(RISCV_GCC) -T $(src_dir)/common/test.ld $(incs)
+RISCV_GCC_OPTS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles -specs=nosys.specs
+RISCV_LINK ?= -T ../lib/linker/flexpret.ld
 RISCV_LINK_OPTS ?= 
-RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump -S -d
-RISCV_SIM ?= spike --isa=rv$(XLEN)gc
+RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
+RISCV_OBJDUMP_OPTS ?= -S -d
+RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy
+RISCV_OBJCOPY_OPTS ?= -O binary
 
-incs  += -I$(clib_dir)/include
-objs  :=
+INCS  += -I$(clib_dir)/include
+OBJS  :=
 
 #--------------------------------------------------------------------
 # Build emulator
@@ -64,7 +66,7 @@ include $(tests_dir)/Makefrag-tests
 all: $(base_dir)/emulator/$(emu) run-c-tests
 
 clean:
-	cd $(c_tests_dir) && rm -f *.out *.dump.txt *.riscv *.hex *.vcd *.map
+	cd $(c_tests_dir) && rm -f *.vcd *.mem *.riscv *.map *.out *.dump
 
 cleanall: clean
 	cd $(base_dir) && $(MAKE) clean
