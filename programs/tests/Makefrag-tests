@@ -6,6 +6,7 @@ basic-c-tests = \
 	fib \
 	malloc \
 	calloc \
+    realloc \
 	lbu \
 	global \
 	syscall \

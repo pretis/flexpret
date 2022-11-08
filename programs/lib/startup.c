@@ -25,10 +25,20 @@ void *malloc(size_t size) {
 }
 
 /**
- * Allocate a requested memory and return a pointer to it.
+ * Allocate a requested memory, initial the memory to 0,
+ * and return a pointer to it.
  */
 void *calloc(size_t nitems, size_t size) {
     return ta_calloc(nitems, size);
+}
+
+/**
+ * resize the memory block pointed to by ptr
+ * that was previously allocated with a call
+ * to malloc or calloc.
+ */
+void *realloc(void *ptr, size_t size) {
+    return ta_realloc(ptr, size);
 }
 
 /**
