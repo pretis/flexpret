@@ -520,7 +520,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   if(!conf.bypassing) {
     exe_flush := false.B
     dec_stall := false.B
-    stall_count := 0.U // until any logic needs >= 3
+    stall_count(io.exe_tid) := 0.U
   }
 
   // stats
