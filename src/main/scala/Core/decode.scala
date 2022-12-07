@@ -29,6 +29,7 @@ package Core
 
 import Chisel._
 import scala.collection.mutable.{ArrayBuffer, Map}
+import scala.language.postfixOps
 
 object DecodeLogic
 {
@@ -75,7 +76,7 @@ object DecodeLogic
       yield apply(addr, thisDefault, thisMapping)
   }
   def apply(addr: UInt, trues: Iterable[UInt], falses: Iterable[UInt]): Bool =
-    apply(addr, BitPat.dontCare(1), trues.map(BitPat(_) -> BitPat("b1")) ++ falses.map(BitPat(_) -> BitPat("b0"))).toBool
+    apply(addr, BitPat.dontCare(1), trues.map(BitPat(_) -> BitPat("b1")) ++ falses.map(BitPat(_) -> BitPat("b0"))).asBool
   def apply(addr: UInt, tru: UInt, fals: UInt): Bool =
     apply(addr, Seq(tru), Seq(fals))
   private val caches = collection.mutable.Map[UInt,collection.mutable.Map[Term,Bool]]()

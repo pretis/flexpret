@@ -173,7 +173,7 @@ class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
   io.dmem.data_in := StoreFormat(io.data_in, io.mem_type)
   val dmem_enable: Bool = if(conf.dMemForceEn) Bool(true) else (dmem_op && (io.load || io.store))
   io.dmem.enable := dmem_enable
-  io.dmem.byte_write := (StoreMask(io.addr(1, 0), io.mem_type, enable=dmem_enable) & Fill(4, write.asUInt)).toBools
+  io.dmem.byte_write := (StoreMask(io.addr(1, 0), io.mem_type, enable=dmem_enable) & Fill(4, write.asUInt)).asBools
 
 
   // instruction memory input
