@@ -9,6 +9,7 @@ package flexpret.util
 
 import chisel3._
 import chisel3.util.BitPat
+import scala.language.implicitConversions
 
 object uintToBitPatObject {
   implicit def uintToBitPat(x: UInt): BitPat = BitPat(x)

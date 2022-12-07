@@ -10,6 +10,12 @@ For more information on the processor architecture:
 
 # Quickstart
 
+After cloning the repository, update submodules with:
+
+```
+git submodule update --init --recursive
+```
+
 To build a default configuration and generate Verilog, run:
 
 ```
