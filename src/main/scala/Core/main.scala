@@ -20,6 +20,6 @@ object CoreMain {
     val coreConfig = FlexpretConfiguration.parseString(confString)
 
     // Pass configuration to FlexPRET processor.
-    chisel3.Driver.execute(chiselArgs, () => new Core(coreConfig))
+    (new chisel3.stage.ChiselStage).emitVerilog(new Core(coreConfig), chiselArgs)
   }
 }
