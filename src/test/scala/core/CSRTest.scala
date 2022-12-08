@@ -7,6 +7,7 @@ License: See LICENSE.txt
 package flexpret.core.test
 
 import org.scalatest._
+import scala.language.implicitConversions
 
 import chisel3._
 
