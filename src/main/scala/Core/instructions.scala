@@ -317,7 +317,7 @@ object CSRs {
     res += cycle
     res += time
     res += instret
-    res += uarch0
+    res += hwlock
     res += uarch1
     res += uarch2
     res += uarch3
