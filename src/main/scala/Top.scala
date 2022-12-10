@@ -10,7 +10,6 @@ case class TopConfig(
 
 class TopIO(topCfg: TopConfig) extends Bundle {
   val gpio = new GPIO()(topCfg.coreCfg)
-  val host = new HostIO()
 }
 
 class Top(topCfg: TopConfig) extends MultiIOModule {
@@ -29,7 +28,12 @@ class Top(topCfg: TopConfig) extends MultiIOModule {
 
   // Connect GPIO pins and "to_host" wires to Top level interface
   io.gpio <> core.io.gpio
-  io.host <> core.io.host
+
+  // Print the values written to the host interface
+  // Use most significant bit as a valid bit
+  when(core.io.host.to_host(31) === 1.U) {
+    printf(s"${core.io.host.to_host(30,0)}")
+  }
 
   // Drive default values on dmem and the WB device side
   core.io.dmem.driveDefaultsFlipped()
