@@ -45,6 +45,8 @@ class WishboneIO(addrBits: Int) extends Bundle {
     rdData := 0.U
     ack := false.B
   }
+  // FIXME: I thought we didnt have to do this cloneType stuff anymore
+  override def cloneType = new WishboneIO(addrBits).asInstanceOf[this.type]
 }
 
 class WishboneMaster(addrBits: Int)(implicit conf: FlexpretConfiguration) extends MultiIOModule {

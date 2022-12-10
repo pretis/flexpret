@@ -1,7 +1,7 @@
 package flexpret
 import chisel3._
 import flexpret.core.{Core, FlexpretConfiguration, GPIO, HostIO}
-import flexpret.Wishbone.WishboneMaster
+import flexpret.Wishbone.{HelloWishbone, WishboneMaster}
 
 case class TopConfig(
   coreCfg : FlexpretConfiguration
@@ -21,6 +21,11 @@ class Top(topCfg: TopConfig) extends MultiIOModule {
   // WB Master connecting FP to memory mapped devices
   val wbMaster = Module(new WishboneMaster(topCfg.coreCfg.busAddrBits)(topCfg.coreCfg))
   core.io.bus <> wbMaster.busIO
+
+  // Simple Wishbone device for testing
+  val wbDevice = Module(new HelloWishbone())
+
+  wbMaster.wbIO <> wbDevice.io
 
   // Connect GPIO pins and "to_host" wires to Top level interface
   io.gpio <> core.io.gpio
