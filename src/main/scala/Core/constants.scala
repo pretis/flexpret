@@ -182,4 +182,12 @@ object FlexpretConstants
   val CAUSE_WI = 5
 
 
+  // BusIO addresses
+  val MMIO_READ_ADDR = 0.U
+  val MMIO_WRITE_ADDR = 1.U
+  val MMIO_WRITE_DATA = 2.U
+  val MMIO_READ_DATA = 3.U
+  val MMIO_STATUS = 4.U
+
+
 }

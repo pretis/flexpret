@@ -162,6 +162,10 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val write = Input(Bool())
   val data_in = Input(UInt(32.W))
 
+  def driveDefaultFromBus(): Unit = {
+    data_out := 0.U
+  }
+
   override def cloneType = (new BusIO).asInstanceOf[this.type]
 }
 
