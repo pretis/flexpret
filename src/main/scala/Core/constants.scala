@@ -182,4 +182,7 @@ object FlexpretConstants
   val CAUSE_WI = 5
 
 
+  // Lock commands
+  val LOCK_ACQUIRE = 0.U(1.W)
+  val LOCK_RELEASE = 1.U(1.W)
 }

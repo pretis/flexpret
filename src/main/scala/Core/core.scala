@@ -125,6 +125,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
   val timeInc       = 10
   require(timeBits <= 32)
   val getTime       = delayUntil || interruptExpire
+  val hwLock        = true
 
   // TODO: priv fault without loadstore
   // Supported exceptions

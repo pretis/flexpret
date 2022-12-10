@@ -314,6 +314,34 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     // TODO: what happens with CSR write?
   }
 
+  // Do HW Lock
+  if (conf.hwLock) {
+    val lock = Module(new Lock()).io
+    lock.driveDefaultsFlipped()
+
+    // Detect writes to the lock CSR address
+    when (write && compare_addr(CSRs.hwlock)) {
+      when(data_in === LOCK_ACQUIRE) {
+        // Acquire the lock. Put thread to sleep if it is not granted
+        lock.acquire.valid := true.B
+        lock.acquire.tid := io.rw.thread
+        // Put thread to sleep if we dont get a grant back
+        sleep := !lock.acquire.grant
+      }.elsewhen(data_in === LOCK_RELEASE) {
+        // Release the lock. Also wakup any thread which
+        //  is released by this action
+        lock.release.valid := true.B
+        lock.release.tid := io.rw.thread
+
+        // Check for released threads
+        when(lock.threadRelease.valid) {
+          // Signal scheduler that this thread can be scheduled again
+          wake(lock.threadRelease.tid) := true.B
+        }
+      }
+    }
+  }
+
   // exception handling
   if (conf.exceptions) {
     when(io.exception) {
