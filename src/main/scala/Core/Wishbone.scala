@@ -13,7 +13,6 @@ case class WishboneConfig(
 
   def nAddrBits = log2Ceil(numDevices)
   def nDataBits = 32
-
 }
 
 class WishboneIO(cfg: WishboneConfig) extends Bundle {
