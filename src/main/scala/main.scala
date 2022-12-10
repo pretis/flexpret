@@ -5,21 +5,31 @@ Author: Michael Zimmer (mzimmer@eecs.berkeley.edu)
 Contributors: Edward Wang (edwardw@eecs.berkeley.edu)
 License: See LICENSE.txt
 ******************************************************************************/
-package Core
-
-import chisel3._
+package flexpret
 
 // Remove this eventually...
-import flexpret.core.Core
-import flexpret.core.FlexpretConfiguration
+import flexpret.core.{Core, FlexpretConfiguration}
 
 object CoreMain {
   def main(args: Array[String]): Unit = {
-    val confString = args(0)
-    val chiselArgs = args.slice(1, args.length)
-    val coreConfig = FlexpretConfiguration.parseString(confString)
+
+    val coreCfg = if (args.length > 0) {
+      FlexpretConfiguration.parseString(args(0))
+    } else {
+      FlexpretConfiguration.defaultConfig
+    }
+
+    val chiselArgs = if (args.length > 1) {
+      args.slice(1,args.length)
+    } else {
+      Array("")
+    }
+
+    val topConfig = TopConfig(
+      coreCfg = coreCfg
+    )
 
     // Pass configuration to FlexPRET processor.
-    (new chisel3.stage.ChiselStage).emitVerilog(new Core(coreConfig), chiselArgs)
+    (new chisel3.stage.ChiselStage).emitVerilog(new Top(topConfig), chiselArgs)
   }
 }

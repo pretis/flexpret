@@ -1,24 +1,14 @@
-package flexpret.core
+package flexpret.Wishbone
 import chisel3._
 import chisel3.util._
 import Core.FlexpretConstants._
+import flexpret.core.{BusIO, FlexpretConfiguration}
 
 
-case class WishboneConfig(
-  numDevices: Int = 1,
-  numMasters: Int = 1
-) {
-  require(numDevices > 0)
-  require(numMasters == 1)
-
-  def nAddrBits = log2Ceil(numDevices)
-  def nDataBits = 32
-}
-
-class WishboneIO(cfg: WishboneConfig) extends Bundle {
-  val addr = Output(UInt(cfg.nAddrBits.W))
-  val wrData = Output(UInt(cfg.nDataBits.W))
-  val rdData = Input(UInt(cfg.nDataBits.W))
+class WishboneIO(addrBits: Int) extends Bundle {
+  val addr = Output(UInt(addrBits.W))
+  val wrData = Output(UInt(32.W))
+  val rdData = Input(UInt(32.W))
   val we = Output(Bool())
   val sel = Output(UInt(4.W))
   val stb = Output(Bool())
@@ -43,7 +33,7 @@ class WishboneIO(cfg: WishboneConfig) extends Bundle {
     stb := true.B
   }
 
-  def driveDefaultFromMaster(): Unit = {
+  def driveDefaults(): Unit = {
     addr := 0.U
     wrData := 0.U
     we := false.B
@@ -51,19 +41,23 @@ class WishboneIO(cfg: WishboneConfig) extends Bundle {
     sel := 0.U
     stb := 0.U
   }
+  def driveDefaultsFlipped(): Unit = {
+    rdData := 0.U
+    ack := false.B
+  }
 }
 
-class WishboneFlexpretMaster(wbCfg: WishboneConfig)(implicit conf: FlexpretConfiguration) extends MultiIOModule {
-  val wbIO = IO(new WishboneIO(wbCfg))
+class WishboneMaster(addrBits: Int)(implicit conf: FlexpretConfiguration) extends MultiIOModule {
+  val wbIO = IO(new WishboneIO(addrBits))
   val busIO = IO(new BusIO())
 
-  wbIO.driveDefaultFromMaster()
-  busIO.driveDefaultFromBus()
+  wbIO.driveDefaults()
+  busIO.driveDefaults()
 
   // Registers with 1CC access latency from FlexPret core
-  val regAddr = RegInit(0.U(wbCfg.nAddrBits.W))
-  val regWriteData = RegInit(0.U(wbCfg.nDataBits.W))
-  val regReadData = RegInit(0.U(wbCfg.nDataBits.W))
+  val regAddr = RegInit(0.U(conf.busAddrBits))
+  val regWriteData = RegInit(0.U(32.W))
+  val regReadData = RegInit(0.U(32.W))
   val regStatus = RegInit(false.B)
 
   // Use a single register to delay read-out for a single cycle
@@ -81,13 +75,13 @@ class WishboneFlexpretMaster(wbCfg: WishboneConfig)(implicit conf: FlexpretConfi
       // Handle writes
       wDoWrite := true.B
       when(addr === MMIO_READ_ADDR) {
-          regAddr := busIO.data_in
-        }.elsewhen(addr === MMIO_READ_ADDR) {
-          regAddr := busIO.data_in
-        }.elsewhen(addr === MMIO_WRITE_DATA) {
-          regWriteData := busIO.data_in
-        }.otherwise {
-          assert(false.B, s"Tried to write to invalid address $addr on wishbone bus master")
+        regAddr := busIO.data_in
+      }.elsewhen(addr === MMIO_READ_ADDR) {
+        regAddr := busIO.data_in
+      }.elsewhen(addr === MMIO_WRITE_DATA) {
+        regWriteData := busIO.data_in
+      }.otherwise {
+        assert(false.B, s"Tried to write to invalid address $addr on wishbone bus master")
       }
     }.otherwise {
       // Handle reads

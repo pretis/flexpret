@@ -1,31 +1,29 @@
-package flexpret.core.test
+package flexpret.Wishbone
 
-import flexpret.core.{WishboneConfig, WishboneFlexpretMaster, FlexpretConfiguration, InstMemConfiguration}
 import chisel3._
-import org.scalatest._
 import chiseltest._
-import chisel3.experimental.BundleLiterals._
+import flexpret.core.{FlexpretConfiguration, InstMemConfiguration}
+import org.scalatest._
 
-class TestWishbone extends FlatSpec with ChiselScalatestTester {
+class WishboneTest extends FlatSpec with ChiselScalatestTester {
 
   behavior of "Wishbone"
 
-  def write(c: WishboneFlexpretMaster, addr: Int, data: Int): Unit = {
+  def write(c: WishboneMaster, addr: Int, data: Int): Unit = {
     c.busIO.data_in.poke(data.U)
     c.busIO.write.poke(true.B)
     c.busIO.enable.poke(true.B)
     c.busIO.addr.poke(addr.U)
   }
 
-  def read(c: WishboneFlexpretMaster, idx: Int, addr: Int, expect: Int) = {
+  def read(c: WishboneMaster, idx: Int, addr: Int, expect: Int) = {
   }
 
-  val cfg = WishboneConfig(numDevices = 8, numMasters = 1)
   val conf = FlexpretConfiguration(threads=1, flex=false,
     InstMemConfiguration(bypass=true, sizeKB=4),
     dMemKB=256, mul=false, features="all")
 
-  def wb = new WishboneFlexpretMaster(cfg)(conf)
+  def wb = new WishboneMaster(conf.busAddrBits)(conf)
 
   it should "initialize" in {
     test(wb) { c =>

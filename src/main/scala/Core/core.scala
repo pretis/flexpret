@@ -31,6 +31,12 @@ object FlexpretConfiguration {
       parsed.get.group(5)
     )
   }
+
+  def defaultConfig: FlexpretConfiguration = {
+    new FlexpretConfiguration(threads=1, flex=false,
+      InstMemConfiguration(bypass=false, sizeKB=4),
+      dMemKB=256, mul=false, features="all")
+  }
 }
 
 case class InstMemConfiguration(
@@ -144,6 +150,13 @@ class InstMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val write = Input(Bool())
   val data_in = Input(UInt(32.W))
   val ready = Output(Bool()) // doesn't have priority
+
+  def driveDefaultsFlipped() = {
+    addr := 0.U
+    enable := false.B
+    write := false.B
+    data_in := 0.U
+  }
 }
 
 class DataMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
@@ -153,6 +166,13 @@ class DataMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val data_out = Output(UInt(32.W))
   val byte_write = Input(Vec(4, Bool()))
   val data_in = Input(UInt(32.W))
+
+  def driveDefaultsFlipped() = {
+    addr := 0.U
+    enable := false.B
+    data_in := 0.U
+    byte_write.map(_ := false.B)
+  }
 }
 
 class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
@@ -162,7 +182,7 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val write = Input(Bool())
   val data_in = Input(UInt(32.W))
 
-  def driveDefaultFromBus(): Unit = {
+  def driveDefaults(): Unit = {
     data_out := 0.U
   }
 
