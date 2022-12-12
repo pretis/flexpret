@@ -260,7 +260,7 @@ object CSRs {
   val cycle = 0xc00
   val time = 0xc01
   val instret = 0xc02
-  val hwlock = 0xcc0 // FIXME: What address can I use for my Lock?
+  val uarch0 = 0xcc0
   val uarch1 = 0xcc1
   val uarch2 = 0xcc2
   val uarch3 = 0xcc3
@@ -280,6 +280,7 @@ object CSRs {
   val cycleh = 0xc80
   val timeh = 0xc81
   val instreth = 0xc82
+  val hwlock = 0xc83 // FIXME: What address can I use for my Lock?
   //flexpret
   val clock = fflags
   val slots = badvaddr

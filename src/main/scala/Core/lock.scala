@@ -78,15 +78,22 @@ class Lock(implicit val conf: FlexpretConfiguration) extends Module {
   // Handle acquiring of the lock
   when(io.acquire.valid) {
     when(regLocked) {
+      // Enqueue the current thread id.
       io.acquire.grant := false.B
       fifo.enq.valid := true.B
       fifo.enq.bits := io.acquire.tid
       assert(fifo.enq.fire)
-    }.otherwise{
+    }.otherwise {
+      // Grant the lock to the thread.
       io.acquire.grant := true.B
+      fifo.enq.valid := false.B
+      fifo.enq.bits := DontCare
       regLocked := true.B
       regOwner := io.acquire.tid
     }
+  }.otherwise {
+    fifo.enq.valid := false.B
+    fifo.enq.bits := DontCare
   }
 
   // Handle releasing the lock
@@ -98,6 +105,7 @@ class Lock(implicit val conf: FlexpretConfiguration) extends Module {
       // Handle scenario where nobody is waiting
       regLocked := false.B
       regOwner := 0.U // FIXME: Not really necessary
+      fifo.deq.ready := false.B
     }.otherwise {
       // Handle scenario where we have waiting threads
       // Release the first one
@@ -106,5 +114,7 @@ class Lock(implicit val conf: FlexpretConfiguration) extends Module {
       io.threadRelease.valid := true.B
       io.threadRelease.tid := fifo.deq.bits
     }
+  }.otherwise {
+    fifo.deq.ready := false.B
   }
 }
