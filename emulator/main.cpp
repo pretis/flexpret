@@ -4,7 +4,7 @@
  *
  * Copyright 2021 Edward Wang <edwardw@eecs.berkeley.edu>
  */
-#include "VCore.h"
+#include "VTop.h"
 #include "verilated.h"
 
 uint64_t timestamp = 0;
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   Verilated::commandArgs(argc, argv);
   Verilated::traceEverOn(true);
 
-  VCore* top = new VCore;
+  VTop* top = new VTop;
 
   // FIXME: Set this via command-line arguments.
   while (timestamp < 3000000 && !Verilated::gotFinish()) {
