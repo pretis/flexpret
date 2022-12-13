@@ -19,10 +19,11 @@ out/
 **/*.riscv
 **/*.map
 **/*.orig
-
+**/*.dump
 **/fp-emu
 
 # Misc
 .vscode/
 project/
 target/
+.bloop/

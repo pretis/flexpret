@@ -183,11 +183,11 @@ object FlexpretConstants
 
 
   // BusIO addresses
-  val MMIO_READ_ADDR = 0.U(3.W)
-  val MMIO_WRITE_ADDR = 1.U(3.W)
-  val MMIO_WRITE_DATA = 2.U(3.W)
-  val MMIO_READ_DATA = 3.U(3.W)
-  val MMIO_STATUS = 4.U(3.W)
+  val MMIO_READ_ADDR = 0.U(5.W)
+  val MMIO_WRITE_ADDR = 4.U(5.W)
+  val MMIO_WRITE_DATA = 8.U(5.W)
+  val MMIO_READ_DATA = 12.U(5.W)
+  val MMIO_STATUS = 16.U(5.W)
 
 
 }

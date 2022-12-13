@@ -11,10 +11,10 @@ class WishboneTest extends FlatSpec with ChiselScalatestTester {
   behavior of "Wishbone"
 
   val READ_ADDR = 0
-  val WRITE_ADDR = 1
-  val WRITE_DATA = 2
-  val READ_DATA = 3
-  val STATUS = 4
+  val WRITE_ADDR = 4
+  val WRITE_DATA = 8
+  val READ_DATA = 12
+  val STATUS = 16
 
 
   // Write word to the Wishbone master (equivalent of a stw instruction)

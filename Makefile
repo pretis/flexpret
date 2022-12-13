@@ -81,9 +81,19 @@ include $(EMULATOR_DIR)/emulator.mk
 # Alias
 emulator: $(EMULATOR_BIN)
 
+
+# -----------------------------------------------------------------------------
+#  Tests
+# -----------------------------------------------------------------------------
+test:
+	sbt 'test'
+
 # -----------------------------------------------------------------------------
 #  Cleanup
 # -----------------------------------------------------------------------------
+
+# Remake emulator
+remulator: clean emulator
 
 # Clean the emulator and the generated source.
 clean:
@@ -111,4 +121,4 @@ cleanall:
 	rm -rf test_run_dir
 	cd $(TEST_DIR) && $(MAKE) clean
 
-.PHONY: run fpga emulator firrtl_raw verilog_raw clean cleanall
+.PHONY: run fpga emulator remulator firrtl_raw verilog_raw clean cleanall test
