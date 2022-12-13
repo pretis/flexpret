@@ -4,7 +4,6 @@ import chisel3.util._
 import Core.FlexpretConstants._
 import flexpret.core.{BusIO, FlexpretConfiguration}
 
-
 class WishboneIO(addrBits: Int) extends Bundle {
   val addr = Output(UInt(addrBits.W))
   val wrData = Output(UInt(32.W))
@@ -15,8 +14,8 @@ class WishboneIO(addrBits: Int) extends Bundle {
   val ack = Input(Bool())
   val cyc = Output(Bool())
 
-  def driveReadReq(addr: UInt): Unit = {
-    addr := addr
+  def driveReadReq(_addr: UInt): Unit = {
+    addr := _addr
     wrData := 0.U
     we := false.B
     cyc := true.B
@@ -24,8 +23,8 @@ class WishboneIO(addrBits: Int) extends Bundle {
     stb := true.B
   }
 
-  def driveWriteReq(addr: UInt, data: UInt) = {
-    addr := addr
+  def driveWriteReq(_addr: UInt, data: UInt) = {
+    addr := _addr
     wrData := data
     we := true.B
     cyc := true.B
@@ -57,7 +56,7 @@ class WishboneMaster(addrBits: Int)(implicit conf: FlexpretConfiguration) extend
   busIO.driveDefaults()
 
   // Registers with 1CC access latency from FlexPret core
-  val regAddr = RegInit(0.U(conf.busAddrBits))
+  val regAddr = RegInit(0.U(conf.busAddrBits.W))
   val regWriteData = RegInit(0.U(32.W))
   val regReadData = RegInit(0.U(32.W))
   val regStatus = RegInit(false.B)
@@ -66,48 +65,52 @@ class WishboneMaster(addrBits: Int)(implicit conf: FlexpretConfiguration) extend
   val regBusRead = RegInit(0.U(32.W))
   busIO.data_out := regBusRead
 
-  val wDoRead = WireDefault(false.B)
-  val wDoWrite = WireDefault(false.B)
-  assert(!(wDoRead && wDoWrite), "Both read and write at the same time")
-
-  // Handle read/write transactions from core
-  when(busIO.enable) {
-    val addr = busIO.data_in
-    when(busIO.write) {
-      // Handle writes
-      wDoWrite := true.B
-      when(addr === MMIO_READ_ADDR) {
-        regAddr := busIO.data_in
-      }.elsewhen(addr === MMIO_READ_ADDR) {
-        regAddr := busIO.data_in
-      }.elsewhen(addr === MMIO_WRITE_DATA) {
-        regWriteData := busIO.data_in
-      }.otherwise {
-        assert(false.B, s"Tried to write to invalid address $addr on wishbone bus master")
-      }
-    }.otherwise {
-      // Handle reads
-      wDoRead := true.B
-      when(addr === MMIO_READ_DATA) {
-        regBusRead := regReadData
-      }.elsewhen(addr === MMIO_STATUS) {
-        regBusRead := regStatus
-        regStatus := false.B
-      }.otherwise {
-        assert(false.B, s"Tried to read from invalid address $addr on wishbone bus master")
-      }
-    }
-  }
 
   // Simple, un-optimized implementation of the wishbone protocol
   val sIdle :: sDoWrite :: sDoRead :: Nil = Enum(3)
   val regState = RegInit(sIdle)
+
+  val wDoRead = WireDefault(false.B)
+  val wDoWrite = WireDefault(false.B)
+  assert(!(wDoRead && wDoWrite), "Both read and write at the same time")
+  assert(!(busIO.enable && regState =/= sIdle), "Recevied bus request while busy")
 
   switch(regState) {
     // Idle state. Waiting for request from FlexPret Core
     //  Decouples the FlexPret load/store instructions from
     //  accessing the WB bus
     is (sIdle) {
+      // Handle read/write transactions from core
+      when(busIO.enable) {
+        val addr = busIO.addr
+        when(busIO.write) {
+          // Handle writes
+          when(addr === MMIO_READ_ADDR) {
+            regAddr := busIO.data_in
+            // Writing to the READ_ADDR will trigger a read on the WB bus
+            wDoRead := true.B
+          }.elsewhen(addr === MMIO_WRITE_ADDR) {
+            regAddr := busIO.data_in
+            // Writing to the WRITE_ADDR will trigger a write on the WB bus
+            //  the WRITE_DATA register must be written before the write to the addr
+            wDoWrite := true.B
+          }.elsewhen(addr === MMIO_WRITE_DATA) {
+            regWriteData := busIO.data_in
+          }.otherwise {
+            assert(false.B, "Tried to write to invalid address %d on wishbone bus master",addr)
+          }
+        }.otherwise {
+          // Handle reads
+          when(addr === MMIO_READ_DATA) {
+            regBusRead := regReadData
+          }.elsewhen(addr === MMIO_STATUS) {
+            regBusRead := regStatus
+            regStatus := false.B
+          }.otherwise {
+            assert(false.B, "Tried to read from invalid address %d on wishbone bus master", addr)
+          }
+        }
+      }
       when (wDoRead) {
         regState := sDoRead
       }.elsewhen(wDoWrite) {
