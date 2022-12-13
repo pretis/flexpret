@@ -185,8 +185,6 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   def driveDefaults(): Unit = {
     data_out := 0.U
   }
-
-  override def cloneType = (new BusIO).asInstanceOf[this.type]
 }
 
 class HostIO() extends Bundle {
@@ -207,8 +205,6 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val gpio = new GPIO()
   val int_exts = Input(Vec(8, Bool()))
   //val int_exts = Input(Vec(conf.threads, Bool()))
-
-  override def cloneType = (new CoreIO).asInstanceOf[this.type]
 }
 
 @chiselName

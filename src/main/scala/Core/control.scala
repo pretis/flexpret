@@ -84,8 +84,6 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
   val exe_exc_expire           = Input(Bool())
   val exe_int_expire           = Input(Bool())
   val exe_int_ext              = Input(Bool())
-
-  override def cloneType = (new ControlDatapathIO).asInstanceOf[this.type]
 }
 
 class Control(implicit val conf: FlexpretConfiguration) extends Module
