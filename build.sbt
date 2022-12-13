@@ -19,6 +19,7 @@ addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.f
 libraryDependencies += "edu.berkeley.cs" %% "chisel3" % chiselVersion
 libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5.5"
 // libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.3"
+libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.4"
 
 
 // disable publishw ith scala version, otherwise artifact name will include scala version
