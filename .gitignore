@@ -21,3 +21,8 @@ out/
 **/*.orig
 
 **/fp-emu
+
+# Misc
+.vscode/
+project/
+target/
