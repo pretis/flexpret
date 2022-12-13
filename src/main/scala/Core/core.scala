@@ -161,8 +161,6 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val data_out = Output(UInt(32.W))
   val write = Input(Bool())
   val data_in = Input(UInt(32.W))
-
-  override def cloneType = (new BusIO).asInstanceOf[this.type]
 }
 
 class HostIO() extends Bundle {
@@ -183,8 +181,6 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val gpio = new GPIO()
   val int_exts = Input(Vec(8, Bool()))
   //val int_exts = Input(Vec(conf.threads, Bool()))
-
-  override def cloneType = (new CoreIO).asInstanceOf[this.type]
 }
 
 @chiselName

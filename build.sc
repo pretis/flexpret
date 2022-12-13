@@ -18,7 +18,7 @@ trait HasXsource211 extends ScalaModule {
 
 trait HasChisel3 extends ScalaModule {
   override def ivyDeps = Agg(
-    ivy"edu.berkeley.cs::chisel3:3.4.+"
+    ivy"edu.berkeley.cs::chisel3:3.5.+"
  )
 }
 
@@ -29,8 +29,8 @@ trait HasChiselTests extends CrossSbtModule  {
   )
   object test extends Tests {
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.4",
-      ivy"edu.berkeley.cs::chiseltest:0.3.+"
+      // ivy"org.scalatest::scalatest:3.0.4",
+      ivy"edu.berkeley.cs::chiseltest:0.5.+"
     )
     def testFrameworks = Seq("org.scalatest.tools.Framework")
 
@@ -48,7 +48,14 @@ trait HasMacroParadise extends ScalaModule {
   def compileIvyDeps = macroPlugins
 }
 
-object flexpret extends CrossSbtModule with HasChisel3 with HasChiselTests with HasXsource211 with HasMacroParadise {
+trait HasCompilerPLugin extends ScalaModule {
+  // Enable macro paradise for @chiselName et al
+  val compilerPlugins = Agg(ivy"edu.berkeley.cs::chisel3-pluginorg:3.5.+")
+  def scalacPluginIvyDeps = compilerPlugins
+  def compileIvyDeps = compilerPlugins
+}
+
+object flexpret extends CrossSbtModule with HasCompilerPLugin with HasChisel3 with HasChiselTests with HasXsource211 with HasMacroParadise {
   def crossScalaVersion = "2.12.10"
   def mainClass = Some("Core.CoreMain")
 }

@@ -24,8 +24,6 @@ class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
     val write = Input(Bool())
     val data_in = Input(UInt(32.W))
   }
-
-  override def cloneType = (new InstMemCoreIO).asInstanceOf[this.type]
 }
 
 class ISpm(implicit conf: FlexpretConfiguration) extends Module {
