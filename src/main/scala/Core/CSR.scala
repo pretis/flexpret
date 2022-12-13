@@ -314,31 +314,25 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     // TODO: what happens with CSR write?
   }
 
-  // Do HW Lock
+  // Implement HW lock
   if (conf.hwLock) {
     val lock = Module(new Lock()).io
     lock.driveDefaultsFlipped()
 
-    // Detect writes to the lock CSR address
-    when (write && compare_addr(CSRs.hwlock)) {
-      when(data_in === LOCK_ACQUIRE) {
+    // Detect read to the lock CSR == lock acquisition
+    when (!write && compare_addr(CSRs.hwlock)) {
         // Acquire the lock. Put thread to sleep if it is not granted
-        lock.acquire.valid := true.B
-        lock.acquire.tid := io.rw.thread
-        // Put thread to sleep if we dont get a grant back
-        sleep := !lock.acquire.grant
-      }.elsewhen(data_in === LOCK_RELEASE) {
-        // Release the lock. Also wakup any thread which
-        //  is released by this action
-        lock.release.valid := true.B
-        lock.release.tid := io.rw.thread
-
-        // Check for released threads
-        when(lock.threadRelease.valid) {
-          // Signal scheduler that this thread can be scheduled again
-          wake(lock.threadRelease.tid) := true.B
-        }
-      }
+        lock.valid := true.B
+        lock.acquire := true.B
+        lock.tid := io.rw.thread
+        data_out := lock.grant // 1 == success, 2 == failure
+    }
+    // Detect write to the lock CSR == lock release
+    when (write && compare_addr(CSRs.hwlock)) {
+      lock.valid := true.B
+      lock.acquire := false.B
+      lock.tid := io.rw.thread
+      assert(lock.grant, s"thread-${io.rw.thread} could not release lock")
     }
   }
 
