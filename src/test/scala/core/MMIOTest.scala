@@ -13,7 +13,7 @@ import chisel3.stage.ChiselStage
 import chisel3.util.DecoupledIO
 
 import chiseltest._
-import chiseltest.experimental.TestOptionBuilder._
+
 
 import flexpret.core._
 

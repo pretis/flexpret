@@ -4,7 +4,7 @@ import chisel3._
 import chiseltest._
 import flexpret.core.{FlexpretConfiguration, InstMemConfiguration}
 import org.scalatest._
-import chiseltest.experimental.TestOptionBuilder._
+
 import treadle.WriteVcdAnnotation
 class WishboneTest extends FlatSpec with ChiselScalatestTester {
 

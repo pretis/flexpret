@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 import chisel3._
 
 import chiseltest._
-import chiseltest.experimental.TestOptionBuilder._
+
 
 import Core.FlexpretConstants._
 import Core.CSRs

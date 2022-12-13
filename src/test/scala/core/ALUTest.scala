@@ -12,7 +12,7 @@ import org.scalatest._
 import chisel3._
 
 import chiseltest._
-import chiseltest.experimental.TestOptionBuilder._
+
 
 import flexpret.core.ALU
 import flexpret.core.ALUTypes
