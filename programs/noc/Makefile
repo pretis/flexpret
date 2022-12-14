@@ -10,4 +10,4 @@ clean:
 
 rebuild: clean build
 
-PHONY: build clean
+PHONY: build clean rebuild

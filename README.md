@@ -8,6 +8,59 @@ For more information on the processor architecture:
 * Michael Zimmer, "[Predictable Processors for Mixed-Criticality Systems and Precision-Timed I/O](http://www2.eecs.berkeley.edu/Pubs/TechRpts/2015/EECS-2015-181.pdf)," Ph.D. Dissertation, EECS Department, University of California, Berkeley, UCB/EECS-2015-181, 2015.
 * Michael Zimmer, David Broman, Chris Shaver, Edward A. Lee. "[FlexPRET: A Processor Platform for Mixed-Criticality Systems](http://chess.eecs.berkeley.edu/pubs/1048.html). Proceedings of the 20th IEEE Real-Time and Embedded Technology and Application Symposium (RTAS), April, 2014.
 
+# Hello Multicore
+
+**Prerequisits**
+1. 32 bit riscv-gcc installed and on the path #TODO: Link to prebuilt binaries
+2. sbt #TODO: Version?
+3. verilator #TODO: Version?
+
+To get a hello-world multicore program running on a quadcore FlexPRET, proceed as follows:
+1. Pull down the soc-comm dependency and publish it locally
+```
+cd somewhere
+git clone https://github.com/t-crest/soc-comm
+cd soc-comm
+sbt "publishLocal"
+cd back-to-flexpret
+```
+2. Source environment variables for convenience
+```
+source env.bash
+```
+3. Build the Quad-core FlexPRET SoC
+```
+make remulator
+```
+
+4. Build a simple program on 4 cores
+```
+cd programs/noc
+make
+```
+
+This will create 4 programs core0.mem ... core3.mem. The naming is important as
+Verilator expects to find those files containing the programs for each core *in
+the directory in which it is invoked from*
+
+5. Run the verilator emulator
+```
+fp-emu
+```
+Note that this must happen in the same folder as core0.mem ... core3.mem is
+located.
+
+## To understand what is going on ...
+- Checkout `flexpret_wb.h` and `flexpret_noc.h` to see how the protocol FP <-> WB-master and WBmaster <-> NoC WB device
+- See Top.scala to see how the multicore SoC, wishbone masters and NoC is instantiated and connected
+
+## Current limitations
+1. Only a single thread should use the Wishbone master connected to each FP core.
+This means that each core should have one delegate thread doing the
+communication. This fits well with the Federated execution in LF.
+2. The Wishbone and NoC header-only libraries are very simple and might deadlock
+   if you try to send to the wrong address. They should be revised
+
 # Quickstart
 
 After cloning the repository, update submodules with:
