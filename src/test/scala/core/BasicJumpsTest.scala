@@ -6,18 +6,12 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
-import chisel3._
-
 import chiseltest._
-
-
-import Core.FlexpretConstants._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import flexpret.core._
 
-class BasicJumpsTest extends FlatSpec with ChiselScalatestTester {
+class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Basic jumps"
 
   val threads = 1

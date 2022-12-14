@@ -15,7 +15,7 @@ class TopIO(topCfg: TopConfig) extends Bundle {
   val host = new HostIO()
 }
 
-class Top(topCfg: TopConfig) extends MultiIOModule {
+class Top(topCfg: TopConfig) extends Module {
   val io = IO(new TopIO(topCfg))
   // FlexPret core
   val core = Module(new Core(topCfg.coreCfg))

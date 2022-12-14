@@ -6,18 +6,17 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
 import chisel3.stage.ChiselStage
 import chisel3.util.DecoupledIO
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 
 import flexpret.core._
 
-class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
+class MMIOCoreTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "MMIOCore"
 
   val config = Seq(
@@ -32,7 +31,7 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
   def waitForDecoupled(c: Module, d: DecoupledIO[Data]): Unit = {
     timescope {
       d.valid.poke(false.B)
-      while(d.ready.peek().litValue() == 0) {
+      while(d.ready.peek().litValue == 0) {
         c.clock.step()
       }
     }
@@ -80,13 +79,13 @@ class MMIOCoreTest extends FlatSpec with ChiselScalatestTester {
 
     timescope {
       c.io.readResp.ready.poke(true.B)
-      while(c.io.readResp.valid.peek().litValue() == 0) {
+      while(c.io.readResp.valid.peek().litValue == 0) {
         c.clock.step()
       }
       c.io.readResp.bits.addr.expect(2.U)
       c.io.readResp.bits.data.expect(1.U)
       c.clock.step()
-      while(c.io.readResp.valid.peek().litValue() == 0) {
+      while(c.io.readResp.valid.peek().litValue == 0) {
         c.clock.step()
       }
       c.io.readResp.bits.addr.expect(0.U)

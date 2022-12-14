@@ -2,11 +2,11 @@ package flexpret.Wishbone
 
 import chisel3._
 import chiseltest._
-import flexpret.core.{FlexpretConfiguration, InstMemConfiguration}
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-import treadle.WriteVcdAnnotation
-class WishboneTest extends FlatSpec with ChiselScalatestTester {
+import flexpret.core.{FlexpretConfiguration, InstMemConfiguration}
+
+class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
 
   behavior of "Wishbone"
 
