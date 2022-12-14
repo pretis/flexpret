@@ -20,7 +20,7 @@ ISPM_KBYTES ?= 256
 DSPM_KBYTES ?= 256
 MUL ?= false
 SUFFIX ?= all
-N_CORES ?= 2
+N_CORES ?= 4
 
 # Target
 # TARGET=[emulator/fpga]: Select target
