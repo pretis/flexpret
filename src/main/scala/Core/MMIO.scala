@@ -160,7 +160,7 @@ package object core {
     io.readResp <> readRespQueue.io.deq
     // We can handle incoming requests when we have space in the output queue
     io.readReq.ready := readRespQueue.io.enq.ready
-    when (io.readReq.fire()) {
+    when (io.readReq.fire) {
       // Read from IO and enqueue into output queue.
       val addr = io.readReq.bits
       val resp = Wire(new MMIOReadRespIO)
@@ -168,7 +168,7 @@ package object core {
       resp.data := io.ins.readByAddress(addr)
 
       readRespQueue.io.enq.enq(resp)
-      assert(readRespQueue.io.enq.fire())
+      assert(readRespQueue.io.enq.fire)
     } .otherwise {
       readRespQueue.io.enq.noenq()
     }

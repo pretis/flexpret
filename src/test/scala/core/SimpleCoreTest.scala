@@ -6,22 +6,15 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
-import chisel3._
-
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-
-import Core.FlexpretConstants._
 
 import flexpret.core.Core
-import flexpret.core.Datapath
 import flexpret.core.FlexpretConfiguration
 import flexpret.core.InstMemConfiguration
-import flexpret.core.InstMemCoreIO
 
-class SimpleCoreTest extends FlatSpec with ChiselScalatestTester {
+class SimpleCoreTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Core (simple config)"
 
   val threads = 1

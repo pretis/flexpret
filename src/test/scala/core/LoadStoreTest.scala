@@ -6,11 +6,10 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 
 import Core.FlexpretConstants._
@@ -19,7 +18,7 @@ import Core.LoadStore
 import flexpret.core.FlexpretConfiguration
 import flexpret.core.InstMemConfiguration
 
-class LoadStoreTest extends FlatSpec with ChiselScalatestTester {
+class LoadStoreTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "LoadStore"
 
   val threads = 1

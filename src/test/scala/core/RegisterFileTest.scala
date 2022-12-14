@@ -6,19 +6,16 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 
-import Core.FlexpretConstants._
 
 import flexpret.core.{RegisterFile, RegisterFileReadIO, RegisterFileWriteIO}
-import flexpret.core.FlexpretConfiguration
 
-class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
+class RegisterFileTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"
 
   val threads = 3

@@ -7,17 +7,15 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
-
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 
 import flexpret.core.ALU
 import flexpret.core.ALUTypes
 
-class ALUTest extends FlatSpec with ChiselScalatestTester {
+class ALUTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "ALU"
 
   def alu = new ALU()

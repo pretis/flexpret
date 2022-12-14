@@ -6,18 +6,14 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
 
 import chiseltest._
-
-
-import Core.FlexpretConstants._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import flexpret.core._
 
-class DatapathTest extends FlatSpec with ChiselScalatestTester {
+class DatapathTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Datapath"
 
   val threads = 1
@@ -30,7 +26,7 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
     // This test confirms that the datapath expects a 1-cycle latency regfile
     // as opposed to 2-cycle.
 
-    test(new MultiIOModule {
+    test(new Module {
       // Hook up the datapath module to a Control module
       val datapathModule = Module(datapath)
       datapathModule.io.gpio <> DontCare
@@ -60,7 +56,7 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
 
       var lastCycleRS2_1 = -1
       (0 until cycles).foreach { _ =>
-        lastCycleRS1_1 = c.debugIO.rs1_addr.peek.litValue().toInt
+        lastCycleRS1_1 = c.debugIO.rs1_addr.peek.litValue.toInt
         // For upcoming cycle
         if (lastCycleRS1_1 == 0) {
           c.debugIO.rs1_value.poke(0.U)
@@ -70,7 +66,7 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
           c.debugIO.rs1_value.poke("h2222_2222".U)
         }
 
-        lastCycleRS2_1 = c.debugIO.rs2_addr.peek.litValue().toInt
+        lastCycleRS2_1 = c.debugIO.rs2_addr.peek.litValue.toInt
         // For upcoming cycle
         if (lastCycleRS2_1 == 0) {
           c.debugIO.rs2_value.poke(0.U)
@@ -81,7 +77,7 @@ class DatapathTest extends FlatSpec with ChiselScalatestTester {
         }
 
         // Simulate one instruction add x3, x2, x1 followed by nops
-        if (c.imem.r.enable.peek.litValue() > 0) {
+        if (c.imem.r.enable.peek.litValue > 0) {
           lastCycleImem = true
         }
         if (lastCycleImem) {
