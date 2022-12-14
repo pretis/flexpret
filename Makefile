@@ -61,9 +61,9 @@ all: $(TARGET)
 VERILOG_RAW = build/$(MODULE).v
 verilog_raw: $(VERILOG_RAW)
 
-
+# --no-dedup flag is to make it possible to load programs directly into the ISpms
 $(VERILOG_RAW): 
-	sbt 'run $(CORE_CONFIG) --target-dir $(BUILD_DIR)'
+	sbt 'run $(CORE_CONFIG) --no-dedup --target-dir $(BUILD_DIR)'
 
 # FPGA Verilog generation
 FPGA_SRC_DIR = $(FPGA_DIR)/generated-src/$(CORE_CONFIG)
@@ -102,7 +102,7 @@ clean:
 	rm -f $(EMULATOR_BIN)
 	rm -rf ./build
 	rm -rf emulator/obj_dir
-	rm -f emulator/Core.sim.v
+	rm -f emulator/$(MODULE).sim.v
 	rm -rf out
 	
 
@@ -113,7 +113,7 @@ cleanall:
 	rm -f $(EMULATOR_BIN)
 	rm -rf ./build
 	rm -rf emulator/obj_dir
-	rm -f emulator/Core.sim.v
+	rm -f emulator/$(MODULE).sim.v
 	rm -rf out
 	rm -f fpga/firrtl.jar
 	rm -f mill

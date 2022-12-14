@@ -8,7 +8,9 @@ HDL_SCRIPTS = $(SCRIPTS_DIR)/hdl
 
 $(EMULATOR_BIN): $(VERILOG_RAW) $(EMULATOR_DIR)/main.cpp $(HDL_SCRIPTS)/simify_verilog.py
 	# Inject the right simulation constructs
+	# FIXME: Remove this alltogether, currently only used for  enabling tracing
 	$(HDL_SCRIPTS)/simify_verilog.py $(VERILOG_RAW) > $(EMULATOR_DIR)/$(MODULE).sim.v
+	
 
 	(cd $(EMULATOR_DIR) && verilator --cc $(MODULE).sim.v --exe --trace --build main.cpp)
 
