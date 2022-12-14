@@ -116,7 +116,7 @@ class WishboneMaster(addrBits: Int)(implicit conf: FlexpretConfiguration) extend
       }.elsewhen(wDoWrite) {
         regState := sDoWrite
       }
-      assert(!wbIO.ack, "WBm in idle mode and recived ACK")
+//      assert(!wbIO.ack, "WBm in idle mode and recived ACK")
     }
 
     // Perform read operation. Drive read signals until we get an ack

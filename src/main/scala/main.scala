@@ -26,7 +26,8 @@ object CoreMain {
     }
 
     val topConfig = TopConfig(
-      coreCfg = coreCfg
+      coreCfg = coreCfg,
+      nCores = 2
     )
 
     // Pass configuration to FlexPRET processor.
