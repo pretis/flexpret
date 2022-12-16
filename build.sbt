@@ -21,3 +21,5 @@ libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.4"
 // disable publish scala version, otherwise artifact name will include scala version
 // e.g cassper_2.11
 crossPaths := false
+
+lazy val flexpret = (project in file("."))
