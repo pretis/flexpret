@@ -36,12 +36,12 @@ object CoreMain {
       Array("")
     }
 
-    val topConfig = TopConfig(
-      coreCfg = coreCfg,
-      nCores = nCores
-    )
-
-    // Pass configuration to FlexPRET processor.
-    (new chisel3.stage.ChiselStage).emitVerilog(new Top(topConfig), chiselArgs)
+//    val topConfig = TopConfig(
+//      coreCfg = coreCfg,
+//      nCores = nCores
+//    )
+//
+//    // Pass configuration to FlexPRET processor.
+//    (new chisel3.stage.ChiselStage).emitVerilog(new Top(topConfig), chiselArgs)
   }
 }
