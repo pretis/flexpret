@@ -325,7 +325,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
         lock.valid := true.B
         lock.acquire := true.B
         lock.tid := io.rw.thread
-        data_out := lock.grant // 1 == success, 2 == failure
+        data_out := lock.grant // 1 == success, 0 == failure
     }
     // Detect write to the lock CSR == lock release
     when (write && compare_addr(CSRs.hwlock)) {
