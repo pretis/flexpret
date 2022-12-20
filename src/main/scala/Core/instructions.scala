@@ -233,6 +233,7 @@ object Causes {
     res.toArray
   }
 }
+// 0xc__ CSRs are read-only.
 object CSRs {
   val fflags = 0x1
   val frm = 0x2
@@ -257,6 +258,7 @@ object CSRs {
   val reset = 0x51d
   val tohost = 0x51e
   val fromhost = 0x51f
+  val hwlock = 0x520
   val cycle = 0xc00
   val time = 0xc01
   val instret = 0xc02
@@ -276,11 +278,11 @@ object CSRs {
   val uarch13 = 0xccd
   val uarch14 = 0xcce
   val uarch15 = 0xccf
+  // Extra CSRs to account for 32-bit architecture
   val counth = 0x586
   val cycleh = 0xc80
   val timeh = 0xc81
   val instreth = 0xc82
-  val hwlock = 0xc83 // FIXME: What address can I use for my Lock?
   //flexpret
   val clock = fflags
   val slots = badvaddr
@@ -315,10 +317,11 @@ object CSRs {
     res += reset
     res += tohost
     res += fromhost
+    res += hwlock
     res += cycle
     res += time
     res += instret
-    res += hwlock
+    res += uarch0
     res += uarch1
     res += uarch2
     res += uarch3

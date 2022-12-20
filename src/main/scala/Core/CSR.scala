@@ -121,7 +121,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   // check permission (if privileged)
   val priv_fault = WireInit(false.B) // default value
   if (conf.privilegedMode) {
-    val addr_read_only = io.rw.addr(11, 10) === 3.U
+    val addr_read_only = io.rw.addr(11, 10) === 3.U // 0xC__ suggests read-only.
     val addr_no_priv = (io.rw.addr(9, 8) =/= 0.U) && (reg_prv(io.rw.thread) === 0.U(2.W))
     when(io.rw.write && (addr_read_only || addr_no_priv)) {
       priv_fault := true.B
@@ -321,18 +321,24 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
     // Detect read to the lock CSR == lock acquisition
     when (!write && compare_addr(CSRs.hwlock)) {
-        // Acquire the lock. Put thread to sleep if it is not granted
-        lock.valid := true.B
-        lock.acquire := true.B
-        lock.tid := io.rw.thread
-        data_out := lock.grant // 1 == success, 0 == failure
+        assert(false.B);
     }
     // Detect write to the lock CSR == lock release
     when (write && compare_addr(CSRs.hwlock)) {
+      // When "CSRRW rd, hwlock, 0", acquire the lock.
       lock.valid := true.B
-      lock.acquire := false.B
       lock.tid := io.rw.thread
-      assert(lock.grant, s"thread-${io.rw.thread} could not release lock")
+      data_out := lock.grant
+      when(io.rw.data_in === 1.U) {
+        lock.acquire := true.B
+      }.elsewhen (io.rw.data_in === 0.U) {
+        lock.acquire := false.B
+        // If for some reason, the lock cannot be released,
+        // raise an exception.
+        assert(lock.grant, s"thread-${io.rw.thread} could not release lock")
+      }.otherwise {
+        assert(false.B)
+      }
     }
   }
 
