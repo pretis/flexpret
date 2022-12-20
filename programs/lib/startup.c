@@ -1,7 +1,9 @@
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <stdint.h>
 #include <flexpret_io.h>
+#ifndef BOOTLOADER
 #include "tinyalloc/tinyalloc.h"
+#endif
 
 #define DSPM_LIMIT          ((void*)0x2003E800) // 0x3E800 = 256K
 #define TA_MAX_HEAP_BLOCK   1000
@@ -20,6 +22,7 @@ int main(void);
 /**
  * Allocate a requested memory and return a pointer to it.
  */
+#ifndef BOOTLOADER
 void *malloc(size_t size) {
     return ta_alloc(size);
 }
@@ -47,6 +50,7 @@ void *realloc(void *ptr, size_t size) {
 void free(void *ptr) {
     ta_free(ptr);
 }
+#endif // BOOTLOADER
 
 /**
  * Initialize initialized global variables, set uninitialized global variables
@@ -69,6 +73,7 @@ void Reset_Handler(void) {
         *pDst++ = 0;
     }
 
+    #ifndef BOOTLOADER
     // Initialize tinyalloc.
     ta_init( 
         &end, // start of the heap space
@@ -77,9 +82,11 @@ void Reset_Handler(void) {
         16, // split_thresh: 16 bytes (Only used when reusing blocks.)
         TA_ALIGNMENT
     );
+    #endif
 
-    // Call main().
+
     main();
+
 
     // Exit by calling the _exit() syscall.
     _exit(0);
