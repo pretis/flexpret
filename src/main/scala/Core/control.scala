@@ -553,5 +553,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   io.mem_rd_write  := mem_rd_write
 
 
+  assert(!io.exe_exception, "Exeception in execute stage")
+
 }
 
