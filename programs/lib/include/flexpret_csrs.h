@@ -1,6 +1,7 @@
 #ifndef FLEXPRET_CSRS_H
 #define FLEXPRET_CSRS_H
 
+#define CSR_COREID      0x510
 #define CSR_TOHOST      0x51e
 #define CSR_FROMHOST    0x51f
 #define CSR_CYCLE       0xc00

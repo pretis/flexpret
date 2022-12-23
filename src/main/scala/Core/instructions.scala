@@ -254,6 +254,7 @@ object CSRs {
   val fatc = 0x50d
   val send_ipi = 0x50e
   val clear_ipi = 0x50f
+  val core_id = 0x510
   val reset = 0x51d
   val tohost = 0x51e
   val fromhost = 0x51f

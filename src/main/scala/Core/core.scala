@@ -20,7 +20,7 @@ object FlexpretConfiguration {
   /**
    * Parse a given configuration string into a FlexpretConfiguration.
    */
-  def parseString(confString: String): FlexpretConfiguration = {
+  def parseString(confString: String, coreId: Int=0): FlexpretConfiguration = {
     val parsed = """(\d+)t(.*)-(\d+)i-(\d+)d.*-(.*)""".r.findFirstMatchIn(confString)
     new FlexpretConfiguration(
       parsed.get.group(1).toInt,
@@ -28,14 +28,15 @@ object FlexpretConfiguration {
       InstMemConfiguration(bypass=false, parsed.get.group(3).toInt),
       parsed.get.group(4).toInt,
       confString contains "mul",
-      parsed.get.group(5)
+      parsed.get.group(5),
+      coreId
     )
   }
 
   def defaultConfig: FlexpretConfiguration = {
     new FlexpretConfiguration(threads=1, flex=false,
       InstMemConfiguration(bypass=false, sizeKB=4),
-      dMemKB=256, mul=false, features="all")
+      dMemKB=256, mul=false, features="all", coreId=0)
   }
 }
 
@@ -50,7 +51,7 @@ case class InstMemConfiguration(
 
 case class FlexpretConfiguration(threads: Int, flex: Boolean,
   imemConfig: InstMemConfiguration,
-  dMemKB: Int, mul: Boolean, features: String) {
+  dMemKB: Int, mul: Boolean, features: String, coreId: Int) {
   println("features: " + features)
   val mt = threads > 1
   val stats = features == "all"
