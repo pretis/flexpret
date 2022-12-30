@@ -8,6 +8,7 @@
 
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <stdint.h>
+#include <stdbool.h>
 #include <flexpret_io.h>
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
@@ -24,8 +25,8 @@ extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
 extern uint32_t end;
 
-static uint32_t __ready__    = 0; // FIXME: Replace by a condition variable.
-extern uint32_t num_busy_workers;
+static bool     __ready__;
+extern uint32_t num_threads_exited;
 
 //prototype of main
 int main(void);
@@ -65,7 +66,10 @@ void free(void *ptr) {
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
-void Reset_Handler(uint32_t hartid) {
+void Reset_Handler() {
+    // Get hartid
+    uint32_t hartid = read_hartid();
+
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {
@@ -96,13 +100,13 @@ void Reset_Handler(uint32_t hartid) {
 
         // Signal ready.
         lock_acquire();
-        __ready__ = 1;
+        __ready__ = true;
         lock_release();
     } else {
         // Wait for thread 0 to finish setup.
         // FIXME: Use delay until (DU)
         // for precise synchronization.
-        while (__ready__ != 1);
+        while (!__ready__);
     }
 
     // Call main().
@@ -114,8 +118,11 @@ void Reset_Handler(uint32_t hartid) {
 
     // Exit by calling the _exit() syscall.
     if (hartid == 0) {
-        // Wait for all the worker threads to finish.
-        while (num_busy_workers > 0);
+        // Mark the main thread as exited.
+        num_threads_exited += 1;
+
+        // Wait for all hardware worker threads to exit.
+        while (num_threads_exited < NUM_THREADS);
 
         // Exit the program.
         _exit(0);
