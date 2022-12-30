@@ -1,4 +1,5 @@
 #include <flexpret_csrs.h>
+#include <flexpret_io.h>
 
 #ifndef FLEXPRET_LOCK_H
 #define FLEXPRET_Lock_H

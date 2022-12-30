@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <flexpret_csrs.h>
 
 #ifndef FLEXPRET_IO_H

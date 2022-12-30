@@ -10,15 +10,12 @@
 #include <stdint.h>
 #include <flexpret_io.h>
 #include <flexpret_lock.h>
+#include <flexpret_thread.h>
 #include "tinyalloc/tinyalloc.h"
 
 #define DSPM_LIMIT          ((void*)0x20040000) // 0x40000 = 256K
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
-
-#ifndef NUM_THREADS
-#define NUM_THREADS 1
-#endif
 
 extern uint32_t __etext;
 extern uint32_t __data_start__;
@@ -28,7 +25,7 @@ extern uint32_t __bss_end__;
 extern uint32_t end;
 
 static uint32_t __ready__    = 0; // FIXME: Replace by a condition variable.
-static uint32_t __num_done__ = 0; // FIXME: Replace by a condition variable.
+extern uint32_t num_busy_workers;
 
 //prototype of main
 int main(void);
@@ -109,23 +106,20 @@ void Reset_Handler(uint32_t hartid) {
     }
 
     // Call main().
-    main();
+    if (hartid == 0) {
+        main();
+    } else {
+        worker_main();
+    }
 
     // Exit by calling the _exit() syscall.
     if (hartid == 0) {
-        lock_acquire();
-        __num_done__ += 1;
-        lock_release();
-
-        // Wait for all the threads to finish.
-        while (__num_done__ < NUM_THREADS);
+        // Wait for all the worker threads to finish.
+        while (num_busy_workers > 0);
 
         // Exit the program.
         _exit(0);
     } else {
-        lock_acquire();
-        __num_done__ += 1;
-        lock_release();
         while (1);
     }
 }

@@ -1,0 +1,2111 @@
+
+add.riscv:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+    li t0, 0x88888888
+    csrw 0x50c, t0 // 0x50c = dMemProtection CSR
+.endm
+
+_start:
+    setHartid           // set a0 to hartid
+       0:	50b02573          	csrr	a0,0x50b
+    setStackPointer	
+       4:	20040137          	lui	sp,0x20040
+       8:	00e51293          	slli	t0,a0,0xe
+       c:	40510133          	sub	sp,sp,t0
+    setGlobalPointer
+      10:	20001197          	auipc	gp,0x20001
+      14:	c1818193          	addi	gp,gp,-1000 # 20000c28 <__global_pointer$>
+    setDMemProtection
+      18:	888892b7          	lui	t0,0x88889
+      1c:	88828293          	addi	t0,t0,-1912 # 88888888 <__global_pointer$+0x68887c60>
+      20:	50c29073          	csrw	0x50c,t0
+    call Reset_Handler  // a0 = hartid
+      24:	69d000ef          	jal	ra,ec0 <Reset_Handler>
+
+00000028 <_fp_finish>:
+  write_csr(CSR_TOHOST, 0xbaaabaaa);
+  write_csr(CSR_TOHOST, val);
+}
+
+// Finish/stop the simulation
+static inline void _fp_finish() {
+      28:	ff010113          	addi	sp,sp,-16 # 2003fff0 <__global_pointer$+0x3f3c8>
+      2c:	00812623          	sw	s0,12(sp)
+      30:	01010413          	addi	s0,sp,16
+  write_csr(CSR_TOHOST, 0xdeaddead);
+      34:	deade7b7          	lui	a5,0xdeade
+      38:	ead78793          	addi	a5,a5,-339 # deaddead <__global_pointer$+0xbeadd285>
+      3c:	51e79073          	csrw	0x51e,a5
+}
+      40:	00000013          	nop
+      44:	00c12403          	lw	s0,12(sp)
+      48:	01010113          	addi	sp,sp,16
+      4c:	00008067          	ret
+
+00000050 <_close>:
+#include <sys/stat.h>   // Defines struct stat.
+#include <flexpret_io.h>
+
+int errno;
+
+int _close(int fildes) {
+      50:	fe010113          	addi	sp,sp,-32
+      54:	00112e23          	sw	ra,28(sp)
+      58:	00812c23          	sw	s0,24(sp)
+      5c:	02010413          	addi	s0,sp,32
+      60:	fea42623          	sw	a0,-20(s0)
+    errno = ENOSYS;
+      64:	510010ef          	jal	ra,1574 <__errno>
+      68:	00050713          	mv	a4,a0
+      6c:	05800793          	li	a5,88
+      70:	00f72023          	sw	a5,0(a4)
+    return -1;
+      74:	fff00793          	li	a5,-1
+}
+      78:	00078513          	mv	a0,a5
+      7c:	01c12083          	lw	ra,28(sp)
+      80:	01812403          	lw	s0,24(sp)
+      84:	02010113          	addi	sp,sp,32
+      88:	00008067          	ret
+
+0000008c <_exit>:
+
+// FIXME: Does this also work on the FPGA?
+void _exit(int rc) {
+      8c:	fe010113          	addi	sp,sp,-32
+      90:	00112e23          	sw	ra,28(sp)
+      94:	00812c23          	sw	s0,24(sp)
+      98:	02010413          	addi	s0,sp,32
+      9c:	fea42623          	sw	a0,-20(s0)
+    _fp_finish();
+      a0:	f89ff0ef          	jal	ra,28 <_fp_finish>
+    while(1) {}
+      a4:	0000006f          	j	a4 <_exit+0x18>
+
+000000a8 <_fstat>:
+    __builtin_unreachable();
+}
+
+int _fstat(int fildes, struct stat *st) {
+      a8:	fe010113          	addi	sp,sp,-32
+      ac:	00112e23          	sw	ra,28(sp)
+      b0:	00812c23          	sw	s0,24(sp)
+      b4:	02010413          	addi	s0,sp,32
+      b8:	fea42623          	sw	a0,-20(s0)
+      bc:	feb42423          	sw	a1,-24(s0)
+    errno = ENOSYS;
+      c0:	4b4010ef          	jal	ra,1574 <__errno>
+      c4:	00050713          	mv	a4,a0
+      c8:	05800793          	li	a5,88
+      cc:	00f72023          	sw	a5,0(a4)
+    return -1;
+      d0:	fff00793          	li	a5,-1
+}
+      d4:	00078513          	mv	a0,a5
+      d8:	01c12083          	lw	ra,28(sp)
+      dc:	01812403          	lw	s0,24(sp)
+      e0:	02010113          	addi	sp,sp,32
+      e4:	00008067          	ret
+
+000000e8 <_getpid>:
+
+int _getpid(void){
+      e8:	ff010113          	addi	sp,sp,-16
+      ec:	00112623          	sw	ra,12(sp)
+      f0:	00812423          	sw	s0,8(sp)
+      f4:	01010413          	addi	s0,sp,16
+    errno = ENOSYS;
+      f8:	47c010ef          	jal	ra,1574 <__errno>
+      fc:	00050713          	mv	a4,a0
+     100:	05800793          	li	a5,88
+     104:	00f72023          	sw	a5,0(a4)
+    return -1;
+     108:	fff00793          	li	a5,-1
+}
+     10c:	00078513          	mv	a0,a5
+     110:	00c12083          	lw	ra,12(sp)
+     114:	00812403          	lw	s0,8(sp)
+     118:	01010113          	addi	sp,sp,16
+     11c:	00008067          	ret
+
+00000120 <_isatty>:
+
+int _isatty(int file) {
+     120:	fe010113          	addi	sp,sp,-32
+     124:	00112e23          	sw	ra,28(sp)
+     128:	00812c23          	sw	s0,24(sp)
+     12c:	02010413          	addi	s0,sp,32
+     130:	fea42623          	sw	a0,-20(s0)
+    errno = ENOSYS;
+     134:	440010ef          	jal	ra,1574 <__errno>
+     138:	00050713          	mv	a4,a0
+     13c:	05800793          	li	a5,88
+     140:	00f72023          	sw	a5,0(a4)
+    return 0;
+     144:	00000793          	li	a5,0
+}
+     148:	00078513          	mv	a0,a5
+     14c:	01c12083          	lw	ra,28(sp)
+     150:	01812403          	lw	s0,24(sp)
+     154:	02010113          	addi	sp,sp,32
+     158:	00008067          	ret
+
+0000015c <_kill>:
+
+int _kill(int pid, int sig) {
+     15c:	fe010113          	addi	sp,sp,-32
+     160:	00112e23          	sw	ra,28(sp)
+     164:	00812c23          	sw	s0,24(sp)
+     168:	02010413          	addi	s0,sp,32
+     16c:	fea42623          	sw	a0,-20(s0)
+     170:	feb42423          	sw	a1,-24(s0)
+    errno = ENOSYS;
+     174:	400010ef          	jal	ra,1574 <__errno>
+     178:	00050713          	mv	a4,a0
+     17c:	05800793          	li	a5,88
+     180:	00f72023          	sw	a5,0(a4)
+    return -1;
+     184:	fff00793          	li	a5,-1
+}
+     188:	00078513          	mv	a0,a5
+     18c:	01c12083          	lw	ra,28(sp)
+     190:	01812403          	lw	s0,24(sp)
+     194:	02010113          	addi	sp,sp,32
+     198:	00008067          	ret
+
+0000019c <_lseek>:
+
+int _lseek(int file, int ptr, int dir) {
+     19c:	fe010113          	addi	sp,sp,-32
+     1a0:	00112e23          	sw	ra,28(sp)
+     1a4:	00812c23          	sw	s0,24(sp)
+     1a8:	02010413          	addi	s0,sp,32
+     1ac:	fea42623          	sw	a0,-20(s0)
+     1b0:	feb42423          	sw	a1,-24(s0)
+     1b4:	fec42223          	sw	a2,-28(s0)
+    errno = ENOSYS;
+     1b8:	3bc010ef          	jal	ra,1574 <__errno>
+     1bc:	00050713          	mv	a4,a0
+     1c0:	05800793          	li	a5,88
+     1c4:	00f72023          	sw	a5,0(a4)
+    return -1;
+     1c8:	fff00793          	li	a5,-1
+}
+     1cc:	00078513          	mv	a0,a5
+     1d0:	01c12083          	lw	ra,28(sp)
+     1d4:	01812403          	lw	s0,24(sp)
+     1d8:	02010113          	addi	sp,sp,32
+     1dc:	00008067          	ret
+
+000001e0 <_read>:
+
+int _read (int file, char *ptr, int len) {
+     1e0:	fe010113          	addi	sp,sp,-32
+     1e4:	00112e23          	sw	ra,28(sp)
+     1e8:	00812c23          	sw	s0,24(sp)
+     1ec:	02010413          	addi	s0,sp,32
+     1f0:	fea42623          	sw	a0,-20(s0)
+     1f4:	feb42423          	sw	a1,-24(s0)
+     1f8:	fec42223          	sw	a2,-28(s0)
+  	errno = ENOSYS;
+     1fc:	378010ef          	jal	ra,1574 <__errno>
+     200:	00050713          	mv	a4,a0
+     204:	05800793          	li	a5,88
+     208:	00f72023          	sw	a5,0(a4)
+  	return -1;
+     20c:	fff00793          	li	a5,-1
+}
+     210:	00078513          	mv	a0,a5
+     214:	01c12083          	lw	ra,28(sp)
+     218:	01812403          	lw	s0,24(sp)
+     21c:	02010113          	addi	sp,sp,32
+     220:	00008067          	ret
+
+00000224 <_sbrk>:
+
+// FIXME: This should not be actually called because of tinyalloc.
+void *_sbrk(int incr) {
+     224:	fd010113          	addi	sp,sp,-48
+     228:	02812623          	sw	s0,44(sp)
+     22c:	03010413          	addi	s0,sp,48
+     230:	fca42e23          	sw	a0,-36(s0)
+   extern char   end; /* Set by linker.  */
+   static char * heap_end;
+   char *        prev_heap_end;
+
+   if (heap_end == 0)
+     234:	200007b7          	lui	a5,0x20000
+     238:	4307a783          	lw	a5,1072(a5) # 20000430 <heap_end.0>
+     23c:	00079863          	bnez	a5,24c <_sbrk+0x28>
+     heap_end = & end;
+     240:	200007b7          	lui	a5,0x20000
+     244:	85018713          	addi	a4,gp,-1968 # 20000478 <__bss_end__>
+     248:	42e7a823          	sw	a4,1072(a5) # 20000430 <heap_end.0>
+
+   prev_heap_end = heap_end;
+     24c:	200007b7          	lui	a5,0x20000
+     250:	4307a783          	lw	a5,1072(a5) # 20000430 <heap_end.0>
+     254:	fef42623          	sw	a5,-20(s0)
+   heap_end += incr;
+     258:	200007b7          	lui	a5,0x20000
+     25c:	4307a703          	lw	a4,1072(a5) # 20000430 <heap_end.0>
+     260:	fdc42783          	lw	a5,-36(s0)
+     264:	00f70733          	add	a4,a4,a5
+     268:	200007b7          	lui	a5,0x20000
+     26c:	42e7a823          	sw	a4,1072(a5) # 20000430 <heap_end.0>
+
+   return (void *) prev_heap_end;
+     270:	fec42783          	lw	a5,-20(s0)
+}
+     274:	00078513          	mv	a0,a5
+     278:	02c12403          	lw	s0,44(sp)
+     27c:	03010113          	addi	sp,sp,48
+     280:	00008067          	ret
+
+00000284 <_write>:
+
+int _write (int file, char *ptr, int len) {
+     284:	fe010113          	addi	sp,sp,-32
+     288:	00112e23          	sw	ra,28(sp)
+     28c:	00812c23          	sw	s0,24(sp)
+     290:	02010413          	addi	s0,sp,32
+     294:	fea42623          	sw	a0,-20(s0)
+     298:	feb42423          	sw	a1,-24(s0)
+     29c:	fec42223          	sw	a2,-28(s0)
+  	errno = ENOSYS;
+     2a0:	2d4010ef          	jal	ra,1574 <__errno>
+     2a4:	00050713          	mv	a4,a0
+     2a8:	05800793          	li	a5,88
+     2ac:	00f72023          	sw	a5,0(a4)
+  	return -1;
+     2b0:	fff00793          	li	a5,-1
+}
+     2b4:	00078513          	mv	a0,a5
+     2b8:	01c12083          	lw	ra,28(sp)
+     2bc:	01812403          	lw	s0,24(sp)
+     2c0:	02010113          	addi	sp,sp,32
+     2c4:	00008067          	ret
+
+000002c8 <insert_block>:
+ * If compaction is enabled, inserts block
+ * into free list, sorted by addr.
+ * If disabled, add block has new head of
+ * the free list.
+ */
+static void insert_block(Block *block) {
+     2c8:	fd010113          	addi	sp,sp,-48
+     2cc:	02812623          	sw	s0,44(sp)
+     2d0:	03010413          	addi	s0,sp,48
+     2d4:	fca42e23          	sw	a0,-36(s0)
+#ifndef TA_DISABLE_COMPACT
+    Block *ptr  = heap->free;
+     2d8:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     2dc:	0007a783          	lw	a5,0(a5)
+     2e0:	fef42623          	sw	a5,-20(s0)
+    Block *prev = NULL;
+     2e4:	fe042423          	sw	zero,-24(s0)
+    while (ptr != NULL) {
+     2e8:	0300006f          	j	318 <insert_block+0x50>
+        if ((size_t)block->addr <= (size_t)ptr->addr) {
+     2ec:	fdc42783          	lw	a5,-36(s0)
+     2f0:	0007a783          	lw	a5,0(a5)
+     2f4:	00078713          	mv	a4,a5
+     2f8:	fec42783          	lw	a5,-20(s0)
+     2fc:	0007a783          	lw	a5,0(a5)
+     300:	02e7f263          	bgeu	a5,a4,324 <insert_block+0x5c>
+            print_s("insert");
+            print_i((size_t)ptr);
+            break;
+        }
+        prev = ptr;
+     304:	fec42783          	lw	a5,-20(s0)
+     308:	fef42423          	sw	a5,-24(s0)
+        ptr  = ptr->next;
+     30c:	fec42783          	lw	a5,-20(s0)
+     310:	0047a783          	lw	a5,4(a5)
+     314:	fef42623          	sw	a5,-20(s0)
+    while (ptr != NULL) {
+     318:	fec42783          	lw	a5,-20(s0)
+     31c:	fc0798e3          	bnez	a5,2ec <insert_block+0x24>
+     320:	0080006f          	j	328 <insert_block+0x60>
+            break;
+     324:	00000013          	nop
+    }
+    if (prev != NULL) {
+     328:	fe842783          	lw	a5,-24(s0)
+     32c:	00078a63          	beqz	a5,340 <insert_block+0x78>
+        if (ptr == NULL) {
+            print_s("new tail");
+        }
+        prev->next = block;
+     330:	fe842783          	lw	a5,-24(s0)
+     334:	fdc42703          	lw	a4,-36(s0)
+     338:	00e7a223          	sw	a4,4(a5)
+     33c:	0100006f          	j	34c <insert_block+0x84>
+    } else {
+        print_s("new head");
+        heap->free = block;
+     340:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     344:	fdc42703          	lw	a4,-36(s0)
+     348:	00e7a023          	sw	a4,0(a5)
+    }
+    block->next = ptr;
+     34c:	fdc42783          	lw	a5,-36(s0)
+     350:	fec42703          	lw	a4,-20(s0)
+     354:	00e7a223          	sw	a4,4(a5)
+#else
+    block->next = heap->free;
+    heap->free  = block;
+#endif
+}
+     358:	00000013          	nop
+     35c:	02c12403          	lw	s0,44(sp)
+     360:	03010113          	addi	sp,sp,48
+     364:	00008067          	ret
+
+00000368 <release_blocks>:
+
+#ifndef TA_DISABLE_COMPACT
+static void release_blocks(Block *scan, Block *to) {
+     368:	fd010113          	addi	sp,sp,-48
+     36c:	02812623          	sw	s0,44(sp)
+     370:	03010413          	addi	s0,sp,48
+     374:	fca42e23          	sw	a0,-36(s0)
+     378:	fcb42c23          	sw	a1,-40(s0)
+    Block *scan_next;
+    while (scan != to) {
+     37c:	0440006f          	j	3c0 <release_blocks+0x58>
+        print_s("release");
+        print_i((size_t)scan);
+        scan_next   = scan->next;
+     380:	fdc42783          	lw	a5,-36(s0)
+     384:	0047a783          	lw	a5,4(a5)
+     388:	fef42623          	sw	a5,-20(s0)
+        scan->next  = heap->fresh;
+     38c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     390:	0087a703          	lw	a4,8(a5)
+     394:	fdc42783          	lw	a5,-36(s0)
+     398:	00e7a223          	sw	a4,4(a5)
+        heap->fresh = scan;
+     39c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     3a0:	fdc42703          	lw	a4,-36(s0)
+     3a4:	00e7a423          	sw	a4,8(a5)
+        scan->addr  = 0;
+     3a8:	fdc42783          	lw	a5,-36(s0)
+     3ac:	0007a023          	sw	zero,0(a5)
+        scan->size  = 0;
+     3b0:	fdc42783          	lw	a5,-36(s0)
+     3b4:	0007a423          	sw	zero,8(a5)
+        scan        = scan_next;
+     3b8:	fec42783          	lw	a5,-20(s0)
+     3bc:	fcf42e23          	sw	a5,-36(s0)
+    while (scan != to) {
+     3c0:	fdc42703          	lw	a4,-36(s0)
+     3c4:	fd842783          	lw	a5,-40(s0)
+     3c8:	faf71ce3          	bne	a4,a5,380 <release_blocks+0x18>
+    }
+}
+     3cc:	00000013          	nop
+     3d0:	00000013          	nop
+     3d4:	02c12403          	lw	s0,44(sp)
+     3d8:	03010113          	addi	sp,sp,48
+     3dc:	00008067          	ret
+
+000003e0 <compact>:
+
+static void compact() {
+     3e0:	fd010113          	addi	sp,sp,-48
+     3e4:	02112623          	sw	ra,44(sp)
+     3e8:	02812423          	sw	s0,40(sp)
+     3ec:	03010413          	addi	s0,sp,48
+    Block *ptr = heap->free;
+     3f0:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     3f4:	0007a783          	lw	a5,0(a5)
+     3f8:	fef42623          	sw	a5,-20(s0)
+    Block *prev;
+    Block *scan;
+    while (ptr != NULL) {
+     3fc:	0dc0006f          	j	4d8 <compact+0xf8>
+        prev = ptr;
+     400:	fec42783          	lw	a5,-20(s0)
+     404:	fef42423          	sw	a5,-24(s0)
+        scan = ptr->next;
+     408:	fec42783          	lw	a5,-20(s0)
+     40c:	0047a783          	lw	a5,4(a5)
+     410:	fef42223          	sw	a5,-28(s0)
+        while (scan != NULL &&
+     414:	0180006f          	j	42c <compact+0x4c>
+               (size_t)prev->addr + prev->size == (size_t)scan->addr) {
+            print_s("merge");
+            print_i((size_t)scan);
+            prev = scan;
+     418:	fe442783          	lw	a5,-28(s0)
+     41c:	fef42423          	sw	a5,-24(s0)
+            scan = scan->next;
+     420:	fe442783          	lw	a5,-28(s0)
+     424:	0047a783          	lw	a5,4(a5)
+     428:	fef42223          	sw	a5,-28(s0)
+        while (scan != NULL &&
+     42c:	fe442783          	lw	a5,-28(s0)
+     430:	02078463          	beqz	a5,458 <compact+0x78>
+               (size_t)prev->addr + prev->size == (size_t)scan->addr) {
+     434:	fe842783          	lw	a5,-24(s0)
+     438:	0007a783          	lw	a5,0(a5)
+     43c:	00078713          	mv	a4,a5
+     440:	fe842783          	lw	a5,-24(s0)
+     444:	0087a783          	lw	a5,8(a5)
+     448:	00f707b3          	add	a5,a4,a5
+     44c:	fe442703          	lw	a4,-28(s0)
+     450:	00072703          	lw	a4,0(a4)
+        while (scan != NULL &&
+     454:	fce782e3          	beq	a5,a4,418 <compact+0x38>
+        }
+        if (prev != ptr) {
+     458:	fe842703          	lw	a4,-24(s0)
+     45c:	fec42783          	lw	a5,-20(s0)
+     460:	06f70663          	beq	a4,a5,4cc <compact+0xec>
+            size_t new_size =
+                (size_t)prev->addr - (size_t)ptr->addr + prev->size;
+     464:	fe842783          	lw	a5,-24(s0)
+     468:	0007a783          	lw	a5,0(a5)
+     46c:	00078713          	mv	a4,a5
+     470:	fec42783          	lw	a5,-20(s0)
+     474:	0007a783          	lw	a5,0(a5)
+     478:	40f70733          	sub	a4,a4,a5
+     47c:	fe842783          	lw	a5,-24(s0)
+     480:	0087a783          	lw	a5,8(a5)
+            size_t new_size =
+     484:	00f707b3          	add	a5,a4,a5
+     488:	fef42023          	sw	a5,-32(s0)
+            print_s("new size");
+            print_i(new_size);
+            ptr->size   = new_size;
+     48c:	fec42783          	lw	a5,-20(s0)
+     490:	fe042703          	lw	a4,-32(s0)
+     494:	00e7a423          	sw	a4,8(a5)
+            Block *next = prev->next;
+     498:	fe842783          	lw	a5,-24(s0)
+     49c:	0047a783          	lw	a5,4(a5)
+     4a0:	fcf42e23          	sw	a5,-36(s0)
+            // make merged blocks available
+            release_blocks(ptr->next, prev->next);
+     4a4:	fec42783          	lw	a5,-20(s0)
+     4a8:	0047a703          	lw	a4,4(a5)
+     4ac:	fe842783          	lw	a5,-24(s0)
+     4b0:	0047a783          	lw	a5,4(a5)
+     4b4:	00078593          	mv	a1,a5
+     4b8:	00070513          	mv	a0,a4
+     4bc:	eadff0ef          	jal	ra,368 <release_blocks>
+            // relink
+            ptr->next = next;
+     4c0:	fec42783          	lw	a5,-20(s0)
+     4c4:	fdc42703          	lw	a4,-36(s0)
+     4c8:	00e7a223          	sw	a4,4(a5)
+        }
+        ptr = ptr->next;
+     4cc:	fec42783          	lw	a5,-20(s0)
+     4d0:	0047a783          	lw	a5,4(a5)
+     4d4:	fef42623          	sw	a5,-20(s0)
+    while (ptr != NULL) {
+     4d8:	fec42783          	lw	a5,-20(s0)
+     4dc:	f20792e3          	bnez	a5,400 <compact+0x20>
+    }
+}
+     4e0:	00000013          	nop
+     4e4:	00000013          	nop
+     4e8:	02c12083          	lw	ra,44(sp)
+     4ec:	02812403          	lw	s0,40(sp)
+     4f0:	03010113          	addi	sp,sp,48
+     4f4:	00008067          	ret
+
+000004f8 <ta_init>:
+#endif
+
+bool ta_init(const void *base, const void *limit, const size_t heap_blocks, const size_t split_thresh, const size_t alignment) {
+     4f8:	fc010113          	addi	sp,sp,-64
+     4fc:	02812e23          	sw	s0,60(sp)
+     500:	04010413          	addi	s0,sp,64
+     504:	fca42e23          	sw	a0,-36(s0)
+     508:	fcb42c23          	sw	a1,-40(s0)
+     50c:	fcc42a23          	sw	a2,-44(s0)
+     510:	fcd42823          	sw	a3,-48(s0)
+     514:	fce42623          	sw	a4,-52(s0)
+    heap = (Heap *)base;
+     518:	fdc42703          	lw	a4,-36(s0)
+     51c:	80e1a623          	sw	a4,-2036(gp) # 20000434 <heap>
+    heap_limit = limit;
+     520:	fd842703          	lw	a4,-40(s0)
+     524:	80e1a823          	sw	a4,-2032(gp) # 20000438 <heap_limit>
+    heap_split_thresh = split_thresh;
+     528:	fd042703          	lw	a4,-48(s0)
+     52c:	80e1aa23          	sw	a4,-2028(gp) # 2000043c <heap_split_thresh>
+    heap_alignment = alignment;
+     530:	fcc42703          	lw	a4,-52(s0)
+     534:	80e1ac23          	sw	a4,-2024(gp) # 20000440 <heap_alignment>
+    heap_max_blocks = heap_blocks;
+     538:	fd442703          	lw	a4,-44(s0)
+     53c:	80e1ae23          	sw	a4,-2020(gp) # 20000444 <heap_max_blocks>
+
+    heap->free   = NULL;
+     540:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     544:	0007a023          	sw	zero,0(a5)
+    heap->used   = NULL;
+     548:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     54c:	0007a223          	sw	zero,4(a5)
+    heap->fresh  = (Block *)(heap + 1);
+     550:	80c1a703          	lw	a4,-2036(gp) # 20000434 <heap>
+     554:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     558:	01070713          	addi	a4,a4,16
+     55c:	00e7a423          	sw	a4,8(a5)
+    heap->top    = (size_t)(heap->fresh + heap_blocks);
+     560:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     564:	0087a683          	lw	a3,8(a5)
+     568:	fd442703          	lw	a4,-44(s0)
+     56c:	00070793          	mv	a5,a4
+     570:	00179793          	slli	a5,a5,0x1
+     574:	00e787b3          	add	a5,a5,a4
+     578:	00279793          	slli	a5,a5,0x2
+     57c:	00f68733          	add	a4,a3,a5
+     580:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     584:	00e7a623          	sw	a4,12(a5)
+
+    Block *block = heap->fresh;
+     588:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     58c:	0087a783          	lw	a5,8(a5)
+     590:	fef42623          	sw	a5,-20(s0)
+    size_t i     = heap_max_blocks - 1;
+     594:	81c1a783          	lw	a5,-2020(gp) # 20000444 <heap_max_blocks>
+     598:	fff78793          	addi	a5,a5,-1
+     59c:	fef42423          	sw	a5,-24(s0)
+    while (i--) {
+     5a0:	0200006f          	j	5c0 <ta_init+0xc8>
+        block->next = block + 1;
+     5a4:	fec42783          	lw	a5,-20(s0)
+     5a8:	00c78713          	addi	a4,a5,12
+     5ac:	fec42783          	lw	a5,-20(s0)
+     5b0:	00e7a223          	sw	a4,4(a5)
+        block++;
+     5b4:	fec42783          	lw	a5,-20(s0)
+     5b8:	00c78793          	addi	a5,a5,12
+     5bc:	fef42623          	sw	a5,-20(s0)
+    while (i--) {
+     5c0:	fe842783          	lw	a5,-24(s0)
+     5c4:	fff78713          	addi	a4,a5,-1
+     5c8:	fee42423          	sw	a4,-24(s0)
+     5cc:	fc079ce3          	bnez	a5,5a4 <ta_init+0xac>
+    }
+    block->next = NULL;
+     5d0:	fec42783          	lw	a5,-20(s0)
+     5d4:	0007a223          	sw	zero,4(a5)
+    return true;
+     5d8:	00100793          	li	a5,1
+}
+     5dc:	00078513          	mv	a0,a5
+     5e0:	03c12403          	lw	s0,60(sp)
+     5e4:	04010113          	addi	sp,sp,64
+     5e8:	00008067          	ret
+
+000005ec <ta_free>:
+
+bool ta_free(void *free) {
+     5ec:	fd010113          	addi	sp,sp,-48
+     5f0:	02112623          	sw	ra,44(sp)
+     5f4:	02812423          	sw	s0,40(sp)
+     5f8:	03010413          	addi	s0,sp,48
+     5fc:	fca42e23          	sw	a0,-36(s0)
+    Block *block = heap->used;
+     600:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     604:	0047a783          	lw	a5,4(a5)
+     608:	fef42623          	sw	a5,-20(s0)
+    Block *prev  = NULL;
+     60c:	fe042423          	sw	zero,-24(s0)
+    while (block != NULL) {
+     610:	0680006f          	j	678 <ta_free+0x8c>
+        if (free == block->addr) {
+     614:	fec42783          	lw	a5,-20(s0)
+     618:	0007a783          	lw	a5,0(a5)
+     61c:	fdc42703          	lw	a4,-36(s0)
+     620:	04f71263          	bne	a4,a5,664 <ta_free+0x78>
+            if (prev) {
+     624:	fe842783          	lw	a5,-24(s0)
+     628:	00078c63          	beqz	a5,640 <ta_free+0x54>
+                prev->next = block->next;
+     62c:	fec42783          	lw	a5,-20(s0)
+     630:	0047a703          	lw	a4,4(a5)
+     634:	fe842783          	lw	a5,-24(s0)
+     638:	00e7a223          	sw	a4,4(a5)
+     63c:	0140006f          	j	650 <ta_free+0x64>
+            } else {
+                heap->used = block->next;
+     640:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     644:	fec42703          	lw	a4,-20(s0)
+     648:	00472703          	lw	a4,4(a4)
+     64c:	00e7a223          	sw	a4,4(a5)
+            }
+            insert_block(block);
+     650:	fec42503          	lw	a0,-20(s0)
+     654:	c75ff0ef          	jal	ra,2c8 <insert_block>
+#ifndef TA_DISABLE_COMPACT
+            compact();
+     658:	d89ff0ef          	jal	ra,3e0 <compact>
+#endif
+            return true;
+     65c:	00100793          	li	a5,1
+     660:	0240006f          	j	684 <ta_free+0x98>
+        }
+        prev  = block;
+     664:	fec42783          	lw	a5,-20(s0)
+     668:	fef42423          	sw	a5,-24(s0)
+        block = block->next;
+     66c:	fec42783          	lw	a5,-20(s0)
+     670:	0047a783          	lw	a5,4(a5)
+     674:	fef42623          	sw	a5,-20(s0)
+    while (block != NULL) {
+     678:	fec42783          	lw	a5,-20(s0)
+     67c:	f8079ce3          	bnez	a5,614 <ta_free+0x28>
+    }
+    return false;
+     680:	00000793          	li	a5,0
+}
+     684:	00078513          	mv	a0,a5
+     688:	02c12083          	lw	ra,44(sp)
+     68c:	02812403          	lw	s0,40(sp)
+     690:	03010113          	addi	sp,sp,48
+     694:	00008067          	ret
+
+00000698 <alloc_block>:
+
+static Block *alloc_block(size_t num) {
+     698:	fc010113          	addi	sp,sp,-64
+     69c:	02112e23          	sw	ra,60(sp)
+     6a0:	02812c23          	sw	s0,56(sp)
+     6a4:	04010413          	addi	s0,sp,64
+     6a8:	fca42623          	sw	a0,-52(s0)
+    Block *ptr  = heap->free;
+     6ac:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     6b0:	0007a783          	lw	a5,0(a5)
+     6b4:	fef42623          	sw	a5,-20(s0)
+    Block *prev = NULL;
+     6b8:	fe042423          	sw	zero,-24(s0)
+    size_t top  = heap->top;
+     6bc:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     6c0:	00c7a783          	lw	a5,12(a5)
+     6c4:	fef42223          	sw	a5,-28(s0)
+    num         = (num + heap_alignment - 1) & -heap_alignment;
+     6c8:	8181a703          	lw	a4,-2024(gp) # 20000440 <heap_alignment>
+     6cc:	fcc42783          	lw	a5,-52(s0)
+     6d0:	00f707b3          	add	a5,a4,a5
+     6d4:	fff78713          	addi	a4,a5,-1
+     6d8:	8181a783          	lw	a5,-2024(gp) # 20000440 <heap_alignment>
+     6dc:	40f007b3          	neg	a5,a5
+     6e0:	00f777b3          	and	a5,a4,a5
+     6e4:	fcf42623          	sw	a5,-52(s0)
+    while (ptr != NULL) {
+     6e8:	18c0006f          	j	874 <alloc_block+0x1dc>
+        const int is_top = ((size_t)ptr->addr + ptr->size >= top) && ((size_t)ptr->addr + num <= (size_t)heap_limit);
+     6ec:	fec42783          	lw	a5,-20(s0)
+     6f0:	0007a783          	lw	a5,0(a5)
+     6f4:	00078713          	mv	a4,a5
+     6f8:	fec42783          	lw	a5,-20(s0)
+     6fc:	0087a783          	lw	a5,8(a5)
+     700:	00f707b3          	add	a5,a4,a5
+     704:	fe442703          	lw	a4,-28(s0)
+     708:	02e7e463          	bltu	a5,a4,730 <alloc_block+0x98>
+     70c:	fec42783          	lw	a5,-20(s0)
+     710:	0007a783          	lw	a5,0(a5)
+     714:	00078713          	mv	a4,a5
+     718:	fcc42783          	lw	a5,-52(s0)
+     71c:	00f707b3          	add	a5,a4,a5
+     720:	8101a703          	lw	a4,-2032(gp) # 20000438 <heap_limit>
+     724:	00f76663          	bltu	a4,a5,730 <alloc_block+0x98>
+     728:	00100793          	li	a5,1
+     72c:	0080006f          	j	734 <alloc_block+0x9c>
+     730:	00000793          	li	a5,0
+     734:	fcf42e23          	sw	a5,-36(s0)
+        if (is_top || ptr->size >= num) {
+     738:	fdc42783          	lw	a5,-36(s0)
+     73c:	00079a63          	bnez	a5,750 <alloc_block+0xb8>
+     740:	fec42783          	lw	a5,-20(s0)
+     744:	0087a783          	lw	a5,8(a5)
+     748:	fcc42703          	lw	a4,-52(s0)
+     74c:	10e7ea63          	bltu	a5,a4,860 <alloc_block+0x1c8>
+            if (prev != NULL) {
+     750:	fe842783          	lw	a5,-24(s0)
+     754:	00078c63          	beqz	a5,76c <alloc_block+0xd4>
+                prev->next = ptr->next;
+     758:	fec42783          	lw	a5,-20(s0)
+     75c:	0047a703          	lw	a4,4(a5)
+     760:	fe842783          	lw	a5,-24(s0)
+     764:	00e7a223          	sw	a4,4(a5)
+     768:	0140006f          	j	77c <alloc_block+0xe4>
+            } else {
+                heap->free = ptr->next;
+     76c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     770:	fec42703          	lw	a4,-20(s0)
+     774:	00472703          	lw	a4,4(a4)
+     778:	00e7a023          	sw	a4,0(a5)
+            }
+            ptr->next  = heap->used;
+     77c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     780:	0047a703          	lw	a4,4(a5)
+     784:	fec42783          	lw	a5,-20(s0)
+     788:	00e7a223          	sw	a4,4(a5)
+            heap->used = ptr;
+     78c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     790:	fec42703          	lw	a4,-20(s0)
+     794:	00e7a223          	sw	a4,4(a5)
+            if (is_top) {
+     798:	fdc42783          	lw	a5,-36(s0)
+     79c:	02078863          	beqz	a5,7cc <alloc_block+0x134>
+                print_s("resize top block");
+                ptr->size = num;
+     7a0:	fec42783          	lw	a5,-20(s0)
+     7a4:	fcc42703          	lw	a4,-52(s0)
+     7a8:	00e7a423          	sw	a4,8(a5)
+                heap->top = (size_t)ptr->addr + num;
+     7ac:	fec42783          	lw	a5,-20(s0)
+     7b0:	0007a783          	lw	a5,0(a5)
+     7b4:	00078693          	mv	a3,a5
+     7b8:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     7bc:	fcc42703          	lw	a4,-52(s0)
+     7c0:	00e68733          	add	a4,a3,a4
+     7c4:	00e7a623          	sw	a4,12(a5)
+     7c8:	0900006f          	j	858 <alloc_block+0x1c0>
+#ifndef TA_DISABLE_SPLIT
+            } else if (heap->fresh != NULL) {
+     7cc:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     7d0:	0087a783          	lw	a5,8(a5)
+     7d4:	08078263          	beqz	a5,858 <alloc_block+0x1c0>
+                size_t excess = ptr->size - num;
+     7d8:	fec42783          	lw	a5,-20(s0)
+     7dc:	0087a703          	lw	a4,8(a5)
+     7e0:	fcc42783          	lw	a5,-52(s0)
+     7e4:	40f707b3          	sub	a5,a4,a5
+     7e8:	fcf42c23          	sw	a5,-40(s0)
+                if (excess >= heap_split_thresh) {
+     7ec:	8141a783          	lw	a5,-2028(gp) # 2000043c <heap_split_thresh>
+     7f0:	fd842703          	lw	a4,-40(s0)
+     7f4:	06f76263          	bltu	a4,a5,858 <alloc_block+0x1c0>
+                    ptr->size    = num;
+     7f8:	fec42783          	lw	a5,-20(s0)
+     7fc:	fcc42703          	lw	a4,-52(s0)
+     800:	00e7a423          	sw	a4,8(a5)
+                    Block *split = heap->fresh;
+     804:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     808:	0087a783          	lw	a5,8(a5)
+     80c:	fcf42a23          	sw	a5,-44(s0)
+                    heap->fresh  = split->next;
+     810:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     814:	fd442703          	lw	a4,-44(s0)
+     818:	00472703          	lw	a4,4(a4)
+     81c:	00e7a423          	sw	a4,8(a5)
+                    split->addr  = (void *)((size_t)ptr->addr + num);
+     820:	fec42783          	lw	a5,-20(s0)
+     824:	0007a783          	lw	a5,0(a5)
+     828:	00078713          	mv	a4,a5
+     82c:	fcc42783          	lw	a5,-52(s0)
+     830:	00f707b3          	add	a5,a4,a5
+     834:	00078713          	mv	a4,a5
+     838:	fd442783          	lw	a5,-44(s0)
+     83c:	00e7a023          	sw	a4,0(a5)
+                    print_s("split");
+                    print_i((size_t)split->addr);
+                    split->size = excess;
+     840:	fd442783          	lw	a5,-44(s0)
+     844:	fd842703          	lw	a4,-40(s0)
+     848:	00e7a423          	sw	a4,8(a5)
+                    insert_block(split);
+     84c:	fd442503          	lw	a0,-44(s0)
+     850:	a79ff0ef          	jal	ra,2c8 <insert_block>
+#ifndef TA_DISABLE_COMPACT
+                    compact();
+     854:	b8dff0ef          	jal	ra,3e0 <compact>
+#endif
+                }
+#endif
+            }
+            return ptr;
+     858:	fec42783          	lw	a5,-20(s0)
+     85c:	0b40006f          	j	910 <alloc_block+0x278>
+        }
+        prev = ptr;
+     860:	fec42783          	lw	a5,-20(s0)
+     864:	fef42423          	sw	a5,-24(s0)
+        ptr  = ptr->next;
+     868:	fec42783          	lw	a5,-20(s0)
+     86c:	0047a783          	lw	a5,4(a5)
+     870:	fef42623          	sw	a5,-20(s0)
+    while (ptr != NULL) {
+     874:	fec42783          	lw	a5,-20(s0)
+     878:	e6079ae3          	bnez	a5,6ec <alloc_block+0x54>
+    }
+    // no matching free blocks
+    // see if any other blocks available
+    size_t new_top = top + num;
+     87c:	fe442703          	lw	a4,-28(s0)
+     880:	fcc42783          	lw	a5,-52(s0)
+     884:	00f707b3          	add	a5,a4,a5
+     888:	fef42023          	sw	a5,-32(s0)
+    if (heap->fresh != NULL && new_top <= (size_t)heap_limit) {
+     88c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     890:	0087a783          	lw	a5,8(a5)
+     894:	06078c63          	beqz	a5,90c <alloc_block+0x274>
+     898:	8101a783          	lw	a5,-2032(gp) # 20000438 <heap_limit>
+     89c:	00078713          	mv	a4,a5
+     8a0:	fe042783          	lw	a5,-32(s0)
+     8a4:	06f76463          	bltu	a4,a5,90c <alloc_block+0x274>
+        ptr         = heap->fresh;
+     8a8:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     8ac:	0087a783          	lw	a5,8(a5)
+     8b0:	fef42623          	sw	a5,-20(s0)
+        heap->fresh = ptr->next;
+     8b4:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     8b8:	fec42703          	lw	a4,-20(s0)
+     8bc:	00472703          	lw	a4,4(a4)
+     8c0:	00e7a423          	sw	a4,8(a5)
+        ptr->addr   = (void *)top;
+     8c4:	fe442703          	lw	a4,-28(s0)
+     8c8:	fec42783          	lw	a5,-20(s0)
+     8cc:	00e7a023          	sw	a4,0(a5)
+        ptr->next   = heap->used;
+     8d0:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     8d4:	0047a703          	lw	a4,4(a5)
+     8d8:	fec42783          	lw	a5,-20(s0)
+     8dc:	00e7a223          	sw	a4,4(a5)
+        ptr->size   = num;
+     8e0:	fec42783          	lw	a5,-20(s0)
+     8e4:	fcc42703          	lw	a4,-52(s0)
+     8e8:	00e7a423          	sw	a4,8(a5)
+        heap->used  = ptr;
+     8ec:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     8f0:	fec42703          	lw	a4,-20(s0)
+     8f4:	00e7a223          	sw	a4,4(a5)
+        heap->top   = new_top;
+     8f8:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     8fc:	fe042703          	lw	a4,-32(s0)
+     900:	00e7a623          	sw	a4,12(a5)
+        return ptr;
+     904:	fec42783          	lw	a5,-20(s0)
+     908:	0080006f          	j	910 <alloc_block+0x278>
+    }
+    return NULL;
+     90c:	00000793          	li	a5,0
+}
+     910:	00078513          	mv	a0,a5
+     914:	03c12083          	lw	ra,60(sp)
+     918:	03812403          	lw	s0,56(sp)
+     91c:	04010113          	addi	sp,sp,64
+     920:	00008067          	ret
+
+00000924 <ta_alloc>:
+
+void *ta_alloc(size_t num) {
+     924:	fd010113          	addi	sp,sp,-48
+     928:	02112623          	sw	ra,44(sp)
+     92c:	02812423          	sw	s0,40(sp)
+     930:	03010413          	addi	s0,sp,48
+     934:	fca42e23          	sw	a0,-36(s0)
+    Block *block = alloc_block(num);
+     938:	fdc42503          	lw	a0,-36(s0)
+     93c:	d5dff0ef          	jal	ra,698 <alloc_block>
+     940:	fea42623          	sw	a0,-20(s0)
+    if (block != NULL) {
+     944:	fec42783          	lw	a5,-20(s0)
+     948:	00078863          	beqz	a5,958 <ta_alloc+0x34>
+        return block->addr;
+     94c:	fec42783          	lw	a5,-20(s0)
+     950:	0007a783          	lw	a5,0(a5)
+     954:	0080006f          	j	95c <ta_alloc+0x38>
+    }
+    return NULL;
+     958:	00000793          	li	a5,0
+}
+     95c:	00078513          	mv	a0,a5
+     960:	02c12083          	lw	ra,44(sp)
+     964:	02812403          	lw	s0,40(sp)
+     968:	03010113          	addi	sp,sp,48
+     96c:	00008067          	ret
+
+00000970 <memclear>:
+
+static void memclear(void *ptr, size_t num) {
+     970:	fd010113          	addi	sp,sp,-48
+     974:	02812623          	sw	s0,44(sp)
+     978:	03010413          	addi	s0,sp,48
+     97c:	fca42e23          	sw	a0,-36(s0)
+     980:	fcb42c23          	sw	a1,-40(s0)
+    size_t *ptrw = (size_t *)ptr;
+     984:	fdc42783          	lw	a5,-36(s0)
+     988:	fef42623          	sw	a5,-20(s0)
+    size_t numw  = (num & -sizeof(size_t)) / sizeof(size_t);
+     98c:	fd842783          	lw	a5,-40(s0)
+     990:	0027d793          	srli	a5,a5,0x2
+     994:	fef42423          	sw	a5,-24(s0)
+    while (numw--) {
+     998:	0140006f          	j	9ac <memclear+0x3c>
+        *ptrw++ = 0;
+     99c:	fec42783          	lw	a5,-20(s0)
+     9a0:	00478713          	addi	a4,a5,4
+     9a4:	fee42623          	sw	a4,-20(s0)
+     9a8:	0007a023          	sw	zero,0(a5)
+    while (numw--) {
+     9ac:	fe842783          	lw	a5,-24(s0)
+     9b0:	fff78713          	addi	a4,a5,-1
+     9b4:	fee42423          	sw	a4,-24(s0)
+     9b8:	fe0792e3          	bnez	a5,99c <memclear+0x2c>
+    }
+    num &= (sizeof(size_t) - 1);
+     9bc:	fd842783          	lw	a5,-40(s0)
+     9c0:	0037f793          	andi	a5,a5,3
+     9c4:	fcf42c23          	sw	a5,-40(s0)
+    uint8_t *ptrb = (uint8_t *)ptrw;
+     9c8:	fec42783          	lw	a5,-20(s0)
+     9cc:	fef42223          	sw	a5,-28(s0)
+    while (num--) {
+     9d0:	0140006f          	j	9e4 <memclear+0x74>
+        *ptrb++ = 0;
+     9d4:	fe442783          	lw	a5,-28(s0)
+     9d8:	00178713          	addi	a4,a5,1
+     9dc:	fee42223          	sw	a4,-28(s0)
+     9e0:	00078023          	sb	zero,0(a5)
+    while (num--) {
+     9e4:	fd842783          	lw	a5,-40(s0)
+     9e8:	fff78713          	addi	a4,a5,-1
+     9ec:	fce42c23          	sw	a4,-40(s0)
+     9f0:	fe0792e3          	bnez	a5,9d4 <memclear+0x64>
+    }
+}
+     9f4:	00000013          	nop
+     9f8:	00000013          	nop
+     9fc:	02c12403          	lw	s0,44(sp)
+     a00:	03010113          	addi	sp,sp,48
+     a04:	00008067          	ret
+
+00000a08 <ta_calloc>:
+
+void *ta_calloc(size_t num, size_t size) {
+     a08:	fd010113          	addi	sp,sp,-48
+     a0c:	02112623          	sw	ra,44(sp)
+     a10:	02812423          	sw	s0,40(sp)
+     a14:	03010413          	addi	s0,sp,48
+     a18:	fca42e23          	sw	a0,-36(s0)
+     a1c:	fcb42c23          	sw	a1,-40(s0)
+    num *= size;
+     a20:	fd842583          	lw	a1,-40(s0)
+     a24:	fdc42503          	lw	a0,-36(s0)
+     a28:	329000ef          	jal	ra,1550 <__mulsi3>
+     a2c:	00050793          	mv	a5,a0
+     a30:	fcf42e23          	sw	a5,-36(s0)
+    Block *block = alloc_block(num);
+     a34:	fdc42503          	lw	a0,-36(s0)
+     a38:	c61ff0ef          	jal	ra,698 <alloc_block>
+     a3c:	fea42623          	sw	a0,-20(s0)
+    if (block != NULL) {
+     a40:	fec42783          	lw	a5,-20(s0)
+     a44:	02078263          	beqz	a5,a68 <ta_calloc+0x60>
+        memclear(block->addr, num);
+     a48:	fec42783          	lw	a5,-20(s0)
+     a4c:	0007a783          	lw	a5,0(a5)
+     a50:	fdc42583          	lw	a1,-36(s0)
+     a54:	00078513          	mv	a0,a5
+     a58:	f19ff0ef          	jal	ra,970 <memclear>
+        return block->addr;
+     a5c:	fec42783          	lw	a5,-20(s0)
+     a60:	0007a783          	lw	a5,0(a5)
+     a64:	0080006f          	j	a6c <ta_calloc+0x64>
+    }
+    return NULL;
+     a68:	00000793          	li	a5,0
+}
+     a6c:	00078513          	mv	a0,a5
+     a70:	02c12083          	lw	ra,44(sp)
+     a74:	02812403          	lw	s0,40(sp)
+     a78:	03010113          	addi	sp,sp,48
+     a7c:	00008067          	ret
+
+00000a80 <count_blocks>:
+
+static size_t count_blocks(Block *ptr) {
+     a80:	fd010113          	addi	sp,sp,-48
+     a84:	02812623          	sw	s0,44(sp)
+     a88:	03010413          	addi	s0,sp,48
+     a8c:	fca42e23          	sw	a0,-36(s0)
+    size_t num = 0;
+     a90:	fe042623          	sw	zero,-20(s0)
+    while (ptr != NULL) {
+     a94:	01c0006f          	j	ab0 <count_blocks+0x30>
+        num++;
+     a98:	fec42783          	lw	a5,-20(s0)
+     a9c:	00178793          	addi	a5,a5,1
+     aa0:	fef42623          	sw	a5,-20(s0)
+        ptr = ptr->next;
+     aa4:	fdc42783          	lw	a5,-36(s0)
+     aa8:	0047a783          	lw	a5,4(a5)
+     aac:	fcf42e23          	sw	a5,-36(s0)
+    while (ptr != NULL) {
+     ab0:	fdc42783          	lw	a5,-36(s0)
+     ab4:	fe0792e3          	bnez	a5,a98 <count_blocks+0x18>
+    }
+    return num;
+     ab8:	fec42783          	lw	a5,-20(s0)
+}
+     abc:	00078513          	mv	a0,a5
+     ac0:	02c12403          	lw	s0,44(sp)
+     ac4:	03010113          	addi	sp,sp,48
+     ac8:	00008067          	ret
+
+00000acc <ta_num_free>:
+
+size_t ta_num_free() {
+     acc:	ff010113          	addi	sp,sp,-16
+     ad0:	00112623          	sw	ra,12(sp)
+     ad4:	00812423          	sw	s0,8(sp)
+     ad8:	01010413          	addi	s0,sp,16
+    return count_blocks(heap->free);
+     adc:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     ae0:	0007a783          	lw	a5,0(a5)
+     ae4:	00078513          	mv	a0,a5
+     ae8:	f99ff0ef          	jal	ra,a80 <count_blocks>
+     aec:	00050793          	mv	a5,a0
+}
+     af0:	00078513          	mv	a0,a5
+     af4:	00c12083          	lw	ra,12(sp)
+     af8:	00812403          	lw	s0,8(sp)
+     afc:	01010113          	addi	sp,sp,16
+     b00:	00008067          	ret
+
+00000b04 <ta_num_used>:
+
+size_t ta_num_used() {
+     b04:	ff010113          	addi	sp,sp,-16
+     b08:	00112623          	sw	ra,12(sp)
+     b0c:	00812423          	sw	s0,8(sp)
+     b10:	01010413          	addi	s0,sp,16
+    return count_blocks(heap->used);
+     b14:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     b18:	0047a783          	lw	a5,4(a5)
+     b1c:	00078513          	mv	a0,a5
+     b20:	f61ff0ef          	jal	ra,a80 <count_blocks>
+     b24:	00050793          	mv	a5,a0
+}
+     b28:	00078513          	mv	a0,a5
+     b2c:	00c12083          	lw	ra,12(sp)
+     b30:	00812403          	lw	s0,8(sp)
+     b34:	01010113          	addi	sp,sp,16
+     b38:	00008067          	ret
+
+00000b3c <ta_num_fresh>:
+
+size_t ta_num_fresh() {
+     b3c:	ff010113          	addi	sp,sp,-16
+     b40:	00112623          	sw	ra,12(sp)
+     b44:	00812423          	sw	s0,8(sp)
+     b48:	01010413          	addi	s0,sp,16
+    return count_blocks(heap->fresh);
+     b4c:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     b50:	0087a783          	lw	a5,8(a5)
+     b54:	00078513          	mv	a0,a5
+     b58:	f29ff0ef          	jal	ra,a80 <count_blocks>
+     b5c:	00050793          	mv	a5,a0
+}
+     b60:	00078513          	mv	a0,a5
+     b64:	00c12083          	lw	ra,12(sp)
+     b68:	00812403          	lw	s0,8(sp)
+     b6c:	01010113          	addi	sp,sp,16
+     b70:	00008067          	ret
+
+00000b74 <ta_check>:
+
+bool ta_check() {
+     b74:	ff010113          	addi	sp,sp,-16
+     b78:	00112623          	sw	ra,12(sp)
+     b7c:	00812423          	sw	s0,8(sp)
+     b80:	00912223          	sw	s1,4(sp)
+     b84:	01010413          	addi	s0,sp,16
+    return heap_max_blocks == ta_num_free() + ta_num_used() + ta_num_fresh();
+     b88:	f45ff0ef          	jal	ra,acc <ta_num_free>
+     b8c:	00050493          	mv	s1,a0
+     b90:	f75ff0ef          	jal	ra,b04 <ta_num_used>
+     b94:	00050793          	mv	a5,a0
+     b98:	00f484b3          	add	s1,s1,a5
+     b9c:	fa1ff0ef          	jal	ra,b3c <ta_num_fresh>
+     ba0:	00050793          	mv	a5,a0
+     ba4:	00f48733          	add	a4,s1,a5
+     ba8:	81c1a783          	lw	a5,-2020(gp) # 20000444 <heap_max_blocks>
+     bac:	40f707b3          	sub	a5,a4,a5
+     bb0:	0017b793          	seqz	a5,a5
+     bb4:	0ff7f793          	zext.b	a5,a5
+}
+     bb8:	00078513          	mv	a0,a5
+     bbc:	00c12083          	lw	ra,12(sp)
+     bc0:	00812403          	lw	s0,8(sp)
+     bc4:	00412483          	lw	s1,4(sp)
+     bc8:	01010113          	addi	sp,sp,16
+     bcc:	00008067          	ret
+
+00000bd0 <ta_getsize>:
+
+static size_t ta_getsize(void *ptr)
+{
+     bd0:	fd010113          	addi	sp,sp,-48
+     bd4:	02812623          	sw	s0,44(sp)
+     bd8:	03010413          	addi	s0,sp,48
+     bdc:	fca42e23          	sw	a0,-36(s0)
+  Block *block = heap->used;
+     be0:	80c1a783          	lw	a5,-2036(gp) # 20000434 <heap>
+     be4:	0047a783          	lw	a5,4(a5)
+     be8:	fef42623          	sw	a5,-20(s0)
+  while (block != NULL) {
+     bec:	02c0006f          	j	c18 <ta_getsize+0x48>
+      if (ptr == block->addr) {
+     bf0:	fec42783          	lw	a5,-20(s0)
+     bf4:	0007a783          	lw	a5,0(a5)
+     bf8:	fdc42703          	lw	a4,-36(s0)
+     bfc:	00f71863          	bne	a4,a5,c0c <ta_getsize+0x3c>
+          return block->size;
+     c00:	fec42783          	lw	a5,-20(s0)
+     c04:	0087a783          	lw	a5,8(a5)
+     c08:	01c0006f          	j	c24 <ta_getsize+0x54>
+      }
+      block = block->next;
+     c0c:	fec42783          	lw	a5,-20(s0)
+     c10:	0047a783          	lw	a5,4(a5)
+     c14:	fef42623          	sw	a5,-20(s0)
+  while (block != NULL) {
+     c18:	fec42783          	lw	a5,-20(s0)
+     c1c:	fc079ae3          	bnez	a5,bf0 <ta_getsize+0x20>
+  }
+  return 0;
+     c20:	00000793          	li	a5,0
+}
+     c24:	00078513          	mv	a0,a5
+     c28:	02c12403          	lw	s0,44(sp)
+     c2c:	03010113          	addi	sp,sp,48
+     c30:	00008067          	ret
+
+00000c34 <ta_realloc>:
+
+void *ta_realloc(void *ptr,size_t num) {
+     c34:	fc010113          	addi	sp,sp,-64
+     c38:	02112e23          	sw	ra,60(sp)
+     c3c:	02812c23          	sw	s0,56(sp)
+     c40:	04010413          	addi	s0,sp,64
+     c44:	fca42623          	sw	a0,-52(s0)
+     c48:	fcb42423          	sw	a1,-56(s0)
+    size_t c;
+    size_t ptrsize;
+    uint8_t* ptrn;
+    uint8_t* ptro;
+    ptrsize=ta_getsize(ptr);
+     c4c:	fcc42503          	lw	a0,-52(s0)
+     c50:	f81ff0ef          	jal	ra,bd0 <ta_getsize>
+     c54:	fea42423          	sw	a0,-24(s0)
+    if(ptrsize>0){
+     c58:	fe842783          	lw	a5,-24(s0)
+     c5c:	08078a63          	beqz	a5,cf0 <ta_realloc+0xbc>
+     Block *block = alloc_block(num);
+     c60:	fc842503          	lw	a0,-56(s0)
+     c64:	a35ff0ef          	jal	ra,698 <alloc_block>
+     c68:	fea42223          	sw	a0,-28(s0)
+     if (block != NULL) {
+     c6c:	fe442783          	lw	a5,-28(s0)
+     c70:	08078063          	beqz	a5,cf0 <ta_realloc+0xbc>
+         ptro=(uint8_t*)ptr;
+     c74:	fcc42783          	lw	a5,-52(s0)
+     c78:	fef42023          	sw	a5,-32(s0)
+         ptrn=(uint8_t*)block->addr;
+     c7c:	fe442783          	lw	a5,-28(s0)
+     c80:	0007a783          	lw	a5,0(a5)
+     c84:	fcf42e23          	sw	a5,-36(s0)
+         if(ptrsize>num) ptrsize=num;
+     c88:	fe842703          	lw	a4,-24(s0)
+     c8c:	fc842783          	lw	a5,-56(s0)
+     c90:	00e7f663          	bgeu	a5,a4,c9c <ta_realloc+0x68>
+     c94:	fc842783          	lw	a5,-56(s0)
+     c98:	fef42423          	sw	a5,-24(s0)
+         for(c=0;c<ptrsize;c++)
+     c9c:	fe042623          	sw	zero,-20(s0)
+     ca0:	0300006f          	j	cd0 <ta_realloc+0x9c>
+          *(ptrn+c)=*(ptro+c);
+     ca4:	fe042703          	lw	a4,-32(s0)
+     ca8:	fec42783          	lw	a5,-20(s0)
+     cac:	00f70733          	add	a4,a4,a5
+     cb0:	fdc42683          	lw	a3,-36(s0)
+     cb4:	fec42783          	lw	a5,-20(s0)
+     cb8:	00f687b3          	add	a5,a3,a5
+     cbc:	00074703          	lbu	a4,0(a4)
+     cc0:	00e78023          	sb	a4,0(a5)
+         for(c=0;c<ptrsize;c++)
+     cc4:	fec42783          	lw	a5,-20(s0)
+     cc8:	00178793          	addi	a5,a5,1
+     ccc:	fef42623          	sw	a5,-20(s0)
+     cd0:	fec42703          	lw	a4,-20(s0)
+     cd4:	fe842783          	lw	a5,-24(s0)
+     cd8:	fcf766e3          	bltu	a4,a5,ca4 <ta_realloc+0x70>
+         ta_free(ptr);
+     cdc:	fcc42503          	lw	a0,-52(s0)
+     ce0:	90dff0ef          	jal	ra,5ec <ta_free>
+         return block->addr;
+     ce4:	fe442783          	lw	a5,-28(s0)
+     ce8:	0007a783          	lw	a5,0(a5)
+     cec:	0080006f          	j	cf4 <ta_realloc+0xc0>
+     }
+    }
+    return NULL;
+     cf0:	00000793          	li	a5,0
+     cf4:	00078513          	mv	a0,a5
+     cf8:	03c12083          	lw	ra,60(sp)
+     cfc:	03812403          	lw	s0,56(sp)
+     d00:	04010113          	addi	sp,sp,64
+     d04:	00008067          	ret
+
+00000d08 <_fp_print>:
+static inline void _fp_print(uint32_t val) {
+     d08:	fe010113          	addi	sp,sp,-32
+     d0c:	00812e23          	sw	s0,28(sp)
+     d10:	02010413          	addi	s0,sp,32
+     d14:	fea42623          	sw	a0,-20(s0)
+  write_csr(CSR_TOHOST, 0xbaaabaaa);
+     d18:	baaac7b7          	lui	a5,0xbaaac
+     d1c:	aaa78793          	addi	a5,a5,-1366 # baaabaaa <__global_pointer$+0x9aaaae82>
+     d20:	51e79073          	csrw	0x51e,a5
+  write_csr(CSR_TOHOST, val);
+     d24:	fec42783          	lw	a5,-20(s0)
+     d28:	51e79073          	csrw	0x51e,a5
+}
+     d2c:	00000013          	nop
+     d30:	01c12403          	lw	s0,28(sp)
+     d34:	02010113          	addi	sp,sp,32
+     d38:	00008067          	ret
+
+00000d3c <_fp_finish>:
+static inline void _fp_finish() {
+     d3c:	ff010113          	addi	sp,sp,-16
+     d40:	00812623          	sw	s0,12(sp)
+     d44:	01010413          	addi	s0,sp,16
+  write_csr(CSR_TOHOST, 0xdeaddead);
+     d48:	deade7b7          	lui	a5,0xdeade
+     d4c:	ead78793          	addi	a5,a5,-339 # deaddead <__global_pointer$+0xbeadd285>
+     d50:	51e79073          	csrw	0x51e,a5
+}
+     d54:	00000013          	nop
+     d58:	00c12403          	lw	s0,12(sp)
+     d5c:	01010113          	addi	sp,sp,16
+     d60:	00008067          	ret
+
+00000d64 <lock_acquire>:
+#include <flexpret_io.h>
+
+#ifndef FLEXPRET_LOCK_H
+#define FLEXPRET_Lock_H
+
+static inline void lock_acquire() {
+     d64:	fe010113          	addi	sp,sp,-32
+     d68:	00812e23          	sw	s0,28(sp)
+     d6c:	02010413          	addi	s0,sp,32
+    while(swap_csr(CSR_HWLOCK, 1) == 0) {}
+     d70:	00000013          	nop
+     d74:	00100793          	li	a5,1
+     d78:	520797f3          	csrrw	a5,0x520,a5
+     d7c:	fef42623          	sw	a5,-20(s0)
+     d80:	fec42783          	lw	a5,-20(s0)
+     d84:	fe0788e3          	beqz	a5,d74 <lock_acquire+0x10>
+}
+     d88:	00000013          	nop
+     d8c:	00000013          	nop
+     d90:	01c12403          	lw	s0,28(sp)
+     d94:	02010113          	addi	sp,sp,32
+     d98:	00008067          	ret
+
+00000d9c <lock_release>:
+
+static inline void lock_release() {
+     d9c:	fe010113          	addi	sp,sp,-32
+     da0:	00112e23          	sw	ra,28(sp)
+     da4:	00812c23          	sw	s0,24(sp)
+     da8:	02010413          	addi	s0,sp,32
+    if (swap_csr(CSR_HWLOCK, 0) != 1) {
+     dac:	00000793          	li	a5,0
+     db0:	520797f3          	csrrw	a5,0x520,a5
+     db4:	fef42623          	sw	a5,-20(s0)
+     db8:	fec42703          	lw	a4,-20(s0)
+     dbc:	00100793          	li	a5,1
+     dc0:	00f70863          	beq	a4,a5,dd0 <lock_release+0x34>
+        _fp_print(666);
+     dc4:	29a00513          	li	a0,666
+     dc8:	f41ff0ef          	jal	ra,d08 <_fp_print>
+        _fp_finish();
+     dcc:	f71ff0ef          	jal	ra,d3c <_fp_finish>
+    };
+}
+     dd0:	00000013          	nop
+     dd4:	01c12083          	lw	ra,28(sp)
+     dd8:	01812403          	lw	s0,24(sp)
+     ddc:	02010113          	addi	sp,sp,32
+     de0:	00008067          	ret
+
+00000de4 <malloc>:
+int main(void);
+
+/**
+ * Allocate a requested memory and return a pointer to it.
+ */
+void *malloc(size_t size) {
+     de4:	fe010113          	addi	sp,sp,-32
+     de8:	00112e23          	sw	ra,28(sp)
+     dec:	00812c23          	sw	s0,24(sp)
+     df0:	02010413          	addi	s0,sp,32
+     df4:	fea42623          	sw	a0,-20(s0)
+    return ta_alloc(size);
+     df8:	fec42503          	lw	a0,-20(s0)
+     dfc:	b29ff0ef          	jal	ra,924 <ta_alloc>
+     e00:	00050793          	mv	a5,a0
+}
+     e04:	00078513          	mv	a0,a5
+     e08:	01c12083          	lw	ra,28(sp)
+     e0c:	01812403          	lw	s0,24(sp)
+     e10:	02010113          	addi	sp,sp,32
+     e14:	00008067          	ret
+
+00000e18 <calloc>:
+
+/**
+ * Allocate a requested memory, initial the memory to 0,
+ * and return a pointer to it.
+ */
+void *calloc(size_t nitems, size_t size) {
+     e18:	fe010113          	addi	sp,sp,-32
+     e1c:	00112e23          	sw	ra,28(sp)
+     e20:	00812c23          	sw	s0,24(sp)
+     e24:	02010413          	addi	s0,sp,32
+     e28:	fea42623          	sw	a0,-20(s0)
+     e2c:	feb42423          	sw	a1,-24(s0)
+    return ta_calloc(nitems, size);
+     e30:	fe842583          	lw	a1,-24(s0)
+     e34:	fec42503          	lw	a0,-20(s0)
+     e38:	bd1ff0ef          	jal	ra,a08 <ta_calloc>
+     e3c:	00050793          	mv	a5,a0
+}
+     e40:	00078513          	mv	a0,a5
+     e44:	01c12083          	lw	ra,28(sp)
+     e48:	01812403          	lw	s0,24(sp)
+     e4c:	02010113          	addi	sp,sp,32
+     e50:	00008067          	ret
+
+00000e54 <realloc>:
+/**
+ * resize the memory block pointed to by ptr
+ * that was previously allocated with a call
+ * to malloc or calloc.
+ */
+void *realloc(void *ptr, size_t size) {
+     e54:	fe010113          	addi	sp,sp,-32
+     e58:	00112e23          	sw	ra,28(sp)
+     e5c:	00812c23          	sw	s0,24(sp)
+     e60:	02010413          	addi	s0,sp,32
+     e64:	fea42623          	sw	a0,-20(s0)
+     e68:	feb42423          	sw	a1,-24(s0)
+    return ta_realloc(ptr, size);
+     e6c:	fe842583          	lw	a1,-24(s0)
+     e70:	fec42503          	lw	a0,-20(s0)
+     e74:	dc1ff0ef          	jal	ra,c34 <ta_realloc>
+     e78:	00050793          	mv	a5,a0
+}
+     e7c:	00078513          	mv	a0,a5
+     e80:	01c12083          	lw	ra,28(sp)
+     e84:	01812403          	lw	s0,24(sp)
+     e88:	02010113          	addi	sp,sp,32
+     e8c:	00008067          	ret
+
+00000e90 <free>:
+
+/**
+ * Deallocate the memory previously allocated by a call to calloc, malloc, or realloc.
+ */
+void free(void *ptr) {
+     e90:	fe010113          	addi	sp,sp,-32
+     e94:	00112e23          	sw	ra,28(sp)
+     e98:	00812c23          	sw	s0,24(sp)
+     e9c:	02010413          	addi	s0,sp,32
+     ea0:	fea42623          	sw	a0,-20(s0)
+    ta_free(ptr);
+     ea4:	fec42503          	lw	a0,-20(s0)
+     ea8:	f44ff0ef          	jal	ra,5ec <ta_free>
+}
+     eac:	00000013          	nop
+     eb0:	01c12083          	lw	ra,28(sp)
+     eb4:	01812403          	lw	s0,24(sp)
+     eb8:	02010113          	addi	sp,sp,32
+     ebc:	00008067          	ret
+
+00000ec0 <Reset_Handler>:
+
+/**
+ * Initialize initialized global variables, set uninitialized global variables
+ * to zero, configure tinyalloc, and jump to main.
+ */
+void Reset_Handler(uint32_t hartid) {
+     ec0:	fc010113          	addi	sp,sp,-64
+     ec4:	02112e23          	sw	ra,60(sp)
+     ec8:	02812c23          	sw	s0,56(sp)
+     ecc:	04010413          	addi	s0,sp,64
+     ed0:	fca42623          	sw	a0,-52(s0)
+    // Only thread 0 performs the setup,
+    // the other threads busy wait until ready.
+    if (hartid == 0) {
+     ed4:	fcc42783          	lw	a5,-52(s0)
+     ed8:	0e079463          	bnez	a5,fc0 <Reset_Handler+0x100>
+        // Copy .data section into the RAM
+        uint32_t size   = &__data_end__ - &__data_start__;
+     edc:	80818713          	addi	a4,gp,-2040 # 20000430 <heap_end.0>
+     ee0:	200007b7          	lui	a5,0x20000
+     ee4:	00078793          	mv	a5,a5
+     ee8:	40f707b3          	sub	a5,a4,a5
+     eec:	4027d793          	srai	a5,a5,0x2
+     ef0:	fcf42e23          	sw	a5,-36(s0)
+        uint32_t *pDst  = (uint32_t*)&__data_start__;       // RAM
+     ef4:	200007b7          	lui	a5,0x20000
+     ef8:	00078793          	mv	a5,a5
+     efc:	fef42623          	sw	a5,-20(s0)
+        uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
+     f00:	000017b7          	lui	a5,0x1
+     f04:	58078793          	addi	a5,a5,1408 # 1580 <__etext>
+     f08:	fef42423          	sw	a5,-24(s0)
+
+        for (uint32_t i = 0; i < size; i++) {
+     f0c:	fe042223          	sw	zero,-28(s0)
+     f10:	0300006f          	j	f40 <Reset_Handler+0x80>
+            *pDst++ = *pSrc++;
+     f14:	fe842703          	lw	a4,-24(s0)
+     f18:	00470793          	addi	a5,a4,4
+     f1c:	fef42423          	sw	a5,-24(s0)
+     f20:	fec42783          	lw	a5,-20(s0)
+     f24:	00478693          	addi	a3,a5,4
+     f28:	fed42623          	sw	a3,-20(s0)
+     f2c:	00072703          	lw	a4,0(a4)
+     f30:	00e7a023          	sw	a4,0(a5)
+        for (uint32_t i = 0; i < size; i++) {
+     f34:	fe442783          	lw	a5,-28(s0)
+     f38:	00178793          	addi	a5,a5,1
+     f3c:	fef42223          	sw	a5,-28(s0)
+     f40:	fe442703          	lw	a4,-28(s0)
+     f44:	fdc42783          	lw	a5,-36(s0)
+     f48:	fcf766e3          	bltu	a4,a5,f14 <Reset_Handler+0x54>
+        }
+
+        // Init. the .bss section to zero in RAM
+        size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
+     f4c:	85018713          	addi	a4,gp,-1968 # 20000478 <__bss_end__>
+     f50:	80818793          	addi	a5,gp,-2040 # 20000430 <heap_end.0>
+     f54:	40f707b3          	sub	a5,a4,a5
+     f58:	fcf42e23          	sw	a5,-36(s0)
+        pDst = (uint32_t*)&__bss_start__;
+     f5c:	80818793          	addi	a5,gp,-2040 # 20000430 <heap_end.0>
+     f60:	fef42623          	sw	a5,-20(s0)
+        for(uint32_t i = 0; i < size; i++) {
+     f64:	fe042023          	sw	zero,-32(s0)
+     f68:	0200006f          	j	f88 <Reset_Handler+0xc8>
+            *pDst++ = 0;
+     f6c:	fec42783          	lw	a5,-20(s0)
+     f70:	00478713          	addi	a4,a5,4
+     f74:	fee42623          	sw	a4,-20(s0)
+     f78:	0007a023          	sw	zero,0(a5)
+        for(uint32_t i = 0; i < size; i++) {
+     f7c:	fe042783          	lw	a5,-32(s0)
+     f80:	00178793          	addi	a5,a5,1
+     f84:	fef42023          	sw	a5,-32(s0)
+     f88:	fe042703          	lw	a4,-32(s0)
+     f8c:	fdc42783          	lw	a5,-36(s0)
+     f90:	fcf76ee3          	bltu	a4,a5,f6c <Reset_Handler+0xac>
+        }
+
+        // Initialize tinyalloc.
+        ta_init( 
+     f94:	00400713          	li	a4,4
+     f98:	01000693          	li	a3,16
+     f9c:	3e800613          	li	a2,1000
+     fa0:	200405b7          	lui	a1,0x20040
+     fa4:	85018513          	addi	a0,gp,-1968 # 20000478 <__bss_end__>
+     fa8:	d50ff0ef          	jal	ra,4f8 <ta_init>
+            16, // split_thresh: 16 bytes (Only used when reusing blocks.)
+            TA_ALIGNMENT
+        );
+
+        // Signal ready.
+        lock_acquire();
+     fac:	db9ff0ef          	jal	ra,d64 <lock_acquire>
+        __ready__ = 1;
+     fb0:	00100713          	li	a4,1
+     fb4:	82e1a023          	sw	a4,-2016(gp) # 20000448 <__ready__>
+        lock_release();
+     fb8:	de5ff0ef          	jal	ra,d9c <lock_release>
+     fbc:	0140006f          	j	fd0 <Reset_Handler+0x110>
+    } else {
+        // Wait for thread 0 to finish setup.
+        // FIXME: Use delay until (DU)
+        // for precise synchronization.
+        while (__ready__ != 1);
+     fc0:	00000013          	nop
+     fc4:	8201a703          	lw	a4,-2016(gp) # 20000448 <__ready__>
+     fc8:	00100793          	li	a5,1
+     fcc:	fef71ce3          	bne	a4,a5,fc4 <Reset_Handler+0x104>
+    }
+
+    // Call main().
+    if (hartid == 0) {
+     fd0:	fcc42783          	lw	a5,-52(s0)
+     fd4:	00079663          	bnez	a5,fe0 <Reset_Handler+0x120>
+        main();
+     fd8:	494000ef          	jal	ra,146c <main>
+     fdc:	0080006f          	j	fe4 <Reset_Handler+0x124>
+    } else {
+        worker_main();
+     fe0:	24c000ef          	jal	ra,122c <worker_main>
+    }
+
+    // Exit by calling the _exit() syscall.
+    if (hartid == 0) {
+     fe4:	fcc42783          	lw	a5,-52(s0)
+     fe8:	00079c63          	bnez	a5,1000 <Reset_Handler+0x140>
+        // Wait for all the worker threads to finish.
+        while (num_busy_workers > 0);
+     fec:	00000013          	nop
+     ff0:	84c1a783          	lw	a5,-1972(gp) # 20000474 <num_busy_workers>
+     ff4:	fe079ee3          	bnez	a5,ff0 <Reset_Handler+0x130>
+
+        // Exit the program.
+        _exit(0);
+     ff8:	00000513          	li	a0,0
+     ffc:	890ff0ef          	jal	ra,8c <_exit>
+    } else {
+        while (1);
+    1000:	0000006f          	j	1000 <Reset_Handler+0x140>
+
+00001004 <_fp_print>:
+static inline void _fp_print(uint32_t val) {
+    1004:	fe010113          	addi	sp,sp,-32
+    1008:	00812e23          	sw	s0,28(sp)
+    100c:	02010413          	addi	s0,sp,32
+    1010:	fea42623          	sw	a0,-20(s0)
+  write_csr(CSR_TOHOST, 0xbaaabaaa);
+    1014:	baaac7b7          	lui	a5,0xbaaac
+    1018:	aaa78793          	addi	a5,a5,-1366 # baaabaaa <__global_pointer$+0x9aaaae82>
+    101c:	51e79073          	csrw	0x51e,a5
+  write_csr(CSR_TOHOST, val);
+    1020:	fec42783          	lw	a5,-20(s0)
+    1024:	51e79073          	csrw	0x51e,a5
+}
+    1028:	00000013          	nop
+    102c:	01c12403          	lw	s0,28(sp)
+    1030:	02010113          	addi	sp,sp,32
+    1034:	00008067          	ret
+
+00001038 <_fp_finish>:
+static inline void _fp_finish() {
+    1038:	ff010113          	addi	sp,sp,-16
+    103c:	00812623          	sw	s0,12(sp)
+    1040:	01010413          	addi	s0,sp,16
+  write_csr(CSR_TOHOST, 0xdeaddead);
+    1044:	deade7b7          	lui	a5,0xdeade
+    1048:	ead78793          	addi	a5,a5,-339 # deaddead <__global_pointer$+0xbeadd285>
+    104c:	51e79073          	csrw	0x51e,a5
+}
+    1050:	00000013          	nop
+    1054:	00c12403          	lw	s0,12(sp)
+    1058:	01010113          	addi	sp,sp,16
+    105c:	00008067          	ret
+
+00001060 <lock_acquire>:
+static inline void lock_acquire() {
+    1060:	fe010113          	addi	sp,sp,-32
+    1064:	00812e23          	sw	s0,28(sp)
+    1068:	02010413          	addi	s0,sp,32
+    while(swap_csr(CSR_HWLOCK, 1) == 0) {}
+    106c:	00000013          	nop
+    1070:	00100793          	li	a5,1
+    1074:	520797f3          	csrrw	a5,0x520,a5
+    1078:	fef42623          	sw	a5,-20(s0)
+    107c:	fec42783          	lw	a5,-20(s0)
+    1080:	fe0788e3          	beqz	a5,1070 <lock_acquire+0x10>
+}
+    1084:	00000013          	nop
+    1088:	00000013          	nop
+    108c:	01c12403          	lw	s0,28(sp)
+    1090:	02010113          	addi	sp,sp,32
+    1094:	00008067          	ret
+
+00001098 <lock_release>:
+static inline void lock_release() {
+    1098:	fe010113          	addi	sp,sp,-32
+    109c:	00112e23          	sw	ra,28(sp)
+    10a0:	00812c23          	sw	s0,24(sp)
+    10a4:	02010413          	addi	s0,sp,32
+    if (swap_csr(CSR_HWLOCK, 0) != 1) {
+    10a8:	00000793          	li	a5,0
+    10ac:	520797f3          	csrrw	a5,0x520,a5
+    10b0:	fef42623          	sw	a5,-20(s0)
+    10b4:	fec42703          	lw	a4,-20(s0)
+    10b8:	00100793          	li	a5,1
+    10bc:	00f70863          	beq	a4,a5,10cc <lock_release+0x34>
+        _fp_print(666);
+    10c0:	29a00513          	li	a0,666
+    10c4:	f41ff0ef          	jal	ra,1004 <_fp_print>
+        _fp_finish();
+    10c8:	f71ff0ef          	jal	ra,1038 <_fp_finish>
+}
+    10cc:	00000013          	nop
+    10d0:	01c12083          	lw	ra,28(sp)
+    10d4:	01812403          	lw	s0,24(sp)
+    10d8:	02010113          	addi	sp,sp,32
+    10dc:	00008067          	ret
+
+000010e0 <thread_create>:
+
+int thread_create(
+    thread_t *restrict hartid,
+    void *(*start_routine)(void *),
+    void *restrict arg
+) {
+    10e0:	fd010113          	addi	sp,sp,-48
+    10e4:	02112623          	sw	ra,44(sp)
+    10e8:	02812423          	sw	s0,40(sp)
+    10ec:	03010413          	addi	s0,sp,48
+    10f0:	fca42e23          	sw	a0,-36(s0)
+    10f4:	fcb42c23          	sw	a1,-40(s0)
+    10f8:	fcc42a23          	sw	a2,-44(s0)
+    // Allocate an available thread.
+    for (int i = 0; i < NUM_THREADS-1; i++) {
+    10fc:	fe042623          	sw	zero,-20(s0)
+    1100:	0a00006f          	j	11a0 <thread_create+0xc0>
+        if (!in_use[i]) {
+    1104:	84818713          	addi	a4,gp,-1976 # 20000470 <in_use>
+    1108:	fec42783          	lw	a5,-20(s0)
+    110c:	00f707b3          	add	a5,a4,a5
+    1110:	0007c783          	lbu	a5,0(a5)
+    1114:	0017c793          	xori	a5,a5,1
+    1118:	0ff7f793          	zext.b	a5,a5
+    111c:	06078c63          	beqz	a5,1194 <thread_create+0xb4>
+            lock_acquire();
+    1120:	f41ff0ef          	jal	ra,1060 <lock_acquire>
+            *hartid = i+1;
+    1124:	fec42783          	lw	a5,-20(s0)
+    1128:	00178793          	addi	a5,a5,1
+    112c:	00078713          	mv	a4,a5
+    1130:	fdc42783          	lw	a5,-36(s0)
+    1134:	00e7a023          	sw	a4,0(a5)
+            routines[i] = start_routine;
+    1138:	82418713          	addi	a4,gp,-2012 # 2000044c <routines>
+    113c:	fec42783          	lw	a5,-20(s0)
+    1140:	00279793          	slli	a5,a5,0x2
+    1144:	00f707b3          	add	a5,a4,a5
+    1148:	fd842703          	lw	a4,-40(s0)
+    114c:	00e7a023          	sw	a4,0(a5)
+            args[i] = arg;
+    1150:	83018713          	addi	a4,gp,-2000 # 20000458 <args>
+    1154:	fec42783          	lw	a5,-20(s0)
+    1158:	00279793          	slli	a5,a5,0x2
+    115c:	00f707b3          	add	a5,a4,a5
+    1160:	fd442703          	lw	a4,-44(s0)
+    1164:	00e7a023          	sw	a4,0(a5)
+            num_busy_workers += 1;
+    1168:	84c1a783          	lw	a5,-1972(gp) # 20000474 <num_busy_workers>
+    116c:	00178713          	addi	a4,a5,1
+    1170:	84e1a623          	sw	a4,-1972(gp) # 20000474 <num_busy_workers>
+            in_use[i] = true; // Signal the worker thread to do work.
+    1174:	84818713          	addi	a4,gp,-1976 # 20000470 <in_use>
+    1178:	fec42783          	lw	a5,-20(s0)
+    117c:	00f707b3          	add	a5,a4,a5
+    1180:	00100713          	li	a4,1
+    1184:	00e78023          	sb	a4,0(a5)
+            lock_release();
+    1188:	f11ff0ef          	jal	ra,1098 <lock_release>
+            return 0;
+    118c:	00000793          	li	a5,0
+    1190:	0200006f          	j	11b0 <thread_create+0xd0>
+    for (int i = 0; i < NUM_THREADS-1; i++) {
+    1194:	fec42783          	lw	a5,-20(s0)
+    1198:	00178793          	addi	a5,a5,1
+    119c:	fef42623          	sw	a5,-20(s0)
+    11a0:	fec42703          	lw	a4,-20(s0)
+    11a4:	00200793          	li	a5,2
+    11a8:	f4e7dee3          	bge	a5,a4,1104 <thread_create+0x24>
+        }
+    }
+    // All the threads are occupied, return error.
+    return 1;
+    11ac:	00100793          	li	a5,1
+}
+    11b0:	00078513          	mv	a0,a5
+    11b4:	02c12083          	lw	ra,44(sp)
+    11b8:	02812403          	lw	s0,40(sp)
+    11bc:	03010113          	addi	sp,sp,48
+    11c0:	00008067          	ret
+
+000011c4 <thread_join>:
+
+int thread_join(thread_t hartid, void **retval) {
+    11c4:	fd010113          	addi	sp,sp,-48
+    11c8:	02812623          	sw	s0,44(sp)
+    11cc:	03010413          	addi	s0,sp,48
+    11d0:	fca42e23          	sw	a0,-36(s0)
+    11d4:	fcb42c23          	sw	a1,-40(s0)
+    uint32_t worker_id = hartid - 1;
+    11d8:	fdc42783          	lw	a5,-36(s0)
+    11dc:	fff78793          	addi	a5,a5,-1
+    11e0:	fef42623          	sw	a5,-20(s0)
+    while(in_use[worker_id]); // Wait
+    11e4:	00000013          	nop
+    11e8:	84818713          	addi	a4,gp,-1976 # 20000470 <in_use>
+    11ec:	fec42783          	lw	a5,-20(s0)
+    11f0:	00f707b3          	add	a5,a4,a5
+    11f4:	0007c783          	lbu	a5,0(a5)
+    11f8:	fe0798e3          	bnez	a5,11e8 <thread_join+0x24>
+    // Get the exit code from the exited thread.
+    *retval = exit_code[worker_id];
+    11fc:	83c18713          	addi	a4,gp,-1988 # 20000464 <exit_code>
+    1200:	fec42783          	lw	a5,-20(s0)
+    1204:	00279793          	slli	a5,a5,0x2
+    1208:	00f707b3          	add	a5,a4,a5
+    120c:	0007a703          	lw	a4,0(a5)
+    1210:	fd842783          	lw	a5,-40(s0)
+    1214:	00e7a023          	sw	a4,0(a5)
+    return 0;
+    1218:	00000793          	li	a5,0
+}
+    121c:	00078513          	mv	a0,a5
+    1220:	02c12403          	lw	s0,44(sp)
+    1224:	03010113          	addi	sp,sp,48
+    1228:	00008067          	ret
+
+0000122c <worker_main>:
+
+/**
+ * Main function for a worker thread (hardware threads 1-7).
+ */
+void worker_main(uint32_t hartid) {
+    122c:	fd010113          	addi	sp,sp,-48
+    1230:	02112623          	sw	ra,44(sp)
+    1234:	02812423          	sw	s0,40(sp)
+    1238:	03010413          	addi	s0,sp,48
+    123c:	fca42e23          	sw	a0,-36(s0)
+    uint32_t worker_id = hartid - 1;
+    1240:	fdc42783          	lw	a5,-36(s0)
+    1244:	fff78793          	addi	a5,a5,-1
+    1248:	fef42623          	sw	a5,-20(s0)
+    // FIXME: Instead of an infinite loop,
+    // need to check for a global shutdown.
+    while(1) {
+        if (in_use[worker_id]) {
+    124c:	84818713          	addi	a4,gp,-1976 # 20000470 <in_use>
+    1250:	fec42783          	lw	a5,-20(s0)
+    1254:	00f707b3          	add	a5,a4,a5
+    1258:	0007c783          	lbu	a5,0(a5)
+    125c:	00079463          	bnez	a5,1264 <worker_main+0x38>
+    1260:	fedff06f          	j	124c <worker_main+0x20>
+            break; // FIXME: Temporarily only execute routines once.            
+    1264:	00000013          	nop
+        }
+    }
+
+    // Execute the routine with the argument passed in.
+    (*routines[worker_id])(args[worker_id]);
+    1268:	82418713          	addi	a4,gp,-2012 # 2000044c <routines>
+    126c:	fec42783          	lw	a5,-20(s0)
+    1270:	00279793          	slli	a5,a5,0x2
+    1274:	00f707b3          	add	a5,a4,a5
+    1278:	0007a783          	lw	a5,0(a5)
+    127c:	83018693          	addi	a3,gp,-2000 # 20000458 <args>
+    1280:	fec42703          	lw	a4,-20(s0)
+    1284:	00271713          	slli	a4,a4,0x2
+    1288:	00e68733          	add	a4,a3,a4
+    128c:	00072703          	lw	a4,0(a4)
+    1290:	00070513          	mv	a0,a4
+    1294:	000780e7          	jalr	a5
+
+    // Mark the thread as available again.
+    lock_acquire();
+    1298:	dc9ff0ef          	jal	ra,1060 <lock_acquire>
+    num_busy_workers -= 1;
+    129c:	84c1a783          	lw	a5,-1972(gp) # 20000474 <num_busy_workers>
+    12a0:	fff78713          	addi	a4,a5,-1
+    12a4:	84e1a623          	sw	a4,-1972(gp) # 20000474 <num_busy_workers>
+    in_use[worker_id] = false;
+    12a8:	84818713          	addi	a4,gp,-1976 # 20000470 <in_use>
+    12ac:	fec42783          	lw	a5,-20(s0)
+    12b0:	00f707b3          	add	a5,a4,a5
+    12b4:	00078023          	sb	zero,0(a5)
+    lock_release();
+    12b8:	de1ff0ef          	jal	ra,1098 <lock_release>
+
+    return;
+    12bc:	00000013          	nop
+    12c0:	02c12083          	lw	ra,44(sp)
+    12c4:	02812403          	lw	s0,40(sp)
+    12c8:	03010113          	addi	sp,sp,48
+    12cc:	00008067          	ret
+
+000012d0 <_fp_print>:
+static inline void _fp_print(uint32_t val) {
+    12d0:	fe010113          	addi	sp,sp,-32
+    12d4:	00812e23          	sw	s0,28(sp)
+    12d8:	02010413          	addi	s0,sp,32
+    12dc:	fea42623          	sw	a0,-20(s0)
+  write_csr(CSR_TOHOST, 0xbaaabaaa);
+    12e0:	baaac7b7          	lui	a5,0xbaaac
+    12e4:	aaa78793          	addi	a5,a5,-1366 # baaabaaa <__global_pointer$+0x9aaaae82>
+    12e8:	51e79073          	csrw	0x51e,a5
+  write_csr(CSR_TOHOST, val);
+    12ec:	fec42783          	lw	a5,-20(s0)
+    12f0:	51e79073          	csrw	0x51e,a5
+}
+    12f4:	00000013          	nop
+    12f8:	01c12403          	lw	s0,28(sp)
+    12fc:	02010113          	addi	sp,sp,32
+    1300:	00008067          	ret
+
+00001304 <_fp_finish>:
+static inline void _fp_finish() {
+    1304:	ff010113          	addi	sp,sp,-16
+    1308:	00812623          	sw	s0,12(sp)
+    130c:	01010413          	addi	s0,sp,16
+  write_csr(CSR_TOHOST, 0xdeaddead);
+    1310:	deade7b7          	lui	a5,0xdeade
+    1314:	ead78793          	addi	a5,a5,-339 # deaddead <__global_pointer$+0xbeadd285>
+    1318:	51e79073          	csrw	0x51e,a5
+}
+    131c:	00000013          	nop
+    1320:	00c12403          	lw	s0,12(sp)
+    1324:	01010113          	addi	sp,sp,16
+    1328:	00008067          	ret
+
+0000132c <lock_acquire>:
+static inline void lock_acquire() {
+    132c:	fe010113          	addi	sp,sp,-32
+    1330:	00812e23          	sw	s0,28(sp)
+    1334:	02010413          	addi	s0,sp,32
+    while(swap_csr(CSR_HWLOCK, 1) == 0) {}
+    1338:	00000013          	nop
+    133c:	00100793          	li	a5,1
+    1340:	520797f3          	csrrw	a5,0x520,a5
+    1344:	fef42623          	sw	a5,-20(s0)
+    1348:	fec42783          	lw	a5,-20(s0)
+    134c:	fe0788e3          	beqz	a5,133c <lock_acquire+0x10>
+}
+    1350:	00000013          	nop
+    1354:	00000013          	nop
+    1358:	01c12403          	lw	s0,28(sp)
+    135c:	02010113          	addi	sp,sp,32
+    1360:	00008067          	ret
+
+00001364 <lock_release>:
+static inline void lock_release() {
+    1364:	fe010113          	addi	sp,sp,-32
+    1368:	00112e23          	sw	ra,28(sp)
+    136c:	00812c23          	sw	s0,24(sp)
+    1370:	02010413          	addi	s0,sp,32
+    if (swap_csr(CSR_HWLOCK, 0) != 1) {
+    1374:	00000793          	li	a5,0
+    1378:	520797f3          	csrrw	a5,0x520,a5
+    137c:	fef42623          	sw	a5,-20(s0)
+    1380:	fec42703          	lw	a4,-20(s0)
+    1384:	00100793          	li	a5,1
+    1388:	00f70863          	beq	a4,a5,1398 <lock_release+0x34>
+        _fp_print(666);
+    138c:	29a00513          	li	a0,666
+    1390:	f41ff0ef          	jal	ra,12d0 <_fp_print>
+        _fp_finish();
+    1394:	f71ff0ef          	jal	ra,1304 <_fp_finish>
+}
+    1398:	00000013          	nop
+    139c:	01c12083          	lw	ra,28(sp)
+    13a0:	01812403          	lw	s0,24(sp)
+    13a4:	02010113          	addi	sp,sp,32
+    13a8:	00008067          	ret
+
+000013ac <t1_do_work>:
+#include <stdint.h>
+#include <flexpret_io.h>
+#include <flexpret_lock.h>
+#include <flexpret_thread.h>
+
+void* t1_do_work(void* num) {
+    13ac:	fd010113          	addi	sp,sp,-48
+    13b0:	02112623          	sw	ra,44(sp)
+    13b4:	02812423          	sw	s0,40(sp)
+    13b8:	03010413          	addi	s0,sp,48
+    13bc:	fca42e23          	sw	a0,-36(s0)
+    uint32_t* _num = (uint32_t*) num;
+    13c0:	fdc42783          	lw	a5,-36(s0)
+    13c4:	fef42623          	sw	a5,-20(s0)
+    lock_acquire();
+    13c8:	f65ff0ef          	jal	ra,132c <lock_acquire>
+    *_num += 1;
+    13cc:	fec42783          	lw	a5,-20(s0)
+    13d0:	0007a783          	lw	a5,0(a5)
+    13d4:	00178713          	addi	a4,a5,1
+    13d8:	fec42783          	lw	a5,-20(s0)
+    13dc:	00e7a023          	sw	a4,0(a5)
+    _fp_print(*_num);
+    13e0:	fec42783          	lw	a5,-20(s0)
+    13e4:	0007a783          	lw	a5,0(a5)
+    13e8:	00078513          	mv	a0,a5
+    13ec:	ee5ff0ef          	jal	ra,12d0 <_fp_print>
+    lock_release();
+    13f0:	f75ff0ef          	jal	ra,1364 <lock_release>
+}
+    13f4:	00000013          	nop
+    13f8:	00078513          	mv	a0,a5
+    13fc:	02c12083          	lw	ra,44(sp)
+    1400:	02812403          	lw	s0,40(sp)
+    1404:	03010113          	addi	sp,sp,48
+    1408:	00008067          	ret
+
+0000140c <t2_do_work>:
+
+void* t2_do_work(void* num) {
+    140c:	fd010113          	addi	sp,sp,-48
+    1410:	02112623          	sw	ra,44(sp)
+    1414:	02812423          	sw	s0,40(sp)
+    1418:	03010413          	addi	s0,sp,48
+    141c:	fca42e23          	sw	a0,-36(s0)
+    uint32_t* _num = (uint32_t*) num;
+    1420:	fdc42783          	lw	a5,-36(s0)
+    1424:	fef42623          	sw	a5,-20(s0)
+    lock_acquire();
+    1428:	f05ff0ef          	jal	ra,132c <lock_acquire>
+    *_num += 2;
+    142c:	fec42783          	lw	a5,-20(s0)
+    1430:	0007a783          	lw	a5,0(a5)
+    1434:	00278713          	addi	a4,a5,2
+    1438:	fec42783          	lw	a5,-20(s0)
+    143c:	00e7a023          	sw	a4,0(a5)
+    _fp_print(*_num);
+    1440:	fec42783          	lw	a5,-20(s0)
+    1444:	0007a783          	lw	a5,0(a5)
+    1448:	00078513          	mv	a0,a5
+    144c:	e85ff0ef          	jal	ra,12d0 <_fp_print>
+    lock_release();
+    1450:	f15ff0ef          	jal	ra,1364 <lock_release>
+}
+    1454:	00000013          	nop
+    1458:	00078513          	mv	a0,a5
+    145c:	02c12083          	lw	ra,44(sp)
+    1460:	02812403          	lw	s0,40(sp)
+    1464:	03010113          	addi	sp,sp,48
+    1468:	00008067          	ret
+
+0000146c <main>:
+
+int main() {
+    146c:	fd010113          	addi	sp,sp,-48
+    1470:	02112623          	sw	ra,44(sp)
+    1474:	02812423          	sw	s0,40(sp)
+    1478:	03010413          	addi	s0,sp,48
+    
+    uint32_t* num = malloc(sizeof(uint32_t));
+    147c:	00400513          	li	a0,4
+    1480:	965ff0ef          	jal	ra,de4 <malloc>
+    1484:	00050793          	mv	a5,a0
+    1488:	fef42623          	sw	a5,-20(s0)
+    *num = 0;
+    148c:	fec42783          	lw	a5,-20(s0)
+    1490:	0007a023          	sw	zero,0(a5)
+    _fp_print(*num);
+    1494:	fec42783          	lw	a5,-20(s0)
+    1498:	0007a783          	lw	a5,0(a5)
+    149c:	00078513          	mv	a0,a5
+    14a0:	e31ff0ef          	jal	ra,12d0 <_fp_print>
+
+    thread_t tid[2];
+    int errno = thread_create(&tid[0], t1_do_work, num);
+    14a4:	fe040713          	addi	a4,s0,-32
+    14a8:	fec42603          	lw	a2,-20(s0)
+    14ac:	000017b7          	lui	a5,0x1
+    14b0:	3ac78593          	addi	a1,a5,940 # 13ac <t1_do_work>
+    14b4:	00070513          	mv	a0,a4
+    14b8:	c29ff0ef          	jal	ra,10e0 <thread_create>
+    14bc:	fea42423          	sw	a0,-24(s0)
+    if (errno != 0) _fp_print(666);
+    14c0:	fe842783          	lw	a5,-24(s0)
+    14c4:	00078663          	beqz	a5,14d0 <main+0x64>
+    14c8:	29a00513          	li	a0,666
+    14cc:	e05ff0ef          	jal	ra,12d0 <_fp_print>
+    errno = thread_create(&tid[1], t2_do_work, num);
+    14d0:	fe040793          	addi	a5,s0,-32
+    14d4:	00478713          	addi	a4,a5,4
+    14d8:	fec42603          	lw	a2,-20(s0)
+    14dc:	000017b7          	lui	a5,0x1
+    14e0:	40c78593          	addi	a1,a5,1036 # 140c <t2_do_work>
+    14e4:	00070513          	mv	a0,a4
+    14e8:	bf9ff0ef          	jal	ra,10e0 <thread_create>
+    14ec:	fea42423          	sw	a0,-24(s0)
+    if (errno != 0) _fp_print(666);
+    14f0:	fe842783          	lw	a5,-24(s0)
+    14f4:	00078663          	beqz	a5,1500 <main+0x94>
+    14f8:	29a00513          	li	a0,666
+    14fc:	dd5ff0ef          	jal	ra,12d0 <_fp_print>
+
+    void * exit_code_t1;
+    void * exit_code_t2;
+    thread_join(tid[0], &exit_code_t1);
+    1500:	fe042783          	lw	a5,-32(s0)
+    1504:	fdc40713          	addi	a4,s0,-36
+    1508:	00070593          	mv	a1,a4
+    150c:	00078513          	mv	a0,a5
+    1510:	cb5ff0ef          	jal	ra,11c4 <thread_join>
+    thread_join(tid[1], &exit_code_t2);
+    1514:	fe442783          	lw	a5,-28(s0)
+    1518:	fd840713          	addi	a4,s0,-40
+    151c:	00070593          	mv	a1,a4
+    1520:	00078513          	mv	a0,a5
+    1524:	ca1ff0ef          	jal	ra,11c4 <thread_join>
+
+    _fp_print(*num);
+    1528:	fec42783          	lw	a5,-20(s0)
+    152c:	0007a783          	lw	a5,0(a5)
+    1530:	00078513          	mv	a0,a5
+    1534:	d9dff0ef          	jal	ra,12d0 <_fp_print>
+    return 0;
+    1538:	00000793          	li	a5,0
+}
+    153c:	00078513          	mv	a0,a5
+    1540:	02c12083          	lw	ra,44(sp)
+    1544:	02812403          	lw	s0,40(sp)
+    1548:	03010113          	addi	sp,sp,48
+    154c:	00008067          	ret
+
+00001550 <__mulsi3>:
+/* Our RV64 64-bit routine is equivalent to our RV32 32-bit routine.  */
+# define __muldi3 __mulsi3
+#endif
+
+FUNC_BEGIN (__muldi3)
+  mv     a2, a0
+    1550:	00050613          	mv	a2,a0
+  li     a0, 0
+    1554:	00000513          	li	a0,0
+.L1:
+  andi   a3, a1, 1
+    1558:	0015f693          	andi	a3,a1,1
+  beqz   a3, .L2
+    155c:	00068463          	beqz	a3,1564 <__mulsi3+0x14>
+  add    a0, a0, a2
+    1560:	00c50533          	add	a0,a0,a2
+.L2:
+  srli   a1, a1, 1
+    1564:	0015d593          	srli	a1,a1,0x1
+  slli   a2, a2, 1
+    1568:	00161613          	slli	a2,a2,0x1
+  bnez   a1, .L1
+    156c:	fe0596e3          	bnez	a1,1558 <__mulsi3+0x8>
+  ret
+    1570:	00008067          	ret
+
+00001574 <__errno>:
+    1574:	200007b7          	lui	a5,0x20000
+    1578:	4287a503          	lw	a0,1064(a5) # 20000428 <_impure_ptr>
+    157c:	00008067          	ret
