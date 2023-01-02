@@ -8,10 +8,10 @@ int main() {
     _fp_print(read_hartid());
 
     // Acquire the lock.
-    lock_acquire();
+    hwlock_acquire();
 
     // Release the lock.
-    lock_release();
+    hwlock_release();
 
     _fp_print(1);
     return 0;

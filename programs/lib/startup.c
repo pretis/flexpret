@@ -99,9 +99,9 @@ void Reset_Handler() {
         );
 
         // Signal ready.
-        lock_acquire();
+        hwlock_acquire();
         __ready__ = true;
-        lock_release();
+        hwlock_release();
     } else {
         // Wait for thread 0 to finish setup.
         // FIXME: Use delay until (DU)

@@ -37,13 +37,13 @@ int thread_create(
     // Cannot allocate to thread 0.
     for (int i = 1; i < NUM_THREADS; i++) {
         if (!in_use[i]) {
-            lock_acquire();
+            hwlock_acquire();
             *hartid = i;
             routines[i] = start_routine;
             args[i] = arg;
             num_threads_busy += 1;
             in_use[i] = true; // Signal the worker thread to do work.
-            lock_release();
+            hwlock_release();
             return 0;
         }
     }
@@ -84,10 +84,10 @@ void worker_main() {
             (*routines[hartid])(args[hartid]);
 
             // Mark the thread as available again.
-            lock_acquire();
+            hwlock_acquire();
             num_threads_busy -= 1;
             in_use[hartid] = false;
-            lock_release();      
+            hwlock_release();      
         }
     }
 
