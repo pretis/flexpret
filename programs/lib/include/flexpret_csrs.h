@@ -71,4 +71,14 @@
 
 #endif
 
+static inline void delay_until(unsigned int high, unsigned int low)
+{
+  __asm__ volatile(
+      "addi  x3,%[h],0;"
+      "addi  x2,%[l],0;"
+      ".word 0x00C4015B;"
+      :
+      : [h] "r"(high), [l] "r"(low));
+}
+
 #endif // FLEXPRET_CSRS_H
