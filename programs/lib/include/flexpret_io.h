@@ -21,6 +21,7 @@ static inline void _fp_finish() {
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*
 // Write all GPO bits
+// FIXME: Consider using the concept of a port. E.g. void gpo_write(unsigned in port, unsigned int val)
 static inline void gpo_write_0(uint32_t val) { write_csr(CSR_UARCH4, val); }
 static inline void gpo_write_1(uint32_t val) { write_csr(CSR_UARCH5, val); }
 static inline void gpo_write_2(uint32_t val) { write_csr(CSR_UARCH6, val); }
