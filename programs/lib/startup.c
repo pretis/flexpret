@@ -1,6 +1,7 @@
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <stdint.h>
 #include <flexpret_io.h>
+#include <flexpret_exceptions.h>
 #ifndef BOOTLOADER
 #include "tinyalloc/tinyalloc.h"
 #endif
@@ -84,7 +85,10 @@ void Reset_Handler(void) {
     );
     #endif
 
+    // Setup exception handling
+    setup_exceptions();
 
+    // Jump to main
     main();
 
 
