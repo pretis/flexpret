@@ -68,7 +68,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
   // General
   // TODO(edwardw): test this assumption and remove the use of the deprecated log2Up
   //require(threads > 0, "Cannot have zero hardware threads")
-  val threadBits    = Chisel.log2Up(threads)
+  val threadBits    = if (Chisel.log2Up(threads) == 0) 1 else Chisel.log2Up(threads)
 
   // Datapath
   // If true, allow arbitrary interleaving of threads in pipeline using bypass paths
@@ -125,6 +125,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
   val timeInc       = 10
   require(timeBits <= 32)
   val getTime       = delayUntil || interruptExpire
+  val hwLock        = true
 
   // TODO: priv fault without loadstore
   // Supported exceptions

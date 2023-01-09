@@ -181,5 +181,4 @@ object FlexpretConstants
   // exceptions
   val CAUSE_WI = 5
 
-
 }

@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <flexpret_csrs.h>
 
 #ifndef FLEXPRET_IO_H
@@ -50,5 +51,8 @@ static inline uint32_t gpi_read_0() { return read_csr(CSR_UARCH0); }
 static inline uint32_t gpi_read_1() { return read_csr(CSR_UARCH1); }
 static inline uint32_t gpi_read_2() { return read_csr(CSR_UARCH2); }
 static inline uint32_t gpi_read_3() { return read_csr(CSR_UARCH3); }
+
+// Read the current hardware thread id (hartid)
+static inline uint32_t read_hartid() { return read_csr(CSR_HARTID); }
 
 #endif // FLEXPRET_IO_H
