@@ -119,7 +119,9 @@ void Reset_Handler() {
     // Exit by calling the _exit() syscall.
     if (hartid == 0) {
         // Mark the main thread as exited.
+        hwlock_acquire();
         num_threads_exited += 1;
+        hwlock_release();
 
         // Wait for all hardware worker threads to exit.
         while (num_threads_exited < NUM_THREADS);
