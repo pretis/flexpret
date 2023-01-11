@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
   VCore* top = new VCore;
 
   // FIXME: Set this via command-line arguments.
-  while (timestamp < 3000000 && !Verilated::gotFinish()) {
+  while (!Verilated::gotFinish()) {
     top->clock = 1;
     top->eval();
     timestamp++;
