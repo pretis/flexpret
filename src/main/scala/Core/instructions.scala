@@ -233,26 +233,27 @@ object Causes {
     res.toArray
   }
 }
+// 0xc__ CSRs are read-only.
 object CSRs {
-  val fflags = 0x1
-  val frm = 0x2
-  val fcsr = 0x3
-  val stats = 0xc0
-  val sup0 = 0x500
-  val sup1 = 0x501
-  val epc = 0x502
-  val badvaddr = 0x503
-  val ptbr = 0x504
-  val asid = 0x505
-  val count = 0x506
-  val compare = 0x507
-  val evec = 0x508
-  val cause = 0x509
-  val status = 0x50a
-  val hartid = 0x50b
-  val impl = 0x50c
-  val fatc = 0x50d
-  val send_ipi = 0x50e
+  val fflags    = 0x1
+  val frm       = 0x2
+  val fcsr      = 0x3
+  val stats     = 0xc0
+  val sup0      = 0x500
+  val sup1      = 0x501
+  val epc       = 0x502
+  val badvaddr  = 0x503
+  val ptbr      = 0x504
+  val asid      = 0x505   // iMemProtection
+  val count     = 0x506
+  val compare   = 0x507
+  val evec      = 0x508
+  val cause     = 0x509
+  val status    = 0x50a
+  val hartid    = 0x50b
+  val impl      = 0x50c   // dMemProtection
+  val fatc      = 0x50d
+  val send_ipi  = 0x50e
   val clear_ipi = 0x50f
   val core_id = 0x510
   val reset = 0x51d
@@ -282,14 +283,14 @@ object CSRs {
   val timeh = 0xc81
   val instreth = 0xc82
   //flexpret
-  val clock = fflags
-  val slots = badvaddr
-  val tmodes = ptbr
-  val iMemProtection = asid
-  val dMemProtection = impl
-  val gpoProtection = fatc
-  val gpiBase = uarch0
-  val gpoBase = uarch4
+  val clock     = fflags
+  val slots     = badvaddr
+  val tmodes    = ptbr
+  val iMemProtection  = asid
+  val dMemProtection  = impl
+  val gpoProtection   = fatc
+  val gpiBase   = uarch0
+  val gpoBase   = uarch4
   val all = {
     val res = collection.mutable.ArrayBuffer[Int]()
     res += fflags
@@ -315,6 +316,7 @@ object CSRs {
     res += reset
     res += tohost
     res += fromhost
+    res += hwlock
     res += cycle
     res += time
     res += instret

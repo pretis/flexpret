@@ -6,11 +6,17 @@
 #define CSR_CAUSE       0x509 
 #define CSR_STATUS      0x50a
 #define CSR_COREID      0x510
+#define CSR_HARTID      0x50b
+
 #define CSR_TOHOST      0x51e
 #define CSR_FROMHOST    0x51f
+
+#define CSR_HWLOCK      0x520
+
 #define CSR_CYCLE       0xc00
 #define CSR_TIME        0xc01
 #define CSR_INSTRET     0xc02
+
 #define CSR_UARCH0      0xcc0
 #define CSR_UARCH1      0xcc1
 #define CSR_UARCH2      0xcc2
@@ -27,6 +33,11 @@
 #define CSR_UARCH13     0xccd
 #define CSR_UARCH14     0xcce
 #define CSR_UARCH15     0xccf
+
+#define CSR_COUNTH      0x586
+#define CSR_CYCLEH      0xc80
+#define CSR_TIMEH       0xc81
+#define CSR_INSTRETH    0xc82
 
 #ifdef __ASSEMBLY__
 #define __ASM_STR(x)	x

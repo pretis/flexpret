@@ -10,7 +10,8 @@ basic-c-tests = \
 	lbu \
 	global \
 	syscall \
-    gpio
+    gpio \
+	hwlock
 
 # FIXME: For some reason, compilation fails when there are artifacts
 # in the program directory (e.g. if riscv_compile.sh is called within
@@ -20,7 +21,7 @@ basic-c-tests = \
 define compile_template
 $(2)/$(1).riscv: $(wildcard $(2)/$(1)/*) $(wildcard $$(clib_dir)/*)
 	# Compile the program into .riscv.
-	$$(RISCV_GCC) $$(INCS) $$(RISCV_GCC_OPTS) $$(RISCV_LINK) $$(RISCV_LINK_OPTS) -o $$@ $$(clib_dir)/start.S $$(clib_dir)/syscalls.c $$(clib_dir)/tinyalloc/tinyalloc.c $$(clib_dir)/startup.c $(wildcard $(2)/$(1)/*.c)
+	$$(RISCV_GCC) $$(INCS) $$(RISCV_GCC_OPTS) $$(RISCV_LINK) $$(RISCV_LINK_OPTS) -o $$@ $$(clib_dir)/start.S $$(clib_dir)/syscalls.c $$(clib_dir)/tinyalloc/tinyalloc.c $$(clib_dir)/startup.c $$(clib_dir)/flexpret_thread.c $$(clib_dir)/flexpret_lock.c $(wildcard $(2)/$(1)/*.c)
 endef
 
 # Expand .riscv targets.
