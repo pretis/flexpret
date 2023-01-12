@@ -14,7 +14,7 @@ out/
 # Generated files
 **/*.mem
 **/*.out
-**/*.dump.txt
+**/*.dump
 **/*.vcd
 **/*.riscv
 **/*.map

@@ -16,4 +16,4 @@ $(EMULATOR_BIN): $(VERILOG_RAW) $(EMULATOR_DIR)/main.cpp $(HDL_SCRIPTS)/simify_v
 
 	cp $(EMULATOR_DIR)/obj_dir/V$(MODULE) $(EMULATOR_BIN)
 
-	echo "Emulator usage: Run '$(EMULATOR_BIN)'. The emulator expects to find the program for each core stored in the directory it is invoked from with the names 'core1.mem', 'core2.mem', 'coreN.mem' etc. The programs can be built using 'scripts/c/riscv_build.sh coreN <C files...>'. The emulation will generate a VCD called 'trace.vcd'. Use flexpret_io.h to print or to terminate simulation."
+	echo "Emulator usage: Run '$(EMULATOR_BIN) +ispm=<name>.mem'. A .mem file can be generated using 'scripts/c/riscv_compile.sh <binary name> <C files...>'. The emulation will generate a VCD in Core.vcd. Use flexpret_io.h to print or to terminate simulation."
