@@ -1,4 +1,5 @@
 #include "flexpret_exceptions.h"
+#include "flexpret_io.h"
 #include "flexpret_csrs.h"
 #include "flexpret_assert.h"
 
@@ -16,7 +17,9 @@ static void register_exception_handler(void (*isr)(void)) {
 
 static void fp_exception_handler(void) {
     int cause = read_csr(CSR_CAUSE);
-
+    // gpo_write_0(0xF);
+    gpo_write_0(cause);
+    
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  
         if(ext_int_handler) ext_int_handler();
     } else if (cause == EXC_CAUSE_INTERRUPT_EXPIRE) {

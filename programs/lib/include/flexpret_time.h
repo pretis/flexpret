@@ -1,6 +1,7 @@
 #ifndef FLEXPRET_TIME_H
 #define FLEXPRET_TIME_H
 
+#include <stdint.h>
 #include "flexpret_csrs.h"
 
 /**

@@ -106,7 +106,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
 
   // GPIO
   val gpiPortSizes  = List(1, 1, 1, 1)
-  val gpoPortSizes  = List(2, 2, 2, 2)
+  val gpoPortSizes  = List(4, 2, 2, 2)
   val initialGpo    = List(
     MEMP_T0, MEMP_SH, MEMP_SH, MEMP_SH
   )
@@ -129,7 +129,7 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
 
   // functionality
   val timeBits      = 32
-  val timeInc       = 10
+  val timeInc       = 20
   require(timeBits <= 32)
   val getTime       = delayUntil || interruptExpire
 
