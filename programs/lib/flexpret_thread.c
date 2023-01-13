@@ -4,25 +4,24 @@
 #include <flexpret_thread.h>
 
 /* Arrays that keep track of the status of threads */
-static void*  (*routines[NUM_THREADS])(void *); // An array of function pointers
-static void** args[NUM_THREADS];
-static bool   exit_requested[NUM_THREADS];
-static void** exit_code[NUM_THREADS];
-static bool   in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
+void*  (*routines[NUM_THREADS])(void *); // An array of function pointers
+void** args[NUM_THREADS];
+bool   cancel_requested[NUM_THREADS];
+bool   exit_requested[NUM_THREADS];
+void** exit_code[NUM_THREADS];
+bool   in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
 
 // Keep track of the number of threads
 // currently processing routines.
-//
-// Hardware threads being not "busy"
-// (i.e., running a routine) is not
-// enough to terminate the main thread.
-// To terminate the main thread,
-// all hardware worker threads need
-// to be EXITED.
+// If this is 0, the main thread can
+// safely terminate the execution.
 uint32_t num_threads_busy = 0;
 
 // Keep track of the number of threads
-// currently processing routines.
+// currently marked as EXITED.
+// FIXME: Once a worker thread exits,
+// it should have completed executing
+// some pre-registered clean-up handlers.
 uint32_t num_threads_exited = 0;
 
 // Assign a routine to the first available
@@ -97,7 +96,7 @@ void thread_exit(void *retval) {
 
 int thread_cancel(thread_t hartid) {
     hwlock_acquire();
-    exit_requested[hartid] = true;
+    cancel_requested[hartid] = true;
     hwlock_release();
     return 0;
 }
@@ -120,6 +119,8 @@ void worker_main() {
             hwlock_release();      
         }
     }
+
+    // FIXME: Execute clean up handlers here.
 
     // Increment the counter of exited threads.
     hwlock_acquire();
