@@ -19,4 +19,5 @@ int thread_map(
 int thread_join(thread_t thread, void **retval);
 void thread_exit(void *retval);
 int thread_cancel(thread_t thread);
+void thread_testcancel();
 void worker_main();

@@ -1,15 +1,17 @@
 #include <stdbool.h>
+#include <setjmp.h>
 #include <flexpret_io.h>
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
 /* Arrays that keep track of the status of threads */
-void*  (*routines[NUM_THREADS])(void *); // An array of function pointers
-void** args[NUM_THREADS];
-bool   cancel_requested[NUM_THREADS];
-bool   exit_requested[NUM_THREADS];
-void** exit_code[NUM_THREADS];
-bool   in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
+void*   (*routines[NUM_THREADS])(void *); // An array of function pointers
+void**  args[NUM_THREADS];
+bool    cancel_requested[NUM_THREADS];
+bool    exit_requested[NUM_THREADS];
+void**  exit_code[NUM_THREADS];
+bool    in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
+jmp_buf envs[NUM_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
@@ -101,11 +103,45 @@ int thread_cancel(thread_t hartid) {
     return 0;
 }
 
+void thread_testcancel() {
+    uint32_t hartid = read_hartid();
+    hwlock_acquire();
+    if (cancel_requested[hartid]) {
+        hwlock_release();
+        longjmp(envs[hartid], 1);
+    }
+    hwlock_release();
+}
+
 /**
  * Main function for a worker thread (hardware threads 1-7).
  */
 void worker_main() {
     uint32_t hartid = read_hartid();
+
+    // Save the environment buffer
+    // for potential thread_cancel calls.
+    // The execution will jump here
+    // if a cancellation request is handled.
+    int val = setjmp(envs[hartid]);
+    // Check if the thread returns from longjmp.
+    // If so, mark the thread as not in use.
+    if (val == 1) {
+        hwlock_acquire();
+        num_threads_busy -= 1;
+        in_use[hartid] = false;
+        hwlock_release();
+
+        // Print a magic number that indicates
+        // the handling of a cancellation request.
+        _fp_print(6662);
+    }
+    else if (val != 0) {
+        // UNREACHABLE
+        // FIXME: Use an assert() here instead.
+        _fp_print(666);
+        _fp_finish();
+    }
 
     while(!exit_requested[hartid]) {
         if (in_use[hartid]) {            

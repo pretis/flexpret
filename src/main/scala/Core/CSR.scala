@@ -319,19 +319,16 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val lock = Module(new Lock()).io
     lock.driveDefaultsFlipped()
 
-    // Detect read to the lock CSR == lock acquisition
-    when (!write && compare_addr(CSRs.hwlock)) {
-        assert(false.B);
-    }
-    // Detect write to the lock CSR == lock release
     when (write && compare_addr(CSRs.hwlock)) {
-      // When "CSRRW rd, hwlock, 0", acquire the lock.
       lock.valid := true.B
       lock.tid := io.rw.thread
       data_out := lock.grant
+      // When "CSRRW rd, hwlock, 1", acquire the lock.
       when(io.rw.data_in === 1.U) {
         lock.acquire := true.B
-      }.elsewhen (io.rw.data_in === 0.U) {
+      }
+      // When "CSRRW rd, hwlock, 0", acquire the lock.
+      .elsewhen (io.rw.data_in === 0.U) {
         lock.acquire := false.B
         // If for some reason, the lock cannot be released,
         // raise an exception.
