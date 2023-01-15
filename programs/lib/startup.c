@@ -18,6 +18,7 @@
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
+/* Linker */
 extern uint32_t __etext;
 extern uint32_t __data_start__;
 extern uint32_t __data_end__;
@@ -25,7 +26,10 @@ extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
 extern uint32_t end;
 
+/* Threading */
 static bool     __ready__;
+extern bool     exit_requested[NUM_THREADS];
+extern uint32_t num_threads_busy;
 extern uint32_t num_threads_exited;
 
 //prototype of main
@@ -116,15 +120,26 @@ void Reset_Handler() {
         worker_main();
     }
 
-    // Exit by calling the _exit() syscall.
+    // Shutdown the program.
     if (hartid == 0) {
-        // Mark the main thread as exited.
+        /* Make sure all worker threads properly shutdown. */
+
+        // Wait for all hardware worker threads
+        // to finish their ongoing routines.
+        while (num_threads_busy > 0);
+
+        // Signal all threads to exit.
         hwlock_acquire();
-        num_threads_exited += 1;
+        for (int i = 0; i < NUM_THREADS; i++) {
+            exit_requested[i] = true;
+        }
         hwlock_release();
 
         // Wait for all hardware worker threads to exit.
-        while (num_threads_exited < NUM_THREADS);
+        while (num_threads_exited < NUM_THREADS-1);
+
+        // FIXME: Execute the main thread
+        // clean up handlers here.
 
         // Exit the program.
         _exit(0);

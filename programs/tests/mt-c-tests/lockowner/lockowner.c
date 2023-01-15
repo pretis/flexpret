@@ -39,11 +39,6 @@ int main() {
     void * exit_code_t2;
     thread_join(tid[1], &exit_code_t2);
 
-    // Terminate by having thread 0 send
-    // cancellation requests to all hardware threads.
-    for (int i = 0; i < NUM_THREADS; i++)
-        thread_cancel(i);
-
     return 0;
 }
 

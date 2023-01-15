@@ -56,17 +56,17 @@ To run a basic Fibonnaci example in simulation, run:
 # cd into the fib directory.
 cd programs/tests/c-tests/fib/
 
-# Compile the program.
-../../../../scripts/c/riscv_compile.sh fib fib.c
+# Compile the program (assume FlexPRET is built with 1 hardware thread).
+../../../../scripts/c/riscv-compile.sh 1 fib fib.c
 
 # Run the simulation.
 ../../../../emulator/fp-emu +ispm=fib.mem
 
 # Clean the generated files.
-../../../../scripts/c/riscv_clean.sh
+../../../../scripts/c/riscv-clean.sh
 ```
 
-We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv_compile.sh` and `fp-emu` become directly accessible.
+We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv-compile.sh` and `fp-emu` become directly accessible.
 
 # Directory Structure
 - `build/` Temporary folder used as part of the build
