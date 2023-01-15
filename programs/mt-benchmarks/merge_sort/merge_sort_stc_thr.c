@@ -85,11 +85,6 @@ int main(int argc, char *argv[]) {
         _fp_print(array[i]);
     }
 
-    // Terminate by having thread 0 send
-    // cancellation requests to all hardware threads.
-    for (int i = 0; i < NUM_THREADS ; i++)
-        thread_cancel(i);
-
     return (0);
 }
 

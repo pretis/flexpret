@@ -40,16 +40,13 @@ int main(int argc, char *argv[]) {
     int i, j, k;
     uint32_t start_time, stop_time;
     
-    // Initialize a, b, and c matrices
+    // Initialize a and b matrices
     for (i = 0; i < NRA; i++) 
         for (j = 0; j < NCA; j++)
             a[i][j] = (int32_t) 1;
     for (i = 0; i < NCA; i++)
         for (j = 0; j < NCB; j++)
             b[i][j] = (int32_t) j;
-    for (i = 0; i < NRA; i++)
-        for (j = 0; j < NCB; j++)
-            c[i][j] = (int32_t) 0;
 
     // Thread ids
     thread_t tid[nb_threads];
@@ -73,11 +70,6 @@ int main(int argc, char *argv[]) {
     stop_time = rdtime();
     _fp_print(stop_time - start_time);
 
-    // Terminate by having thread 0 send
-    // cancellation requests to all hardware threads.
-    for (int i = 0; i < NUM_THREADS ; i++)
-        thread_cancel(i);
-
     return (0);
 }
 
@@ -98,7 +90,7 @@ void* matrix_multiply () {
 
     for (i = i_start; i < i_end; i++) {
         for (j = 0; j < NCB; j++) {
-            for (k = 0; k < NCA; k++) {
+            for (k = 0, c[i][j] = 0; k < NCA; k++) {
                 c[i][j] += a[i][k] * b[k][j];
             }
             // if (i == 0) _fp_print(c[i][j]);
