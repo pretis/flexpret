@@ -5,13 +5,13 @@
 #include <flexpret_thread.h>
 
 /* Arrays that keep track of the status of threads */
-void*   (*routines[NUM_THREADS])(void *); // An array of function pointers
-void**  args[NUM_THREADS];
-bool    cancel_requested[NUM_THREADS];
-bool    exit_requested[NUM_THREADS];
-void**  exit_code[NUM_THREADS];
-bool    in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
-jmp_buf envs[NUM_THREADS];
+static void*   (*routines[NUM_THREADS])(void *); // An array of function pointers
+static void**  args[NUM_THREADS];
+static void**  exit_code[NUM_THREADS];
+static bool    in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
+static jmp_buf envs[NUM_THREADS];
+static bool    cancel_requested[NUM_THREADS];
+       bool    exit_requested[NUM_THREADS]; // Accessed in startup.c
 
 // Keep track of the number of threads
 // currently processing routines.
