@@ -21,3 +21,7 @@ out/
 **/*.orig
 
 **/fp-emu
+
+target/
+project/
+.bsp/

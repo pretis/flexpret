@@ -44,7 +44,7 @@ def add_vcd(contents: str) -> str:
     orig_str = m.group()
     vcd_blob = """
 initial begin
-$dumpfile({mem_file_name, ".vcd"});
+$dumpfile("trace.vcd"); 
 $dumpvars;
 end
 
