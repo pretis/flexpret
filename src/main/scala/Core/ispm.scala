@@ -44,14 +44,15 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
 
   if (conf.iMemCoreRW || conf.iMemBusRW) {
     // read/write port
-    val busRwPort = ispm(io.bus.addr)
+    val readAddr = WireDefault(0.U(32.W))
+    val readData = ispm.read(readAddr)
 
     if (conf.iMemBusRW) {
-      io.bus.data_out := busRwPort
+      io.bus.data_out := readData
       io.bus.ready := true.B
       when(io.bus.enable) {
         when(io.bus.write) {
-          busRwPort := io.bus.data_in
+          readData := io.bus.data_in
         }
       }
     } else {
@@ -59,13 +60,12 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
     }
 
     // Core has priority over bus
-    val coreRwPort = ispm(io.core.rw.addr)
     if (conf.iMemCoreRW) {
-      io.core.rw.data_out := coreRwPort
+      io.core.rw.data_out := readData
       when(io.core.rw.enable) {
         if(conf.iMemBusRW) io.bus.ready := false.B
         when(io.core.rw.write) {
-          coreRwPort := io.core.rw.data_in
+          readAddr := io.core.rw.data_in
         }
       }
     }
