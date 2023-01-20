@@ -26,6 +26,7 @@ module DualPortBRAM #(
 // Shared memory
 reg [DATA-1:0] mem [(2**ADDR)-1:0];
 
+
 // Port A
 always @(posedge clk) begin
     a_dout      <= mem[a_addr];
@@ -42,6 +43,11 @@ always @(posedge clk) begin
         b_dout      <= b_din;
         mem[b_addr] <= b_din;
     end
+end
+
+// Load its content from the file `ispm.mem`
+initial begin
+  $readmemh("ispm.mem", mem);
 end
 
 endmodule

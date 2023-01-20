@@ -28,7 +28,7 @@ class InstMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
   }
 }
 
-class TrueDualPortBram(addrBits: Int, dataBits: Int) 
+class DualPortBram(addrBits: Int, dataBits: Int) 
 extends BlackBox(Map("DATA" -> dataBits, "ADDR" -> addrBits)) {
   val io = IO(new Bundle {
     val clk = Input(Clock())
@@ -55,7 +55,8 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
 
   // memory for instruction SPM
   // sync read, sync write
-  val ispm = Module(new TrueDualPortBram(conf.iMemDepth, 32))
+  val ispm = Module(new DualPortBram(conf.iMemAddrBits, 32))
+  ispm.io.clk := clock
 
 
 
