@@ -5,10 +5,9 @@
 #include <stdbool.h>
 
 #define ASSERT(cond) do {   \
-    if(!cond) {             \
-        _fp_print(666);     \
-        _fp_finish();       \
-    }                      \
+    if(cond == false) {     \
+        _fp_abort();        \
+    }                       \
 } while(0)
 
 

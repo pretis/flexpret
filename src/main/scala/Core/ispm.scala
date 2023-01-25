@@ -44,6 +44,13 @@ extends BlackBox(Map("DATA" -> dataBits, "ADDR" -> addrBits)) {
   })
 }
 
+/**
+  * Instruction scratchpad memory is a 1r1rw memory. The instruction fetch stage
+  * has a read port, the EXE (?) also has a r/w port for stores and loads into
+  * the IMEM. 
+  *
+  * @param conf
+  */
 class ISpm(implicit conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
     val core = new InstMemCoreIO()
@@ -69,18 +76,25 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
 
   // Second read/write port
   if (conf.iMemCoreRW || conf.iMemBusRW) {
-    // Drive default
-    ispm.io.b_wr := false.B
-    ispm.io.b_addr := 0.U
-    ispm.io.b_din := 0.U
+    // read/write port
+    val addr = WireDefault(0.U(32.W))
+    val writeData = WireDefault(0.U(23.W))
+    val write = WireDefault(false.B)
+    // Read
+    val readData = ispm.read(addr)
+    // Write
+    when (write) {
+      ispm.write(addr, writeData)
+    }
 
     if (conf.iMemBusRW) {
-      ispm.io.b_addr := io.bus.addr
-      io.bus.data_out := ispm.io.b_dout
+      io.bus.data_out := readData
       io.bus.ready := true.B
       when(io.bus.enable) {
+        addr := io.bus.addr
         when(io.bus.write) {
-          ispm.io.b_din := io.bus.data_in
+          write := true.B
+          writeData := io.bus.data_in  
         }
       }
     } else {
@@ -89,13 +103,13 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
 
     // Core has priority over bus
     if (conf.iMemCoreRW) {
-      ispm.io.b_addr := io.core.rw.addr
-      io.core.rw.data_out := ispm.io.b_dout
+      io.core.rw.data_out := readData
       when(io.core.rw.enable) {
+        addr := io.core.rw.addr        
         if(conf.iMemBusRW) io.bus.ready := false.B
         when(io.core.rw.write) {
-          ispm.io.b_wr := true.B
-          ispm.io.b_din := io.core.rw.data_in
+          write := true.B
+          writeData := io.core.rw.data_in
         }
       }
     }

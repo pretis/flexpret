@@ -13,10 +13,17 @@ static inline void _fp_print(uint32_t val) {
   write_csr(CSR_TOHOST, val);
 }
 
-// Finish/stop the simulation
+// Finish/stop the simulation. Simulation environment will terminate when all
+//  cores have made a call to `_fp_finish`
 static inline void _fp_finish() {
   write_csr(CSR_TOHOST, 0xdeaddead);
 }
+
+// Abort simulation. Simulation environment will terminate if any core makes this call
+static inline void _fp_abort() {
+  write_csr(CSR_TOHOST, 0xdeadbeef);
+}
+
 
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*
