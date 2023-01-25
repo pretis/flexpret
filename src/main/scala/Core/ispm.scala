@@ -65,9 +65,6 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
   val ispm = Module(new DualPortBram(conf.iMemAddrBits, 32))
   ispm.io.clk := clock
 
-
-
-
   // read port
   ispm.io.a_addr := io.core.r.addr
   ispm.io.a_wr := false.B
@@ -80,12 +77,10 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
     val addr = WireDefault(0.U(32.W))
     val writeData = WireDefault(0.U(23.W))
     val write = WireDefault(false.B)
-    // Read
-    val readData = ispm.read(addr)
-    // Write
-    when (write) {
-      ispm.write(addr, writeData)
-    }
+    ispm.io.b_addr := addr
+    ispm.io.b_wr := write
+    ispm.io.b_din := writeData
+    val readData = ispm.io.b_dout
 
     if (conf.iMemBusRW) {
       io.bus.data_out := readData
@@ -100,7 +95,6 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
     } else {
       io.bus.data_out := DontCare
     }
-
     // Core has priority over bus
     if (conf.iMemCoreRW) {
       io.core.rw.data_out := readData
