@@ -1,6 +1,9 @@
 #ifndef FLEXPRET_CSRS_H
 #define FLEXPRET_CSRS_H
 
+#define CSR_SLOTS       0x503
+#define CSR_TMODES      0x504
+
 #define CSR_HARTID      0x50b
 
 #define CSR_TOHOST      0x51e

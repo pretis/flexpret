@@ -106,6 +106,17 @@ void Reset_Handler() {
         hwlock_acquire();
         __ready__ = true;
         hwlock_release();
+
+        // Under flexible scheduling,
+        // signal all the other threads to warm up,
+        // i.e. start from Start.S and execute up to here.
+        for (int i = 0; i < NUM_THREADS; i++) {
+            set_slot_hrtt(i, i);
+            set_tmode(i, TMODE_HA);
+        }
+        for (int j = NUM_THREADS; j < SLOTS_SIZE; j++) {
+            set_slot_disable(j);
+        }
     } else {
         // Wait for thread 0 to finish setup.
         // FIXME: Use delay until (DU)

@@ -4,7 +4,71 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-/* Arrays that keep track of the status of threads */
+/* FlexPRET's hardware thread scheduling functions */
+
+int set_slot_hrtt(uint32_t slot, uint32_t hartid) {
+    if (slot > 7) {
+        // FIXME: Panic.
+        return 1;
+    }
+    if (hartid > NUM_THREADS) {
+        // FIXME: Panic.
+        return 2;
+    }
+    uint32_t mask = 0xf << (slot * 4);
+    uint32_t val_prev = read_csr(CSR_SLOTS);
+    uint32_t val_new = (val_prev & ~mask) | (hartid << (slot * 4));     // Use hartid.
+    hwlock_acquire();
+    write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
+    hwlock_release();
+    return 0;
+}
+
+int set_slot_srtt(uint32_t slot) {
+    if (slot > 7) {
+        // FIXME: Panic.
+        return 1;
+    }
+    uint32_t mask = 0xf << (slot * 4);
+    uint32_t val_prev = read_csr(CSR_SLOTS);
+    uint32_t val_new = (val_prev & ~mask) | (SLOT_S << (slot * 4));     // Use SLOT_S.
+    hwlock_acquire();
+    write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
+    hwlock_release();
+    return 0;
+}
+
+int set_slot_disable(uint32_t slot) {
+    if (slot > 7) {
+        // FIXME: Panic.
+        return 1;
+    }
+    uint32_t mask = 0xf << (slot * 4);
+    uint32_t val_prev = read_csr(CSR_SLOTS);
+    uint32_t val_new = (val_prev & ~mask) | (SLOT_D << (slot * 4));     // Use SLOT_D.
+    hwlock_acquire();
+    write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
+    hwlock_release();
+    return 0;
+}
+
+int set_tmode(uint32_t hartid, uint32_t val) {
+    if (hartid > NUM_THREADS) {
+        // FIXME: Panic.
+        return 1;
+    }
+    uint32_t mask = 0xf << (hartid * 2);
+    uint32_t val_prev = read_csr(CSR_TMODES);
+    uint32_t val_new = (val_prev & ~mask) | (val << (hartid * 2));
+    hwlock_acquire();
+    write_csr(CSR_TMODES, val_new); // Each slot is 4-bit wide.
+    hwlock_release();
+    return 0;
+}
+
+
+/* Variables that keep track of the status of threads */
+
 static void*   (*routines[NUM_THREADS])(void *); // An array of function pointers
 static void**  args[NUM_THREADS];
 static void**  exit_code[NUM_THREADS];
@@ -25,6 +89,9 @@ uint32_t num_threads_busy = 0;
 // it should have completed executing
 // some pre-registered clean-up handlers.
 uint32_t num_threads_exited = 0;
+
+
+/* Pthreads-like threading library functions */
 
 // Assign a routine to the first available
 // hardware thread.
@@ -48,6 +115,9 @@ int thread_create(
         }
     }
     hwlock_release();
+    // Wake up the thread.
+    // set_slot_hrtt(*hartid, *hartid);
+    // set_tmode(*hartid, TMODE_HA);
     // All the threads are occupied, return error.
     return 1;
 }
@@ -72,6 +142,9 @@ int thread_map(
         return 0;
     }
     hwlock_release();
+    // Wake up the thread.
+    // set_slot_hrtt(*hartid, *hartid);
+    // set_tmode(*hartid, TMODE_HA);
     // All the threads are occupied, return error.
     return 1;
 }
@@ -144,6 +217,17 @@ void worker_main() {
     }
 
     while(!exit_requested[hartid]) {
+        // Goes to sleep here unless the main thread
+        // wakes it up.
+        // Assuming slot # = hartid here.
+        // FIXME: This assumption might be invalid if
+        // the user decides to do something weird.
+        // Need to have an array that keeps track of
+        // which slots a thread owns.
+        // FIXME: Does not work yet.
+        // set_tmode(hartid, TMODE_HZ);
+        // set_slot_disable(hartid);
+
         if (in_use[hartid]) {            
             // Execute the routine with the argument passed in.
             (*routines[hartid])(args[hartid]);
@@ -152,7 +236,7 @@ void worker_main() {
             hwlock_acquire();
             num_threads_busy -= 1;
             in_use[hartid] = false;
-            hwlock_release();      
+            hwlock_release();
         }
     }
 
