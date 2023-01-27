@@ -105,10 +105,10 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
   val dMemBusRW     = false
 
   // GPIO
-  val gpiPortSizes  = List(1, 1, 1, 1)
-  val gpoPortSizes  = List(4, 2, 2, 2)
+  val gpiPortSizes  = List(8, 8, 8, 8)
+  val gpoPortSizes  = List(8, 8, 8, 8)
   val initialGpo    = List(
-    MEMP_T0, MEMP_SH, MEMP_SH, MEMP_SH
+    MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH
   )
 
   // Bus
