@@ -17,7 +17,7 @@
 #include "tinyalloc/tinyalloc.h" // Only include tinyalloc in applications, not bootloader
 #endif
 
-#define DSPM_LIMIT          ((void*)0x2004000) // 0x4000 = 16KB
+#define DSPM_LIMIT          ((void*)0x20004000) // 0x4000 = 16KB
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
@@ -75,7 +75,7 @@ void free(void *ptr) {
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
-
+    _fp_print(hartid);
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {
@@ -106,6 +106,7 @@ void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
 
+    _fp_print(hartid);
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {

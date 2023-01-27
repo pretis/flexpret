@@ -19,7 +19,7 @@
     /* Give each thread 1KB of stack. */
 
     // 0x4000 = 16KiB = DSPM size
-    // 0x20040000 is the maximum DSPM address.
+    // 0x20004000 is the maximum DSPM address.
     li sp, 0x20004000
     
     // Calculate how much to subtract
