@@ -17,7 +17,7 @@
 #include "tinyalloc/tinyalloc.h" // Only include tinyalloc in applications, not bootloader
 #endif
 
-#define DSPM_LIMIT          ((void*)0x20040000) // 0x40000 = 256K
+#define DSPM_LIMIT          ((void*)0x20004000) // 0x4000 = 16KB
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
@@ -71,10 +71,42 @@ void free(void *ptr) {
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
+#ifdef BOOTLOADER
+void Reset_Handler() {
+    // Get hartid
+    uint32_t hartid = read_hartid();
+    _fp_print(hartid);
+    // Only thread 0 performs the setup,
+    // the other threads busy wait until ready.
+    if (hartid == 0) {
+        // Copy .data section into the RAM
+        uint32_t size   = &__data_end__ - &__data_start__;
+        uint32_t *pDst  = (uint32_t*)&__data_start__;       // RAM
+        uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
+
+        for (uint32_t i = 0; i < size; i++) {
+            *pDst++ = *pSrc++;
+        }
+    }
+
+    // Setup exception handling
+    setup_exceptions();
+
+    // Jump to main (which should be the bootloader)
+    main();
+    
+    // Exit the program.
+    _exit(0);
+    
+    // Infinite loop
+    while (1);
+}
+#else
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
 
+    _fp_print(hartid);
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {
@@ -87,7 +119,6 @@ void Reset_Handler() {
             *pDst++ = *pSrc++;
         }
 
-    #ifndef BOOTLOADER
     // Initialize tinyalloc.
     ta_init( 
         &end, // start of the heap space
@@ -96,7 +127,6 @@ void Reset_Handler() {
         16, // split_thresh: 16 bytes (Only used when reusing blocks.)
         TA_ALIGNMENT
     );
-    #endif
 
     // Setup exception handling
     setup_exceptions();
@@ -135,3 +165,4 @@ void Reset_Handler() {
         while (1);
     }
 }
+#endif

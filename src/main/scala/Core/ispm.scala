@@ -75,7 +75,7 @@ class ISpm(implicit conf: FlexpretConfiguration) extends Module {
   if (conf.iMemCoreRW || conf.iMemBusRW) {
     // read/write port
     val addr = WireDefault(0.U(32.W))
-    val writeData = WireDefault(0.U(23.W))
+    val writeData = WireDefault(0.U(32.W))
     val write = WireDefault(false.B)
     ispm.io.b_addr := addr
     ispm.io.b_wr := write

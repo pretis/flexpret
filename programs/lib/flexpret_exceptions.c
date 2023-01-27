@@ -27,6 +27,7 @@ static void fp_exception_handler(void) {
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
         if(ee_int_handler) ee_int_handler();
     } else {
+        _fp_print(66666666);
         _fp_print(cause);
         ASSERT(false);
     }
