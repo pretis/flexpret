@@ -4,9 +4,13 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-/* FlexPRET's hardware thread scheduling functions */
+/**
+ * FlexPRET's hardware thread scheduling functions
+ * These functions assume that a lock is held
+ * by the caller.
+ */
 
-int set_slot_hrtt(uint32_t slot, uint32_t hartid) {
+int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
         return 1;
@@ -18,13 +22,11 @@ int set_slot_hrtt(uint32_t slot, uint32_t hartid) {
     uint32_t mask = 0xf << (slot * 4);
     uint32_t val_prev = read_csr(CSR_SLOTS);
     uint32_t val_new = (val_prev & ~mask) | (hartid << (slot * 4));     // Use hartid.
-    hwlock_acquire();
     write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
-    hwlock_release();
     return 0;
 }
 
-int set_slot_srtt(uint32_t slot) {
+int slot_set_srtt(uint32_t slot) {
     if (slot > 7) {
         // FIXME: Panic.
         return 1;
@@ -32,13 +34,11 @@ int set_slot_srtt(uint32_t slot) {
     uint32_t mask = 0xf << (slot * 4);
     uint32_t val_prev = read_csr(CSR_SLOTS);
     uint32_t val_new = (val_prev & ~mask) | (SLOT_S << (slot * 4));     // Use SLOT_S.
-    hwlock_acquire();
     write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
-    hwlock_release();
     return 0;
 }
 
-int set_slot_disable(uint32_t slot) {
+int slot_disable(uint32_t slot) {
     if (slot > 7) {
         // FIXME: Panic.
         return 1;
@@ -46,13 +46,21 @@ int set_slot_disable(uint32_t slot) {
     uint32_t mask = 0xf << (slot * 4);
     uint32_t val_prev = read_csr(CSR_SLOTS);
     uint32_t val_new = (val_prev & ~mask) | (SLOT_D << (slot * 4));     // Use SLOT_D.
-    hwlock_acquire();
     write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
-    hwlock_release();
     return 0;
 }
 
-int set_tmode(uint32_t hartid, uint32_t val) {
+uint32_t tmode_get(uint32_t hartid) {
+    if (hartid > NUM_THREADS) {
+        // FIXME: Panic.
+        return 1;
+    }
+    uint32_t mask = 0xf << (hartid * 2);
+    uint32_t val_prev = read_csr(CSR_TMODES);
+    return (val_prev & ~mask) >> (hartid * 2);
+}
+
+int tmode_set(uint32_t hartid, uint32_t val) {
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
         return 1;
@@ -60,12 +68,35 @@ int set_tmode(uint32_t hartid, uint32_t val) {
     uint32_t mask = 0xf << (hartid * 2);
     uint32_t val_prev = read_csr(CSR_TMODES);
     uint32_t val_new = (val_prev & ~mask) | (val << (hartid * 2));
-    hwlock_acquire();
     write_csr(CSR_TMODES, val_new); // Each slot is 4-bit wide.
-    hwlock_release();
     return 0;
 }
 
+/**
+ * Put the thread to sleep based on its current thread mode.
+ * If the thread is HRTT, then change the tmode to TMODE_HA.
+ * If the thread is SRTT, then change the tmode to TMODE_SA.
+ */
+int tmode_active(uint32_t hartid) {
+    uint32_t tmode = tmode_get(hartid);
+    if (tmode == TMODE_HZ || tmode == TMODE_HA) tmode_set(hartid, TMODE_HA);
+    else if (tmode == TMODE_SZ || tmode == TMODE_SA) tmode_set(hartid, TMODE_SA);
+    else return 1;
+    return 0;
+}
+
+/**
+ * Put the thread to sleep based on its current thread mode.
+ * If the thread is HRTT, then change the tmode to TMODE_HZ.
+ * If the thread is SRTT, then change the tmode to TMODE_SZ.
+ */
+int tmode_sleep(uint32_t hartid) {
+    uint32_t tmode = tmode_get(hartid);
+    if (tmode == TMODE_HA || tmode == TMODE_HZ) tmode_set(hartid, TMODE_HZ);
+    else if (tmode == TMODE_SA || tmode == TMODE_SZ) tmode_set(hartid, TMODE_SZ);
+    else return 1;
+    return 0;
+}
 
 /* Variables that keep track of the status of threads */
 
@@ -96,6 +127,7 @@ uint32_t num_threads_exited = 0;
 // Assign a routine to the first available
 // hardware thread.
 int thread_create(
+    bool is_hrtt,   // HRTT = true, SRTT = false
     thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
@@ -114,10 +146,11 @@ int thread_create(
             return 0;
         }
     }
-    hwlock_release();
     // Wake up the thread.
-    // set_slot_hrtt(*hartid, *hartid);
-    // set_tmode(*hartid, TMODE_HA);
+    if (is_hrtt) tmode_set(*hartid, TMODE_HA);
+    else tmode_set(*hartid, TMODE_SA);
+    
+    hwlock_release();
     // All the threads are occupied, return error.
     return 1;
 }
@@ -126,6 +159,7 @@ int thread_create(
 // hardware thread. If the thread is in use,
 // return 1. Otherwise, map the routine and return 0.
 int thread_map(
+    bool is_hrtt,   // HRTT = true, SRTT = false
     thread_t *restrict hartid, // hartid requested by the user
     void *(*start_routine)(void *),
     void *restrict arg
@@ -141,10 +175,10 @@ int thread_map(
         hwlock_release();
         return 0;
     }
-    hwlock_release();
     // Wake up the thread.
-    // set_slot_hrtt(*hartid, *hartid);
-    // set_tmode(*hartid, TMODE_HA);
+    if (is_hrtt) tmode_set(*hartid, TMODE_HA);
+    else tmode_set(*hartid, TMODE_SA);
+    hwlock_release();
     // All the threads are occupied, return error.
     return 1;
 }
@@ -154,10 +188,17 @@ int thread_join(thread_t hartid, void **retval) {
     // Get the exit code from the exiting thread.
     hwlock_acquire();
     *retval = exit_code[hartid];
+    // Put the thread to sleep.
+    tmode_sleep(hartid);
+    // FIXME: Should we make idle thread SRTT?
     hwlock_release();
     return 0;
 }
 
+/** 
+ * This should be called by a thread
+ * that hopes to exit.
+ */
 void thread_exit(void *retval) {
     uint32_t hartid = read_hartid();
     hwlock_acquire();
@@ -217,16 +258,13 @@ void worker_main() {
     }
 
     while(!exit_requested[hartid]) {
-        // Goes to sleep here unless the main thread
-        // wakes it up.
-        // Assuming slot # = hartid here.
-        // FIXME: This assumption might be invalid if
-        // the user decides to do something weird.
-        // Need to have an array that keeps track of
-        // which slots a thread owns.
-        // FIXME: Does not work yet.
-        // set_tmode(hartid, TMODE_HZ);
-        // set_slot_disable(hartid);
+        // It is hard for a thread to put
+        // itself to sleep, because calling
+        // tmode_set(hartid, TMODE_HZ);
+        // requires a thread to grab the lock.
+        // But as soon as the thread sleeps,
+        // the lock will not be freed.
+        // So it's the best if thread 0 can do it.
 
         if (in_use[hartid]) {            
             // Execute the routine with the argument passed in.

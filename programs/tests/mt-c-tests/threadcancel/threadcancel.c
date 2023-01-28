@@ -32,9 +32,9 @@ void* t2_do_work() {
 
 int main() {
 
-    int errno = thread_map(&tid[0], t1_do_work, NULL);
+    int errno = thread_map(HRTT, &tid[0], t1_do_work, NULL);
     if (errno != 0) _fp_print(666);
-    errno = thread_map(&tid[1], t2_do_work, NULL);
+    errno = thread_map(HRTT, &tid[1], t2_do_work, NULL);
     if (errno != 0) _fp_print(666);
 
     void * exit_code_t1;

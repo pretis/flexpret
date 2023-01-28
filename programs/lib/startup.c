@@ -107,15 +107,33 @@ void Reset_Handler() {
         __ready__ = true;
         hwlock_release();
 
-        // Under flexible scheduling,
-        // signal all the other threads to warm up,
-        // i.e. start from Start.S and execute up to here.
-        for (int i = 0; i < NUM_THREADS; i++) {
-            set_slot_hrtt(i, i);
-            set_tmode(i, TMODE_HA);
-        }
+        /**
+         * Configure flexible scheduling
+         * 
+         * The default schedule (i.e. slots) has
+         * one slot per hardware thread. For example,
+         * if FlexPRET has four threads, then the slots
+         * are [T0 T1 T2 T3 D D D D]. The thread modes
+         * (i.e. whether a thread is an HRTT or an SRTT)
+         * are set by the user via thread_create() or
+         * thread_map(). Here, during startup, they are
+         * configured as HRTTs.
+         * 
+         * More fine-grained control of the schedule
+         * can be done by the user via slot_set_hrtt(),
+         * slot_set_srtt(), slot_disable(), and tmode_set().
+         * But normally, the user does not need to
+         * worry about them.
+         */
+        // Disable slots with ID >= NUM_THREADS,
         for (int j = NUM_THREADS; j < SLOTS_SIZE; j++) {
-            set_slot_disable(j);
+            slot_disable(j);
+        }
+        // and signal all the other threads to warm up,
+        // i.e. begin from start.S and execute up to here.
+        for (int i = 0; i < NUM_THREADS; i++) {
+            slot_set_hrtt(i, i);
+            tmode_set(i, TMODE_HA);
         }
     } else {
         // Wait for thread 0 to finish setup.
@@ -139,10 +157,12 @@ void Reset_Handler() {
         // to finish their ongoing routines.
         while (num_threads_busy > 0);
 
-        // Signal all threads to exit.
+        // Signal all threads besides T0 to exit.
         hwlock_acquire();
-        for (int i = 0; i < NUM_THREADS; i++) {
+        for (int i = 1; i < NUM_THREADS; i++) {
             exit_requested[i] = true;
+            // Wake up the thread.
+            tmode_active(i);
         }
         hwlock_release();
 
