@@ -4,6 +4,13 @@
 #include <stdint.h>
 #include "flexpret_csrs.h"
 
+#if CPU_FREQ == 50000000
+#define CLOCK_PERIOD_NS 20
+#else
+#error "CPU_FREQ must be defined"
+#endif
+
+
 /**
  * @brief Delay execution until an absolute time. Loads the timeout 
  * into the compare register of the thread. Then execute the
