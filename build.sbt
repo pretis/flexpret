@@ -17,7 +17,7 @@ addCompilerPlugin("edu.berkeley.cs" %% "chisel3-plugin" % chiselVersion cross Cr
 // We should drop this, needs source change
 addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full)
 libraryDependencies += "edu.berkeley.cs" %% "chisel3" % chiselVersion
-libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.3"
+libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5.6"
 // libraryDependencies += "org.scalamacros" %% "paradise" % "2.1.0"
 
 
