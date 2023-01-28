@@ -1,3 +1,8 @@
+.bloop/
+.metals/
+.vscode/
+project/
+target/
 build/
 test_run_dir/
 
@@ -15,3 +20,4 @@ mill
 
 **/fp-emu
 emulator/obj_dir/
+emulator/Core.sim.v
