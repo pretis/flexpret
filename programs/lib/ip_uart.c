@@ -38,6 +38,8 @@ void ip_uart_tx_send(ip_uart_config_t *uart, char byte) {
     }
     // Stop bit
     gpo_set_1(uart->_mask);
+    next_event += uart->_ns_per_bit;
+    delay_until(next_event);
 }
 
 
