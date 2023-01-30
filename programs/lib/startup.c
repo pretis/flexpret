@@ -28,6 +28,7 @@ extern uint32_t end;
 
 /* Threading */
 static bool     __ready__;
+static bool     sleep_requested[NUM_THREADS] = {false};
 extern bool     exit_requested[NUM_THREADS];
 extern uint32_t num_threads_busy;
 extern uint32_t num_threads_exited;
@@ -102,11 +103,6 @@ void Reset_Handler() {
             TA_ALIGNMENT
         );
 
-        // Signal ready.
-        hwlock_acquire();
-        __ready__ = true;
-        hwlock_release();
-
         /**
          * Configure flexible scheduling
          * 
@@ -133,12 +129,35 @@ void Reset_Handler() {
         // i.e. begin from start.S and execute up to here.
         for (int i = 0; i < NUM_THREADS; i++) {
             slot_set_hrtt(i, i);
-            tmode_set(i, TMODE_HA);
+            tmode_active(i);
         }
+
+        // Wait for a worker thread to signal
+        // ready-to-sleep and put it to sleep.
+        // FIXME: Mysterious bug
+        int num_sleeping = 0;
+        while (num_sleeping < NUM_THREADS - 1) {
+            for(int i = 1; i < NUM_THREADS; i++) {
+                hwlock_acquire();
+                if (sleep_requested[i]) {
+                    tmode_sleep(i);
+                    num_sleeping++;
+                }
+                hwlock_release();
+            }
+        }
+
+        // Signal everything is ready.
+        hwlock_acquire();
+        __ready__ = true;
+        hwlock_release();
     } else {
+        // Signal thread 0 to put the worker thread to sleep.
+        hwlock_acquire();
+        sleep_requested[hartid] = true;
+        hwlock_release();
+
         // Wait for thread 0 to finish setup.
-        // FIXME: Use delay until (DU)
-        // for precise synchronization.
         while (!__ready__);
     }
 

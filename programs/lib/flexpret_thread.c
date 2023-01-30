@@ -142,14 +142,13 @@ int thread_create(
             args[i] = arg;
             num_threads_busy += 1;
             in_use[i] = true; // Signal the worker thread to do work.
+            // Wake up the thread.
+            if (is_hrtt) tmode_set(i, TMODE_HA);
+            else tmode_set(i, TMODE_SA);
             hwlock_release();
             return 0;
         }
     }
-    // Wake up the thread.
-    if (is_hrtt) tmode_set(*hartid, TMODE_HA);
-    else tmode_set(*hartid, TMODE_SA);
-    
     hwlock_release();
     // All the threads are occupied, return error.
     return 1;
@@ -172,12 +171,12 @@ int thread_map(
         args[*hartid] = arg;
         num_threads_busy += 1;
         in_use[*hartid] = true; // Signal the worker thread to do work.
+        // Wake up the thread.
+        if (is_hrtt) tmode_set(*hartid, TMODE_HA);
+        else tmode_set(*hartid, TMODE_SA);
         hwlock_release();
         return 0;
     }
-    // Wake up the thread.
-    if (is_hrtt) tmode_set(*hartid, TMODE_HA);
-    else tmode_set(*hartid, TMODE_SA);
     hwlock_release();
     // All the threads are occupied, return error.
     return 1;
