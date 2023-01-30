@@ -2,16 +2,13 @@
 # Set configuration in config.mk or pass variable assignments as arguments.
 #
 # Usage:
-# make run: Compile programs located at $(PROG_DIR)/$(PROGS) with 
-#   $(PROG_CONFIG) configuration, then execute on target specified by $(TARGET)
-#   (either emulator or fpga) FlexPRET core with $(CORE_CONFIG) configuration.
-# 
-# Optional Usage:
-# make fpga: ---
-# make all: Same as make $(TARGET)
+# make verilog_raw: generate raw verilog from Chisel code.
+# make emulator: generate a verilator-based FlexPRET emulator.
 #
+# Authors:
 # Michael Zimmer (mzimmer@eecs.berkeley.edu)
 # Edward Wang (edwardw@eecs.berkeley.edu)
+# Shaokai Lin (shaokai@eecs.berkeley.edu)
 
 # -----------------------------------------------------------------------------
 # Standard directory/file locations and naming.
