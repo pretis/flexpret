@@ -29,9 +29,7 @@ void print_int(int val) {
         val = val/10;
     }
 
-    for (int i=n_digits-1; i>=0; i--) {
-        ip_uart_tx_send(&uart, buf[i]);
-    }
+    ip_uart_tx_send_arr(&uart, &buf[0], n_digits);
 }
 
 

@@ -12,7 +12,7 @@
 #define READ_LATENCY 300*CLOCK_PERIOD_NS
 
 
-static void _ip_uart_tx_send_byte(ip_uart_config_t *uart, char byte) {
+static void _ip_uart_tx_byte(ip_uart_config_t *uart, char byte) {
     // Start bit
     unsigned int next_event = rdtime();
     gpo_clear(uart->port, uart->_mask);
@@ -43,10 +43,8 @@ void ip_uart_tx_run(ip_uart_config_t *uart) {
     uart->_mask = (1 << uart->pin);
 
     // Initialize lock
-    _fp_print(666);
     uart->_lock.locked = false;
     uart->_lock.owner = UINT32_MAX;
-    _fp_print(666);
 
     // Create cbuf
     uint8_t *buffer = ta_alloc(uart->buf_size * sizeof(uint8_t));
@@ -61,22 +59,24 @@ void ip_uart_tx_run(ip_uart_config_t *uart) {
     while(true) {
         uint8_t tx_byte;
         while(cbuf_get(uart->_cbuf, &tx_byte) == 0) {
-            // _ip_uart_tx_send_byte(uart, (char) tx_byte);
-            // _fp_print(tx_byte);
+            _ip_uart_tx_byte(uart, (char) tx_byte);
         }
     }
 }
 
 void ip_uart_tx_send(ip_uart_config_t *uart, char byte) {
     while (!uart->initialized) {}
-    _fp_print(111);
-    _fp_print(uart->_lock.owner);
     lock_acquire(&uart->_lock);
-    _fp_print(111);
-    _fp_print(uart->_lock.owner);
     while(cbuf_put_reject(uart->_cbuf, byte) != 0) {}
-    _fp_print(111);
-    _fp_print(uart->_lock.owner);
+    lock_release(&uart->_lock);
+}
+
+void ip_uart_tx_send_arr(ip_uart_config_t *uart, char *byte, size_t len) {
+    while (!uart->initialized) {}
+    lock_acquire(&uart->_lock);
+    for (int i=0; i<len; i++) {
+        while(cbuf_put_reject(uart->_cbuf, byte[i]) != 0) {}
+    }
     lock_release(&uart->_lock);
 }
 
