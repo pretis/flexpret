@@ -4,9 +4,11 @@
 project/
 target/
 build/
+out/
 test_run_dir/
 
 mill
+firrtl.jar
 .DS_Store
 
 # Generated files
