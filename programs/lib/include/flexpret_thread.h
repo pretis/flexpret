@@ -5,32 +5,44 @@
 #endif
 
 /**
- * FlexPRET related constants (i.e. for slots and tmodes)
+ * Constants for FlexPRET scheduling (i.e. slots and tmodes)
  * These values must match those in constants.scala.
  */
 
-// Special values for a slot.
-#define SLOT_S      14
-#define SLOT_D      15
-
+// Maximum slots
 #define SLOTS_SIZE  8
 
-// Possible values for a tmode.
-#define TMODE_HA    0
-#define TMODE_HZ    1
-#define TMODE_SA    2
-#define TMODE_SZ    3
-
+// Helper macros for making
+// thread_create() and thread_map()
+// more readable.
 #define HRTT        true
 #define SRTT        false
 
+// Possible values for a slot
+typedef enum slot_t {
+    SLOT_T0=0,
+    SLOT_T1, SLOT_T2, SLOT_T3, SLOT_T4,
+    SLOT_T5, SLOT_T6, SLOT_T7,
+    SLOT_S=14,
+    SLOT_D=15
+} slot_t;
+
+// Possible values for a thread mode
+typedef enum tmode_t {
+    TMODE_HA=0,   // HRTT Active
+    TMODE_HZ,     // HRTT Sleeping
+    TMODE_SA,     // SRTT Active
+    TMODE_SZ      // SRTT Sleeping
+} tmode_t;
+
 /* FlexPRET's hardware thread scheduling APIs */
 
+int slot_set(slot_t slots[], uint32_t length);
 int slot_set_hrtt(uint32_t slot, uint32_t hartid);
 int slot_set_srtt(uint32_t slot);
 int slot_disable(uint32_t slot);
-uint32_t tmode_get(uint32_t hartid);
-int tmode_set(uint32_t hartid, uint32_t val);
+tmode_t tmode_get(uint32_t hartid);
+int tmode_set(uint32_t hartid, tmode_t val);
 int tmode_active(uint32_t hartid);
 int tmode_sleep(uint32_t hartid);
 

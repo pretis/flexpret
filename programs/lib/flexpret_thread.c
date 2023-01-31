@@ -4,12 +4,39 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-/**
+/*************************************************
  * FlexPRET's hardware thread scheduling functions
  * These functions assume that a lock is held
  * by the caller.
- */
+ *************************************************/
 
+/**
+ * @brief Set a complete schedule.
+ * 
+ * @param slots An array of slot values
+ * @param length The length of the array
+ * @return int If success, return 0, otherwise an error code.
+ */
+int slot_set(slot_t slots[], uint32_t length) {
+    if (length > 8) {
+        // FIXME: Panic
+        return 1;
+    }
+    uint32_t val = 0;
+    for (int i = 0; i < length; i++) {
+        val |= slots[i] << (i * 4);
+    }
+    write_csr(CSR_SLOTS, val);
+    return 0;
+}
+
+/**
+ * @brief Allocate a slot for a hard real-time thread (HRTT).
+ * 
+ * @param slot The slot to be allocated
+ * @param hartid The hartid of the HRTT
+ * @return int If success, return 0, otherwise an error code.
+ */
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
@@ -21,11 +48,18 @@ int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     }
     uint32_t mask = 0xf << (slot * 4);
     uint32_t val_prev = read_csr(CSR_SLOTS);
-    uint32_t val_new = (val_prev & ~mask) | (hartid << (slot * 4));     // Use hartid.
-    write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
+    // Use hartid. Each slot is 4-bit wide.
+    uint32_t val_new = (val_prev & ~mask) | (hartid << (slot * 4));
+    write_csr(CSR_SLOTS, val_new);
     return 0;
 }
 
+/**
+ * @brief Allocate a slot for a soft real-time thread (SRTT).
+ * 
+ * @param slot The slot to be allocated
+ * @return int If success, return 0, otherwise an error code.
+ */
 int slot_set_srtt(uint32_t slot) {
     if (slot > 7) {
         // FIXME: Panic.
@@ -33,11 +67,18 @@ int slot_set_srtt(uint32_t slot) {
     }
     uint32_t mask = 0xf << (slot * 4);
     uint32_t val_prev = read_csr(CSR_SLOTS);
-    uint32_t val_new = (val_prev & ~mask) | (SLOT_S << (slot * 4));     // Use SLOT_S.
-    write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
+    // Use SLOT_S. Each slot is 4-bit wide.
+    uint32_t val_new = (val_prev & ~mask) | (SLOT_S << (slot * 4));
+    write_csr(CSR_SLOTS, val_new);
     return 0;
 }
 
+/**
+ * @brief Disable a slot in the FlexPRET schedule.
+ * 
+ * @param slot The slot to be disabled
+ * @return int If success, return 0, otherwise an error code.
+ */
 int slot_disable(uint32_t slot) {
     if (slot > 7) {
         // FIXME: Panic.
@@ -45,12 +86,19 @@ int slot_disable(uint32_t slot) {
     }
     uint32_t mask = 0xf << (slot * 4);
     uint32_t val_prev = read_csr(CSR_SLOTS);
-    uint32_t val_new = (val_prev & ~mask) | (SLOT_D << (slot * 4));     // Use SLOT_D.
-    write_csr(CSR_SLOTS, val_new); // Each slot is 4-bit wide.
+    // Use SLOT_D. Each slot is 4-bit wide.
+    uint32_t val_new = (val_prev & ~mask) | (SLOT_D << (slot * 4));
+    write_csr(CSR_SLOTS, val_new);
     return 0;
 }
 
-uint32_t tmode_get(uint32_t hartid) {
+/**
+ * @brief Get the thread mode of a hardware thread.
+ * 
+ * @param hartid The hardware thread ID
+ * @return tmode_t The current thread mode
+ */
+tmode_t tmode_get(uint32_t hartid) {
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
         return 1;
@@ -60,7 +108,14 @@ uint32_t tmode_get(uint32_t hartid) {
     return (val_prev & ~mask) >> (hartid * 2);
 }
 
-int tmode_set(uint32_t hartid, uint32_t val) {
+/**
+ * @brief Set the thread mode of a hardware thread.
+ * 
+ * @param hartid The hardware thread ID
+ * @param val The thread mode to be set
+ * @return int If success, return 0, otherwise an error code.
+ */
+int tmode_set(uint32_t hartid, tmode_t val) {
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
         return 1;
@@ -73,7 +128,8 @@ int tmode_set(uint32_t hartid, uint32_t val) {
 }
 
 /**
- * Put the thread to sleep based on its current thread mode.
+ * @brief Put the thread to sleep based on its current thread mode.
+ * 
  * If the thread is HRTT, then change the tmode to TMODE_HA.
  * If the thread is SRTT, then change the tmode to TMODE_SA.
  */
@@ -86,7 +142,8 @@ int tmode_active(uint32_t hartid) {
 }
 
 /**
- * Put the thread to sleep based on its current thread mode.
+ * @brief Put the thread to sleep based on its current thread mode.
+ * 
  * If the thread is HRTT, then change the tmode to TMODE_HZ.
  * If the thread is SRTT, then change the tmode to TMODE_SZ.
  */

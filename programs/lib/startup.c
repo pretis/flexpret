@@ -106,31 +106,38 @@ void Reset_Handler() {
         /**
          * Configure flexible scheduling
          * 
-         * The default schedule (i.e. slots) has
-         * one slot per hardware thread. For example,
+         * The default schedule (i.e. encoded in slots)
+         * being set here allocates each hardware thread
+         * a slot. For example,
          * if FlexPRET has four threads, then the slots
-         * are [T0 T1 T2 T3 D D D D]. The thread modes
-         * (i.e. whether a thread is an HRTT or an SRTT)
-         * are set by the user via thread_create() or
-         * thread_map(). Here, during startup, they are
-         * configured as HRTTs.
+         * are [T0 T1 T2 T3 D D D D].
+         * Here, during startup, they are
+         * configured as HRTTs. After startup,
+         * T1, T2, and T3 are put to sleep, and T1, T2,
+         * and T3 are then used for SRTTs.
          * 
-         * More fine-grained control of the schedule
-         * can be done by the user via slot_set_hrtt(),
+         * The user can set the thread modes when
+         * thread_create() or thread_map() is called. 
+         * 
+         * If the user wants to change the schedule,
+         * the user can call slot_set(), slot_set_hrtt(),
          * slot_set_srtt(), slot_disable(), and tmode_set().
          * But normally, the user does not need to
-         * worry about them.
+         * worry about them since a "one-slot-per-thread"
+         * schedule seems sufficient for most applications.
          */
+        // Signal all the other (currently HRTT) threads
+        // to wake up and execute up to here,
+        // by allocating the slots to them.
+        slot_t slots[8];
+        for (int i = 0; i < NUM_THREADS; i++)
+            slots[i] = i;
         // Disable slots with ID >= NUM_THREADS,
-        for (int j = NUM_THREADS; j < SLOTS_SIZE; j++) {
-            slot_disable(j);
-        }
-        // and signal all the other threads to warm up,
-        // i.e. begin from start.S and execute up to here.
-        for (int i = 0; i < NUM_THREADS; i++) {
-            slot_set_hrtt(i, i);
-            tmode_active(i);
-        }
+        for (int j = NUM_THREADS; j < SLOTS_SIZE; j++)
+            slots[j] = SLOT_D;
+        hwlock_acquire();
+        slot_set(slots, 8);
+        hwlock_release();
 
         // Wait for a worker thread to signal
         // ready-to-sleep and put it to sleep.
