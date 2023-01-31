@@ -64,8 +64,9 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   // CSR state
 
   // thread scheduler
-  val reg_slots = RegInit(VecInit(conf.initialSlots.map(i => i).toSeq)) // i => i since they are already UInts
-  val reg_tmodes = RegInit(VecInit(conf.initialTmodes.map(i => i).toSeq))
+  // val reg_slots = RegInit(VecInit(conf.initialSlots.map(i => i).toSeq)) // i => i since they are already UInts
+  val reg_slots = RegInit(VecInit(conf.initialSlots.toSeq))
+  val reg_tmodes = RegInit(VecInit(conf.initialTmodes.toSeq))
   // exception handling
   val reg_evecs = Reg(Vec(conf.threads, UInt()))
   val reg_epcs = Reg(Vec(conf.threads, UInt())) // RO?
@@ -332,7 +333,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
         lock.acquire := false.B
         // If for some reason, the lock cannot be released,
         // raise an exception.
-        assert(lock.grant, s"thread-${io.rw.thread} could not release lock")
+        assert(lock.grant, cf"thread-${io.rw.thread} could not release lock")
       }.otherwise {
         assert(false.B)
       }

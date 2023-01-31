@@ -11,7 +11,6 @@ import org.scalatest._
 import chisel3._
 
 import chiseltest._
-import chiseltest.experimental.TestOptionBuilder._
 
 import Core.FlexpretConstants._
 
@@ -63,7 +62,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "read back what we read before even if we are reading 0 next" in {
-    test(registerFile).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(registerFile).withAnnotations(Seq(VerilatorBackendAnnotation)) { c =>
       val thread = 0
       val addr = 31
       val data = "hf00df00d".U
@@ -185,7 +184,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "not leak when reading/writing an invalid thread" in {
-    test(registerFile).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(registerFile).withAnnotations(Seq(VerilatorBackendAnnotation)) { c =>
       val addr = 31
       val data0 = "hf00df00d".U
       val data1 = "hf00df11d".U

@@ -16,8 +16,6 @@ class DataMemCoreIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val data_out = Output(UInt(32.W))
   val byte_write = Input(Vec(4, Bool()))
   val data_in = Input(UInt(32.W))
-
-  override def cloneType = (new DataMemCoreIO).asInstanceOf[this.type]
 }
 
 class DSpm(implicit conf: FlexpretConfiguration) extends Module {
