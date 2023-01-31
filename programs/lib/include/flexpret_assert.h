@@ -4,7 +4,7 @@
 #include "flexpret_io.h"
 #include <stdbool.h>
 
-#define ASSERT(cond) do {   \
+#define assert(cond) do {   \
     if(cond == false) {     \
         _fp_abort();        \
     }                       \

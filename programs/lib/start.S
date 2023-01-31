@@ -45,9 +45,15 @@
     csrw 0x50c, t1 // 0x50c = dMemProtection CSR
 .endm
 
+.macro setGpoProtection
+    li t1, 0x8888
+    csrw 0x50d, t1 // 0x50c = GpoProtection CSR
+.endm
+
 _start:
     setHartid
     setStackPointer
     setGlobalPointer
     setDMemProtection
+    setGpoProtection
     call Reset_Handler

@@ -2,7 +2,7 @@
 #define FLEXPRET_STDIO_H
 
 
-void print_init();
+void print_run();
 
 void print_int(int val);
 

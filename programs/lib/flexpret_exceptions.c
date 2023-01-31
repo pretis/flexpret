@@ -29,7 +29,7 @@ static void fp_exception_handler(void) {
     } else {
         _fp_print(66666666);
         _fp_print(cause);
-        ASSERT(false);
+        assert(false);
     }
 }
 
@@ -52,7 +52,7 @@ void register_isr(int cause, void (*isr)(void)) {
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
         ee_int_handler = isr;
     } else {
-        ASSERT(false);
+        assert(false);
     }
 }
 
