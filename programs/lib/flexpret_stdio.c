@@ -17,20 +17,24 @@ void print_init() {
 
 void print_int(int val) {
     lock_acquire(&lock);
+    char buf[64];
+    int n_digits=0;
     while (val) {
         char digit = '0' + (val % 10);
-        ip_uart_tx_send(&uart, digit);
+        buf[n_digits++] = digit;
         val = val/10;
+    }
+    for (int i=n_digits-1; i>=0; i--) {
+        ip_uart_tx_send(&uart, buf[i]);
     }
     lock_release(&lock);
 }
 
 
-    void print_str(const char *mapsstr[]) {
+    void print_str(const char *str) {
     lock_acquire(&lock);
     while (*str != '\0') {
-        // ip_uart_tx_send(&uart, *str);
-        _fp_print(*str);
+        ip_uart_tx_send(&uart, *str);
         str++;
     }
     lock_release(&lock);
