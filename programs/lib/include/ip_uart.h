@@ -5,6 +5,7 @@
 
 typedef struct {
     bool initialized;
+    uint32_t port;
     size_t pin;
     size_t baud;
     size_t buf_size;

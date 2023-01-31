@@ -5,6 +5,7 @@
 
 #define STDIO_UART_PIN 0
 #define STDIO_UART_BAUD 115200
+#define STDIO_UART_PORT 1
 #define STDIO_MAX_DIGITS 32
 
 ip_uart_config_t uart = {.initialized = false};
@@ -12,6 +13,7 @@ ip_uart_config_t uart = {.initialized = false};
 void print_run() {
     uart.pin = STDIO_UART_PIN;
     uart.baud = STDIO_UART_BAUD;
+    uart.port = STDIO_UART_PORT;
     uart.buf_size = 8;
     ip_uart_tx_run(&uart);
 }

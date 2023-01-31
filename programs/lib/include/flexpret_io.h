@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdbool.h>
+#include <flexpret_assert.h>
 #include <flexpret_csrs.h>
 
 #ifndef FLEXPRET_IO_H
@@ -36,7 +38,7 @@ static inline void gpo_write(uint32_t port, uint32_t val) {
     case 1: write_csr(CSR_UARCH5, val); break;
     case 2: write_csr(CSR_UARCH6, val); break;
     case 3: write_csr(CSR_UARCH7, val); break;
-    default: assert(false);
+    default: _fp_abort();
   }
 }
 
@@ -46,7 +48,7 @@ static inline void gpo_set(uint32_t port, uint32_t mask) {
     case 1: set_csr(CSR_UARCH5, mask); break;
     case 2: set_csr(CSR_UARCH6, mask); break;
     case 3: set_csr(CSR_UARCH7, mask); break;
-    default: assert(false);
+    default: _fp_abort();
   }
 }
 
@@ -57,30 +59,30 @@ static inline void gpo_clear(uint32_t port, uint32_t mask) {
     case 1: clear_csr(CSR_UARCH5, mask); break;
     case 2: clear_csr(CSR_UARCH6, mask); break;
     case 3: clear_csr(CSR_UARCH7, mask); break;
-    default: assert(false);
+    default: _fp_abort();
   }
 }
 
-static inline void gpo_read(uint32_t port) {
+static inline uint32_t gpo_read(uint32_t port) {
   switch(port) {
     case 0: return read_csr(CSR_UARCH4); break;
     case 1: return read_csr(CSR_UARCH5); break;
     case 2: return read_csr(CSR_UARCH6); break;
     case 3: return read_csr(CSR_UARCH7); break;
-    default: assert(false);
+    default: _fp_abort();
   }
 }
 
 // GPI ports, if port width < 32, then upper bits are zero
 // Read GPI bits
 // CSR_GPI_*
-static inline void gpi_read(uint32_t port) {
+static inline uint32_t gpi_read(uint32_t port) {
   switch(port) {
     case 0: return read_csr(CSR_UARCH4); break;
     case 1: return read_csr(CSR_UARCH5); break;
     case 2: return read_csr(CSR_UARCH6); break;
     case 3: return read_csr(CSR_UARCH7); break;
-    default: assert(false);
+    default: _fp_abort();
   }
 }
 
