@@ -12,7 +12,6 @@ SECTIONS
     {
         *(.isr_vector)
         *(.text*)
-        *(.rodata*)
         *(.eh_frame*)
 
         /* All text end */
@@ -24,6 +23,7 @@ SECTIONS
     {
         __data_start__ = .;
         *(.data .data.*)
+        *(.rodata*)
         *(.gnu.linkonce.d.*)
     } > RAM AT> ROM
 
