@@ -7,6 +7,8 @@
 #define CSR_CAUSE       0x509 
 #define CSR_STATUS      0x50a
 #define CSR_COREID      0x510
+#define CSR_TMODES      0x504
+
 #define CSR_HARTID      0x50b
 
 #define CSR_TOHOST      0x51e

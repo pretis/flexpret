@@ -9,8 +9,6 @@ package flexpret.core.test
 
 import chisel3._
 import chiseltest._
-import org.scalatest.flatspec.AnyFlatSpec
-
 
 import flexpret.core.ALU
 import flexpret.core.ALUTypes

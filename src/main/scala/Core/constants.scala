@@ -7,7 +7,8 @@ License: See LICENSE.txt
 ******************************************************************************/
 package Core
 
-import Chisel._
+import chisel3._
+import chisel3.util._
 
 object FlexpretConstants
 {
@@ -25,77 +26,77 @@ object FlexpretConstants
 
   // immediate
   val IMM_WI = 3
-  val IMM_S  = UInt(0, 3)
-  val IMM_B  = UInt(1, 3)
-  val IMM_U  = UInt(2, 3)
-  val IMM_J  = UInt(3, 3)
-  val IMM_I  = UInt(4, 3)
-  val IMM_Z  = UInt(5, 3)
+  val IMM_S  = 0.U(3.W)
+  val IMM_B  = 1.U(3.W)
+  val IMM_U  = 2.U(3.W)
+  val IMM_J  = 3.U(3.W)
+  val IMM_I  = 4.U(3.W)
+  val IMM_Z  = 5.U(3.W)
   val IMM_X  = BitPat("b???")
 
   // ALU op1 select
   val OP1_WI = 2
-  val OP1_PC  = UInt(0, 2)
-  val OP1_RS1 = UInt(1, 2)
-  val OP1_0   = UInt(2, 2)
+  val OP1_PC  = 0.U(2.W)
+  val OP1_RS1 = 1.U(2.W)
+  val OP1_0   = 2.U(2.W)
   val OP1_X   = BitPat("b??")
 
   // ALU op2 select
   val OP2_WI = 2
-  val OP2_IMM = UInt(0, 2)
-  val OP2_RS2 = UInt(1, 2)
-  val OP2_0   = UInt(2, 2)
-  val OP2_4   = UInt(3, 2) // only needed for WU
+  val OP2_IMM = 0.U(2.W)
+  val OP2_RS2 = 1.U(2.W)
+  val OP2_0   = 2.U(2.W)
+  val OP2_4   = 3.U(2.W) // only needed for WU
   val OP2_X   = BitPat("b??")
 
   // branch condition
   val BR_WI = 3
-  val BR_EQ  = UInt(0, 3)
-  val BR_NE  = UInt(1, 3)
-  val BR_LT  = UInt(2, 3)
-  val BR_GE  = UInt(3, 3)
-  val BR_LTU = UInt(4, 3)
-  val BR_GEU = UInt(5, 3)
+  val BR_EQ  = 0.U(3.W)
+  val BR_NE  = 1.U(3.W)
+  val BR_LT  = 2.U(3.W)
+  val BR_GE  = 3.U(3.W)
+  val BR_LTU = 4.U(3.W)
+  val BR_GEU = 5.U(3.W)
   val BR_X   = BitPat("b???")
 
   // CSR types
   val CSR_WI = 2
-  val CSR_W = UInt(1, 2)
-  val CSR_S = UInt(2, 2)
-  val CSR_C = UInt(3, 2)
+  val CSR_W = 1.U(2.W)
+  val CSR_S = 2.U(2.W)
+  val CSR_C = 3.U(2.W)
   val CSR_X = BitPat("b??")
 
   // rd from execute stage select
   val EXE_RD_WI = 2
-  val EXE_RD_ALU = UInt(0, 2)
-  val EXE_RD_CSR = UInt(1, 2)
-  val EXE_RD_PC4 = UInt(2, 2)
+  val EXE_RD_ALU = 0.U(2.W)
+  val EXE_RD_CSR = 1.U(2.W)
+  val EXE_RD_PC4 = 2.U(2.W)
   val EXE_RD_X   = BitPat("b??")
 
   // memory load/store operation types
   val MEM_WI = 4
-  val MEM_LB  = UInt(0,  4)
-  val MEM_LH  = UInt(1,  4)
-  val MEM_LW  = UInt(2,  4)
-  val MEM_LBU = UInt(4,  4)
-  val MEM_LHU = UInt(5,  4)
-  val MEM_SB  = UInt(8,  4)
-  val MEM_SH  = UInt(9,  4)
-  val MEM_SW  = UInt(10, 4)
+  val MEM_LB  = 0.U(4.W)
+  val MEM_LH  = 1.U(4.W)
+  val MEM_LW  = 2.U(4.W)
+  val MEM_LBU = 4.U(4.W)
+  val MEM_LHU = 5.U(4.W)
+  val MEM_SB  = 8.U(4.W)
+  val MEM_SH  = 9.U(4.W)
+  val MEM_SW  = 1.U(4.W)
   val MEM_X   = BitPat("b????")
 
   val MUL_WI = 2
-  val MUL_L   = UInt(0, 2)
-  val MUL_H   = UInt(1, 2)
-  val MUL_HSU = UInt(2, 2)
-  val MUL_HU  = UInt(3, 2)
+  val MUL_L   = 0.U(2.W)
+  val MUL_H   = 1.U(2.W)
+  val MUL_HSU = 2.U(2.W)
+  val MUL_HU  = 3.U(2.W)
   val MUL_X   = BitPat("b??")
 
   // rd from memory stage select
   val MEM_RD_WI = 2
-  val MEM_RD_REG = UInt(0, 2)
-  val MEM_RD_MEM = UInt(1, 2)
-  val MEM_RD_MUL = UInt(2, 2)
+  val MEM_RD_REG = 0.U(2.W)
+  val MEM_RD_MEM = 1.U(2.W)
+  val MEM_RD_MUL = 2.U(2.W)
   val MEM_RD_X   = BitPat("b??")
 
 
@@ -104,79 +105,79 @@ object FlexpretConstants
 
   // next PCs select
   val NPC_WI = 2
-  val NPC_PCREG = UInt(0, 2)
-  val NPC_PLUS4 = UInt(1, 2)
-  val NPC_BRJMP = UInt(2, 2)
-  val NPC_EVEC  = UInt(3, 2)
+  val NPC_PCREG = 0.U(2.W)
+  val NPC_PLUS4 = 1.U(2.W)
+  val NPC_BRJMP = 2.U(2.W)
+  val NPC_EVEC  = 3.U(2.W)
 
   // rs1 source select
   val RS1_WI = 2
-  val RS1_DEC = UInt(0, 2)
-  val RS1_EXE = UInt(1, 2)
-  val RS1_MEM = UInt(2, 2)
-  val RS1_WB  = UInt(3, 2)
+  val RS1_DEC = 0.U(2.W)
+  val RS1_EXE = 1.U(2.W)
+  val RS1_MEM = 2.U(2.W)
+  val RS1_WB  = 3.U(2.W)
 
   // rs2 source select
   val RS2_WI = 2
-  val RS2_DEC = UInt(0, 2)
-  val RS2_EXE = UInt(1, 2)
-  val RS2_MEM = UInt(2, 2)
-  val RS2_WB  = UInt(3, 2)
+  val RS2_DEC = 0.U(2.W)
+  val RS2_EXE = 1.U(2.W)
+  val RS2_MEM = 2.U(2.W)
+  val RS2_WB  = 3.U(2.W)
 
   // ************************************************************
   // Constants
 
   // thread scheduling slots
   val SLOT_WI = 4
-  val SLOT_T0 = UInt(0, 4)
-  val SLOT_T1 = UInt(1, 4)
-  val SLOT_T2 = UInt(2, 4)
-  val SLOT_T3 = UInt(3, 4)
-  val SLOT_T4 = UInt(4, 4)
-  val SLOT_T5 = UInt(5, 4)
-  val SLOT_T6 = UInt(6, 4)
-  val SLOT_T7 = UInt(7, 4)
-  val SLOT_S  = UInt(14, 4)
-  val SLOT_D  = UInt(15, 4)
+  val SLOT_T0 = 0.U(4.W)
+  val SLOT_T1 = 1.U(4.W)
+  val SLOT_T2 = 2.U(4.W)
+  val SLOT_T3 = 3.U(4.W)
+  val SLOT_T4 = 4.U(4.W)
+  val SLOT_T5 = 5.U(4.W)
+  val SLOT_T6 = 6.U(4.W)
+  val SLOT_T7 = 7.U(4.W)
+  val SLOT_S  = 14.U(4.W)
+  val SLOT_D  = 15.U(4.W)
 
   // thread modes
   val TMODE_WI = 2
-  val TMODE_HA = UInt(0, 2)
-  val TMODE_HZ = UInt(1, 2)
-  val TMODE_SA = UInt(2, 2)
-  val TMODE_SZ = UInt(3, 2)
-  val TMODE_AND_A = UInt(2, 2)
-  val TMODE_OR_Z  = UInt(1, 2)
+  val TMODE_HA = 0.U(2.W)
+  val TMODE_HZ = 1.U(2.W)
+  val TMODE_SA = 2.U(2.W)
+  val TMODE_SZ = 3.U(2.W)
+  val TMODE_AND_A = 2.U(2.W)
+  val TMODE_OR_Z  = 1.U(2.W)
 
   // timer modes
   val TIMER_WI = 2
-  val TIMER_OFF   = UInt(0, 2)
-  val TIMER_DU_WU = UInt(1, 2)
-  val TIMER_IE    = UInt(2, 2)
-  val TIMER_EE    = UInt(3, 2)
+  val TIMER_OFF   = 0.U(2.W)
+  val TIMER_DU_WU = 1.U(2.W)
+  val TIMER_IE    = 2.U(2.W)
+  val TIMER_EE    = 3.U(2.W)
 
   // memory space
-  val ADDR_PC_INIT   = Bits("h00000000", 32)
-  val ADDR_EVEC_INIT = Bits("h00000000", 32)
+  val ADDR_PC_INIT   = "h00000000".U(32.W)
+  val ADDR_EVEC_INIT = "h00000000".U(32.W)
   val ADDR_ISPM_BITS = 3
-  val ADDR_ISPM_VAL  = Bits("b000", ADDR_ISPM_BITS)
+  val ADDR_ISPM_VAL  = "b000".U(ADDR_ISPM_BITS.W)
   val ADDR_DSPM_BITS = 3
-  val ADDR_DSPM_VAL  = Bits("b001", ADDR_DSPM_BITS)
+  val ADDR_DSPM_VAL  = "b001".U(ADDR_DSPM_BITS.W)
   val ADDR_BUS_BITS  = 2
-  val ADDR_BUS_VAL   = Bits("b01", ADDR_BUS_BITS)
+  val ADDR_BUS_VAL   = "b01".U(ADDR_BUS_BITS.W)
 
   // memory protection
   val MEMP_WI = 4
-  val MEMP_T0 = UInt(0, 4)
-  val MEMP_T1 = UInt(1, 4)
-  val MEMP_T2 = UInt(2, 4)
-  val MEMP_T3 = UInt(3, 4)
-  val MEMP_T4 = UInt(4, 4)
-  val MEMP_T5 = UInt(5, 4)
-  val MEMP_T6 = UInt(6, 4)
-  val MEMP_T7 = UInt(7, 4)
-  val MEMP_SH = UInt(8, 4) // shared
-  val MEMP_RO = UInt(12, 4) // read-only
+  val MEMP_T0 = 0.U(4.W)
+  val MEMP_T1 = 1.U(4.W)
+  val MEMP_T2 = 2.U(4.W)
+  val MEMP_T3 = 3.U(4.W)
+  val MEMP_T4 = 4.U(4.W)
+  val MEMP_T5 = 5.U(4.W)
+  val MEMP_T6 = 6.U(4.W)
+  val MEMP_T7 = 7.U(4.W)
+  val MEMP_SH = 8.U(4.W) // shared
+  val MEMP_RO = 12.U(4.W) // read-only
 
   // exceptions
   val CAUSE_WI = 5

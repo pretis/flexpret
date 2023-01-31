@@ -21,6 +21,7 @@
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
+/* Linker */
 extern uint32_t __etext;
 extern uint32_t __data_start__;
 extern uint32_t __data_end__;
@@ -28,7 +29,11 @@ extern uint32_t __bss_start__;
 extern uint32_t __bss_end__;
 extern uint32_t end;
 
+/* Threading */
 static bool     __ready__;
+static bool     sleep_requested[NUM_THREADS] = {false};
+extern bool     exit_requested[NUM_THREADS];
+extern uint32_t num_threads_busy;
 extern uint32_t num_threads_exited;
 
 //prototype of main
@@ -131,14 +136,70 @@ void Reset_Handler() {
     // Setup exception handling
     setup_exceptions();
 
-    // Signal ready.
-    hwlock_acquire();
-    __ready__ = true;
-    hwlock_release();
+        /**
+         * Configure flexible scheduling
+         * 
+         * The default schedule (i.e. encoded in slots)
+         * being set here allocates each hardware thread
+         * a slot. For example,
+         * if FlexPRET has four threads, then the slots
+         * are [T0 T1 T2 T3 D D D D].
+         * Here, during startup, they are
+         * configured as HRTTs. After startup,
+         * T1, T2, and T3 are put to sleep, and T1, T2,
+         * and T3 are then used for SRTTs.
+         * 
+         * The user can set the thread modes when
+         * thread_create() or thread_map() is called. 
+         * 
+         * If the user wants to change the schedule,
+         * the user can call slot_set(), slot_set_hrtt(),
+         * slot_set_srtt(), slot_disable(), and tmode_set().
+         * But normally, the user does not need to
+         * worry about them since a "one-slot-per-thread"
+         * schedule seems sufficient for most applications.
+         */
+        // Signal all the other (currently HRTT) threads
+        // to wake up and execute up to here,
+        // by allocating the slots to them.
+        slot_t slots[8];
+        for (int i = 0; i < NUM_THREADS; i++)
+            slots[i] = i;
+        // Disable slots with ID >= NUM_THREADS,
+        for (int j = NUM_THREADS; j < SLOTS_SIZE; j++)
+            slots[j] = SLOT_D;
+        hwlock_acquire();
+        slot_set(slots, 8);
+        hwlock_release();
+
+        // Wait for a worker thread to signal
+        // ready-to-sleep and put it to sleep.
+        // FIXME: Mysterious bug
+        int num_sleeping = 0;
+        while (num_sleeping < NUM_THREADS - 1) {
+            for(int i = 1; i < NUM_THREADS; i++) {
+                hwlock_acquire();
+                if (sleep_requested[i]) {
+                    tmode_sleep(i);
+                    num_sleeping++;
+                }
+                hwlock_release();
+            }
+        }
+
+        // Signal everything is ready.
+        hwlock_acquire();
+        __ready__ = true;
+        hwlock_release();
     } else {
+        // Signal thread 0 to put the worker thread to sleep.
+        hwlock_acquire();
+        sleep_requested[hartid] = true;
+        hwlock_release();
+    
+        setup_exceptions();
+
         // Wait for thread 0 to finish setup.
-        // FIXME: Use delay until (DU)
-        // for precise synchronization.
         while (!__ready__);
     }
 
@@ -149,15 +210,28 @@ void Reset_Handler() {
         worker_main();
     }
 
-    // Exit by calling the _exit() syscall.
+    // Shutdown the program.
     if (hartid == 0) {
-        // Mark the main thread as exited.
+        /* Make sure all worker threads properly shutdown. */
+
+        // Wait for all hardware worker threads
+        // to finish their ongoing routines.
+        while (num_threads_busy > 0);
+
+        // Signal all threads besides T0 to exit.
         hwlock_acquire();
-        num_threads_exited += 1;
+        for (int i = 1; i < NUM_THREADS; i++) {
+            exit_requested[i] = true;
+            // Wake up the thread.
+            tmode_active(i);
+        }
         hwlock_release();
 
         // Wait for all hardware worker threads to exit.
-        while (num_threads_exited < NUM_THREADS);
+        while (num_threads_exited < NUM_THREADS-1);
+
+        // FIXME: Execute the main thread
+        // clean up handlers here.
 
         // Exit the program.
         _exit(0);
