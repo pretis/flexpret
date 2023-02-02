@@ -11,9 +11,9 @@
 #include <stdbool.h>
 #include <flexpret_io.h>
 #include <flexpret_exceptions.h>
+#ifndef BOOTLOADER 
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
-#ifndef BOOTLOADER 
 #include "tinyalloc/tinyalloc.h" // Only include tinyalloc in applications, not bootloader
 #endif
 
@@ -104,8 +104,6 @@ void Reset_Handler() {
             *pDst++ = 0;
         }
         
-        // Setup exception handling
-        setup_exceptions();
     }
     // Jump to main (which should be the bootloader)
     main();

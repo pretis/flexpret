@@ -35,7 +35,7 @@ EMU=fp-emu
 
 # Compile a C program into a riscv ELF file.
 # "${@:3}" = all the command line arguments starting from $3 ($3, $4, ...). 
-$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -DNUM_THREADS=$1 -DCPU_FREQ=50000000 -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $2.riscv $LIB_DIR/start.S $LIB_DIR/syscalls.c $LIB_DIR/tinyalloc/tinyalloc.c $LIB_DIR/startup.c $LIB_DIR/flexpret_thread.c $LIB_DIR/flexpret_lock.c $LIB_DIR/flexpret_exceptions.c $LIB_DIR/ip_uart.c $LIB_DIR/flexpret_stdio.c $LIB_DIR/cbuf.c "${@:3}"
+$CC -I$LIB_DIR/include -T $LINKER_SCRIPT -Xlinker -Map=output.map -DNUM_THREADS=$1 -DCPU_FREQ=50000000 -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -o $2.riscv $LIB_DIR/start.S $LIB_DIR/syscalls.c $LIB_DIR/tinyalloc/tinyalloc.c $LIB_DIR/startup.c $LIB_DIR/flexpret_thread.c $LIB_DIR/flexpret_lock.c $LIB_DIR/flexpret_exceptions.c $LIB_DIR/ip_uart.c $LIB_DIR/flexpret_stdio.c $LIB_DIR/cbuf.c $LIB_DIR/flexpret_printer.c "${@:3}"
 
 # Generate dump file.
 $OBJDUMP -S -d $2.riscv > $2.dump

@@ -20,6 +20,16 @@ static void noc_send(uint32_t addr, uint32_t data) {
     NOC_DATA = data;
 }
 
+// Send array, blocking
+static void noc_send_arr(uint32_t addr, uint32_t * data, int length) {
+    for (int i=0; i<length; i++) {
+        while (!NOC_TX_READY(NOC_CSR)) {}
+        _fp_print(data[i]);
+        NOC_DEST = addr; // FIXME: Can we get rid of these?
+        NOC_DATA = data[i];
+    }
+}
+
 // Blocking read word
 static uint32_t noc_receive() {
     while(!NOC_DATA_AVAILABLE(NOC_CSR)) {}

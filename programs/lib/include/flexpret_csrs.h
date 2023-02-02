@@ -1,6 +1,8 @@
 #ifndef FLEXPRET_CSRS_H
 #define FLEXPRET_CSRS_H
 
+#include <stdint.h>
+
 #define CSR_SLOTS       0x503
 #define CSR_COMPARE     0x507
 #define CSR_EVEC        0x508 
