@@ -23,7 +23,7 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-#define NRA 20 // number of rows in matrix a
+#define NRA 48 // number of rows in matrix a
 #define NCA 20 // number of columns in matrix a
 #define NCB 20 // number of columns in matrix b
 
