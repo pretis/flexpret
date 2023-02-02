@@ -46,7 +46,7 @@
 .endm
 
 .macro setGpoProtection
-    li t1, 0x8888
+    li t1, 0x88888888
     csrw 0x50d, t1 // 0x50c = GpoProtection CSR
 .endm
 

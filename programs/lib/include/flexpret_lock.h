@@ -1,13 +1,14 @@
+#ifndef FLEXPRET_LOCK_H
+#define FLEXPRET_LOCK_H
 #include <stdbool.h>
+#include <stdint.h>
 #include <flexpret_csrs.h>
 #include <flexpret_io.h>
 
-#ifndef FLEXPRET_LOCK_H
-#define FLEXPRET_LOCK_H
 
 #define LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX }
-typedef struct _lock_t {
-    bool     locked;
+typedef struct {
+    bool locked;
     uint32_t owner;
 } lock_t;
 
@@ -15,7 +16,7 @@ typedef struct _lock_t {
  * Acquire a hardware lock.
  */
 static inline void hwlock_acquire() {
-    while(swap_csr(CSR_HWLOCK, 1) == 0);
+    while(swap_csr(CSR_HWLOCK, 1) == 0) {}
 }
 
 /**

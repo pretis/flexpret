@@ -17,8 +17,12 @@
 #include "tinyalloc/tinyalloc.h" // Only include tinyalloc in applications, not bootloader
 #endif
 
-#define DSPM_LIMIT          ((void*)0x20004000) // 0x4000 = 16KB
-#define TA_MAX_HEAP_BLOCK   1000
+// Memory map
+// 0x20000000 -> 0x20001000 (4KB) Bootloader DMEM
+// 0x20001000 -> 0x20005000 (16KB) App DMEM
+// 0x20005000 -> 0x20006000 (4KB) Thread stacks (1KB each)
+#define DSPM_LIMIT          ((void*)0x20005000) // 0x20005000 is where the stacks start
+#define TA_MAX_HEAP_BLOCK   256
 #define TA_ALIGNMENT        4
 
 /* Linker */
@@ -92,14 +96,20 @@ void Reset_Handler() {
         for (uint32_t i = 0; i < size; i++) {
             *pDst++ = *pSrc++;
         }
+
+        // Init. the .bss section to zero in RAM
+        size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
+        pDst = (uint32_t*)&__bss_start__;
+        for(uint32_t i = 0; i < size; i++) {
+            *pDst++ = 0;
+        }
+        
+        // Setup exception handling
+        setup_exceptions();
     }
-
-    // Setup exception handling
-    setup_exceptions();
-
     // Jump to main (which should be the bootloader)
     main();
-    
+
     // Exit the program.
     _exit(0);
     
@@ -111,7 +121,6 @@ void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
 
-    _fp_print(hartid);
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {
@@ -124,6 +133,13 @@ void Reset_Handler() {
             *pDst++ = *pSrc++;
         }
 
+                // Init. the .bss section to zero in RAM
+        size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
+        pDst = (uint32_t*)&__bss_start__;
+        for(uint32_t i = 0; i < size; i++) {
+            *pDst++ = 0;
+        }
+
     // Initialize tinyalloc.
     ta_init( 
         &end, // start of the heap space
@@ -132,9 +148,6 @@ void Reset_Handler() {
         16, // split_thresh: 16 bytes (Only used when reusing blocks.)
         TA_ALIGNMENT
     );
-
-    // Setup exception handling
-    setup_exceptions();
 
         /**
          * Configure flexible scheduling
@@ -192,7 +205,7 @@ void Reset_Handler() {
         __ready__ = true;
         hwlock_release();
     } else {
-        // Signal thread 0 to put the worker thread to sleep.
+        // // Signal thread 0 to put the worker thread to sleep.
         hwlock_acquire();
         sleep_requested[hartid] = true;
         hwlock_release();
@@ -202,6 +215,9 @@ void Reset_Handler() {
         // Wait for thread 0 to finish setup.
         while (!__ready__);
     }
+
+    // Setup exception handling
+    setup_exceptions();
 
     // Call main().
     if (hartid == 0) {

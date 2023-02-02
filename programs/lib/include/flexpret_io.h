@@ -1,18 +1,22 @@
+#ifndef FLEXPRET_IO_H
+#define FLEXPRET_IO_H
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <flexpret_assert.h>
 #include <flexpret_csrs.h>
 
-#ifndef FLEXPRET_IO_H
-#define FLEXPRET_IO_H
 
 // Write a generic value to the tohost CSR
 static inline void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
 
+
 // Print the given value in the simulation
 static inline void _fp_print(uint32_t val) {
+  while(swap_csr(CSR_HWLOCK, 1) == 0);
   write_csr(CSR_TOHOST, 0xbaaabaaa);
   write_csr(CSR_TOHOST, val);
+  swap_csr(CSR_HWLOCK, 0);
 }
 
 // Finish/stop the simulation. Simulation environment will terminate when all
@@ -86,7 +90,5 @@ static inline uint32_t gpi_read(uint32_t port) {
   }
 }
 
-// Read the current hardware thread id (hartid)
-static inline uint32_t read_hartid() { return read_csr(CSR_HARTID); }
 
 #endif // FLEXPRET_IO_H

@@ -12,7 +12,7 @@
 #define READ_LATENCY 300*CLOCK_PERIOD_NS
 
 
-static void _ip_uart_tx_byte(ip_uart_config_t *uart, char byte) {
+void ip_uart_tx_byte(ip_uart_config_t *uart, char byte) {
     // Start bit
     unsigned int next_event = rdtime();
     gpo_clear(uart->port, uart->_mask);

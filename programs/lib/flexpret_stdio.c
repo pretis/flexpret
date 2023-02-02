@@ -42,6 +42,10 @@ void print_int(int val) {
 
     char buf[32];
     int n_digits=0;
+    if (val == 0) {
+        buf[n_digits++] = '0';
+    }
+
     while (val && n_digits<STDIO_MAX_DIGITS) {
         char digit = '0' + (val % 10);
         buf[n_digits++] = digit;
