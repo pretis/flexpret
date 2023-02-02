@@ -8,7 +8,7 @@ int main() {
     _fp_print(42);
     uint32_t read;
     for (int i=0; i<10; i++) {
-        read = noc_receive();
+        read = noc_receive(UINT32_MAX);
         _fp_print(read);
     }
 }
