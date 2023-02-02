@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     
     // Create the threads
     for (i = 0; i < nb_threads; i++) {
-        errno[i] = thread_create(&tid[i], matrix_multiply, NULL);
+        errno[i] = thread_create(HRTT, &tid[i], matrix_multiply, NULL);
         if (errno[i] != 0)
             _fp_print(666);
     }
@@ -93,7 +93,7 @@ void* matrix_multiply () {
             for (k = 0, c[i][j] = 0; k < NCA; k++) {
                 c[i][j] += a[i][k] * b[k][j];
             }
-            // if (i == 0) _fp_print(c[i][j]);
+            if (i == 0) _fp_print(c[i][j]);
         }
     }
 }

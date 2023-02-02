@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     // Create the threads and scatter the work based on the indexes
     for (i = 0; i < nb_threads; i++) {
-        errno[i] = thread_create(&tid[i], merge_sort_thread, NULL);
+        errno[i] = thread_create(HRTT, &tid[i], merge_sort_thread, NULL);
         if (errno[i] != 0)
             _fp_print(666);
     }
