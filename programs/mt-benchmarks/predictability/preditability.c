@@ -1,19 +1,15 @@
 /**
- * A threaded version of matrix multiplication, where the matrices are defined
- * in the static memory: a * b = c.
+ * A threaded version of a predictability test. This is useful for playing around
+ * the cycle count...
+ * 
+ * The number of threads executing is set in `NUM_THREADS`.
  *
- * The number of threads executing the the parallel matric multiply is set in
- * `NUM_THREADS`.
- *
- * Make sure to pass the hardware thread number to the `riscv-compile.sh`. It
- * should be at least `NUM_THREADS + 1`, where the extra one being for the master
- * thread. Ex: `riscv-compile.sh 5 mm matrix_multiply_stc_thr.c`.
- * In addition, make sure that the FlexPRET was built wih the right number of
+ * Use the Makefile to clean, build and run the emulator. 
+ * Make sure that the FlexPRET was built wih the right number of
  * hardware threads. This can be set in the `config.mk` file, before building
  * the emulator.
  *
- * Currently, the program prints the time spent in the calculation, including
- * threads creation and joining. This latter needs to be assessed separateley.
+ * Currently, the program prints the number of cycles spent in the calculation.
  **/
 
 #include <stdlib.h>
