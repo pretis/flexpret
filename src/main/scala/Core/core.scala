@@ -49,9 +49,15 @@ case class InstMemConfiguration(
   require(sizeKB >= 0)
 }
 
-case class FlexpretConfiguration(threads: Int, flex: Boolean,
+case class FlexpretConfiguration(
+  threads: Int,
+  flex: Boolean,
   imemConfig: InstMemConfiguration,
-  dMemKB: Int, mul: Boolean, features: String, coreId: Int) {
+  dMemKB: Int,
+  mul: Boolean,   // FIXME: Unused, to be removed.
+  features: String,
+  coreId: Int
+) {
   println("features: " + features)
   val mt = threads > 1
   val stats = features == "all"
@@ -68,7 +74,6 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
   val dedicatedCsrData  = true // otherwise wait for pass through ALU
   val iMemCoreRW        = true // 'true' required for load/store to ISPM
   val privilegedMode    = false // Off until updated to latest compiler..
-  //val privilegedMode = true
 
   // ************************************************************
 
@@ -85,9 +90,12 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
 
   // Scheduler
   val roundRobin    = !flex
+  // At the beginning, only T0 is specified in the schedule.
   val initialSlots  = List(
     SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_D, SLOT_T0
   )
+  // At the beginning, all threads are HRTTs,
+  // and T0 is the only active HRTT.
   val initialTmodes = (0 until threads).map(i => if (i != 0) TMODE_HZ else TMODE_HA)
 
   // I-Spm
@@ -105,10 +113,10 @@ case class FlexpretConfiguration(threads: Int, flex: Boolean,
   val dMemBusRW     = false
 
   // GPIO
-  val gpiPortSizes  = List(1, 1, 1, 1)
-  val gpoPortSizes  = List(4, 2, 2, 2)
+  val gpiPortSizes  = List(8, 8, 8, 8)
+  val gpoPortSizes  = List(8, 8, 8, 8)
   val initialGpo    = List(
-    MEMP_T0, MEMP_SH, MEMP_SH, MEMP_SH
+    MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH
   )
 
   // Bus

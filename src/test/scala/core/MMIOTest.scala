@@ -11,8 +11,6 @@ import chisel3.stage.ChiselStage
 import chisel3.util.DecoupledIO
 
 import chiseltest._
-import org.scalatest.flatspec.AnyFlatSpec
-
 
 import flexpret.core._
 

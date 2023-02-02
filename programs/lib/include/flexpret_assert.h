@@ -4,11 +4,10 @@
 #include "flexpret_io.h"
 #include <stdbool.h>
 
-#define ASSERT(cond) do {   \
-    if(!cond) {             \
-        _fp_print(666);     \
-        _fp_finish();       \
-    }                      \
+#define assert(cond) do {   \
+    if(cond == false) {     \
+        _fp_abort();        \
+    }                       \
 } while(0)
 
 

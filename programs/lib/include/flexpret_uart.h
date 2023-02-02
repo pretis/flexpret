@@ -6,9 +6,9 @@
 #include "flexpret_wb.h"
 
 // Addresses on the NOC wishbone device
-#define UART_TXD 0x10UL
-#define UART_RXD 0x14UL
-#define UART_CSR 0x18UL
+#define UART_TXD 0x0UL
+#define UART_RXD 0x4UL
+#define UART_CSR 0x8UL
 
 // Macros for parsing the CSR register value
 #define UART_DATA_READY(val) (val & 0x01)

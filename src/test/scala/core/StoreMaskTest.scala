@@ -11,7 +11,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import chiseltest._
 
-
 import Core.StoreMask
 import Core.FlexpretConstants._
 

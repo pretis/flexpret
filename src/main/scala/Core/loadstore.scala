@@ -7,7 +7,8 @@ License: See LICENSE.txt
 ******************************************************************************/
 package Core
 
-import Chisel._
+import chisel3._
+import chisel3.util._
 import FlexpretConstants._
 
 // Remove this eventually
@@ -22,13 +23,13 @@ object LoadFormat {
   def apply(data: Bits, address: UInt, memType: UInt) = {
     // Shift data to move subword loads to lowest bytes.
     // Address -> Shift Amount: 00->0, 01->8, 10->16, 11->24
-    val shifted = data >> (Cat(address, UInt(0,3)))
+    val shifted = data >> (Cat(address, 0.U(3.W)))
 
     // Zero or sign extend.
     Mux(memType === MEM_LB,  Cat(Fill(24, shifted( 7)), shifted(7,  0)),
-    Mux(memType === MEM_LBU, Cat(Bits(0, 24),           shifted(7,  0)),
+    Mux(memType === MEM_LBU, Cat(0.U(24.W),             shifted(7,  0)),
     Mux(memType === MEM_LH,  Cat(Fill(16, shifted(15)), shifted(15, 0)),
-    Mux(memType === MEM_LHU, Cat(Bits(0, 16),           shifted(15, 0)),
+    Mux(memType === MEM_LHU, Cat(0.U(16.W),             shifted(15, 0)),
                          shifted))))
   }
 }
@@ -83,44 +84,44 @@ object StoreMask {
 
 class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
 {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     // connections to memories and bus
-    val dmem = new DataMemCoreIO().flip
-    val imem = new InstMemCoreIO().flip // only use write port
-    val bus = new BusIO().flip
+    val dmem = Flipped(new DataMemCoreIO())
+    val imem = Flipped(new InstMemCoreIO()) // only use write port
+    val bus = Flipped(new BusIO())
     // connection to datapath
-    val addr = UInt(INPUT, 32)
-    val thread = UInt(INPUT, conf.threadBits)
-    val load = Bool(INPUT)
-    val store = Bool(INPUT)
-    val mem_type = UInt(INPUT, MEM_WI)
-    val data_in = Bits(INPUT, 32)
-    val data_out = Bits(OUTPUT, 32)
+    val addr = Input(UInt(32.W))
+    val thread = Input(UInt(conf.threadBits.W))
+    val load = Input(Bool())
+    val store = Input(Bool())
+    val mem_type = Input(UInt(MEM_WI.W))
+    val data_in = Input(Bits(32.W))
+    val data_out = Output(Bits(32.W))
     // memory protection
-    val imem_protection = Vec(conf.memRegions, UInt(INPUT, MEMP_WI))
-    val dmem_protection = Vec(conf.memRegions, UInt(INPUT, MEMP_WI))
+    val imem_protection = Vec(conf.memRegions, Input(UInt(MEMP_WI.W)))
+    val dmem_protection = Vec(conf.memRegions, Input(UInt(MEMP_WI.W)))
     // exceptions
-    val kill = Bool(INPUT)
-    val load_misaligned  = Bool(OUTPUT)
-    val load_fault       = Bool(OUTPUT)
-    val store_misaligned = Bool(OUTPUT)
-    val store_fault      = Bool(OUTPUT)
-  }
+    val kill = Input(Bool())
+    val load_misaligned  = Output(Bool())
+    val load_fault       = Output(Bool())
+    val store_misaligned = Output(Bool())
+    val store_fault      = Output(Bool())
+  })
 
   // Preserve byte location and type of operation.
-  val addr_byte_reg = Reg(next = io.addr(1, 0))
-  val mem_type_reg = Reg(next = io.mem_type)
+  val addr_byte_reg = RegNext(io.addr(1, 0))
+  val mem_type_reg = RegNext(io.mem_type)
 
   // Determine source/destination by address range
   val dmem_op = io.addr(31, 32-ADDR_DSPM_BITS) === ADDR_DSPM_VAL
   val imem_op = io.addr(31, 32-ADDR_ISPM_BITS) === ADDR_ISPM_VAL
   val bus_op  = io.addr(31, 32-ADDR_BUS_BITS)  === ADDR_BUS_VAL
   // Check if address overflows size
-  // spike val bad_address = Bool(false)
+  // spike val bad_address = false.B
   val bad_address = (
-    (dmem_op && io.addr(31-ADDR_DSPM_BITS, conf.dMemAddrBits) =/= Bits(0)) ||
-    (imem_op && io.addr(31-ADDR_ISPM_BITS, conf.iMemAddrBits+2) =/= Bits(0)) ||
-    (bus_op  && io.addr(31-ADDR_BUS_BITS,  conf.busAddrBits-conf.threadBits) =/= Bits(0)) )
+    (dmem_op && io.addr(31-ADDR_DSPM_BITS, conf.dMemAddrBits) =/= 0.U) ||
+    (imem_op && io.addr(31-ADDR_ISPM_BITS, conf.iMemAddrBits+2) =/= 0.U) ||
+    (bus_op  && io.addr(31-ADDR_BUS_BITS,  conf.busAddrBits-conf.threadBits) =/= 0.U) )
 
   // Memory protection (for write)
   val permission = Wire(Bool())
@@ -134,59 +135,60 @@ class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
     // check for exception
     permission := (dmem_op && dmem_permission) || (imem_op && imem_permission) || bus_op
   } else {
-    permission := Bool(true)
+    permission := true.B
   }
 
   // Exception checks
   val load_misaligned = Wire(Bool())
-  load_misaligned := Bool(false)
+  load_misaligned := false.B
   if(conf.causes.contains(Causes.misaligned_load)) {
     load_misaligned := io.load && (
-      (((io.mem_type === MEM_LH) || (io.mem_type === MEM_LHU)) && (io.addr(0) =/= Bits(0))) ||
-      ((io.mem_type === MEM_LW) && (io.addr(1,0) =/= Bits(0))))
+      (((io.mem_type === MEM_LH) || (io.mem_type === MEM_LHU)) && (io.addr(0) =/= 0.U)) ||
+      ((io.mem_type === MEM_LW) && (io.addr(1,0) =/= 0.U)))
   }
   val load_fault = Wire(Bool())
-  load_fault := Bool(false)
+  load_fault := false.B
   if(conf.causes.contains(Causes.fault_load)) {
     load_fault := io.load && bad_address
   }
   val store_misaligned = Wire(Bool())
-  store_misaligned := Bool(false)
+  store_misaligned := false.B
   if(conf.causes.contains(Causes.misaligned_store)) {
     store_misaligned := io.store && (
-      ((io.mem_type === MEM_SH) && (io.addr(0) =/= Bits(0))) ||
-      ((io.mem_type === MEM_SW) && (io.addr(1,0) =/= Bits(0))))
+      ((io.mem_type === MEM_SH) && (io.addr(0) =/= 0.U)) ||
+      ((io.mem_type === MEM_SW) && (io.addr(1,0) =/= 0.U)))
   }
   val store_fault = Wire(Bool())
-  store_fault := Bool(false)
+  store_fault := false.B
   if(conf.causes.contains(Causes.fault_store)) {
     store_fault := io.store && (bad_address || !permission)
   }
 
   // remember last operation
-  val dmem_op_reg = Reg(next = dmem_op)
-  val imem_op_reg = Reg(next = imem_op)
+  val dmem_op_reg = RegNext(dmem_op)
+  val imem_op_reg = RegNext(imem_op)
 
   val write: Bool = io.store && permission && !store_misaligned && !store_fault && !io.kill
   // data memory input
   io.dmem.addr := io.addr(conf.dMemAddrBits-1, 2) // assumes aligned
   io.dmem.data_in := StoreFormat(io.data_in, io.mem_type)
-  val dmem_enable: Bool = if(conf.dMemForceEn) Bool(true) else (dmem_op && (io.load || io.store))
+  val dmem_enable: Bool = if(conf.dMemForceEn) true.B else (dmem_op && (io.load || io.store))
   io.dmem.enable := dmem_enable
   io.dmem.byte_write := (StoreMask(io.addr(1, 0), io.mem_type, enable=dmem_enable) & Fill(4, write.asUInt)).asBools
 
 
   // instruction memory input
   // no subword
+  io.imem.r := DontCare
   if(conf.iMemCoreRW) {
     io.imem.rw.addr := io.addr(conf.iMemAddrBits-1, 2) // assumes word aligned
     io.imem.rw.data_in := io.data_in // TODO: currently only supports word write
-    io.imem.rw.enable := (if(conf.iMemForceEn) Bool(true)
+    io.imem.rw.enable := (if(conf.iMemForceEn) true.B
                           else imem_op && (io.load || io.store))
     io.imem.rw.write := imem_op && write
   } else {
-    io.imem.rw.enable := Bool(false)
-    io.imem.rw.write := Bool(false)
+    io.imem.rw.enable := false.B
+    io.imem.rw.write := false.B
   }
 
   // bus input

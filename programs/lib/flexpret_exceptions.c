@@ -17,8 +17,7 @@ static void register_exception_handler(void (*isr)(void)) {
 
 static void fp_exception_handler(void) {
     int cause = read_csr(CSR_CAUSE);
-    // gpo_write_0(0xF);
-    gpo_write_0(cause);
+    gpo_write(0, cause);
     
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  
         if(ext_int_handler) ext_int_handler();
@@ -27,8 +26,9 @@ static void fp_exception_handler(void) {
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
         if(ee_int_handler) ee_int_handler();
     } else {
+        _fp_print(66666666);
         _fp_print(cause);
-        ASSERT(false);
+        assert(false);
     }
 }
 
@@ -51,7 +51,7 @@ void register_isr(int cause, void (*isr)(void)) {
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
         ee_int_handler = isr;
     } else {
-        ASSERT(false);
+        assert(false);
     }
 }
 

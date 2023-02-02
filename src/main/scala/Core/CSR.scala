@@ -64,8 +64,9 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   // CSR state
 
   // thread scheduler
-  val reg_slots = RegInit(VecInit(conf.initialSlots.map(i => i).toSeq)) // i => i since they are already UInts
-  val reg_tmodes = RegInit(VecInit(conf.initialTmodes.map(i => i).toSeq))
+  // val reg_slots = RegInit(VecInit(conf.initialSlots.map(i => i).toSeq)) // i => i since they are already UInts
+  val reg_slots = RegInit(VecInit(conf.initialSlots.toSeq))
+  val reg_tmodes = RegInit(VecInit(conf.initialTmodes.toSeq))
   // exception handling
   val reg_evecs = Reg(Vec(conf.threads, UInt()))
   val reg_epcs = Reg(Vec(conf.threads, UInt())) // RO?
@@ -324,23 +325,20 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val lock = Module(new Lock()).io
     lock.driveDefaultsFlipped()
 
-    // Detect read to the lock CSR == lock acquisition
-    when (!write && compare_addr(CSRs.hwlock)) {
-        assert(false.B);
-    }
-    // Detect write to the lock CSR == lock release
     when (write && compare_addr(CSRs.hwlock)) {
-      // When "CSRRW rd, hwlock, 0", acquire the lock.
       lock.valid := true.B
       lock.tid := io.rw.thread
       data_out := lock.grant
+      // When "CSRRW rd, hwlock, 1", acquire the lock.
       when(io.rw.data_in === 1.U) {
         lock.acquire := true.B
-      }.elsewhen (io.rw.data_in === 0.U) {
+      }
+      // When "CSRRW rd, hwlock, 0", acquire the lock.
+      .elsewhen (io.rw.data_in === 0.U) {
         lock.acquire := false.B
         // If for some reason, the lock cannot be released,
         // raise an exception.
-        assert(lock.grant, s"thread-${io.rw.thread} could not release lock")
+        assert(lock.grant, cf"thread-${io.rw.thread} could not release lock")
       }.otherwise {
         assert(false.B)
       }

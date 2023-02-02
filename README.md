@@ -72,20 +72,20 @@ git submodule update --init --recursive
 To build a default configuration and generate Verilog, run:
 
 ```
-make fpga
+make verilog_raw
 ```
 
 # Unit tests
 To run all unit tests:
 
 ```
-mill flexpret.test
+sbt test
 ```
 
 To run a specific unit test (e.g. SimpleCoreTest):
 
 ```
-mill flexpret.test.testOnly flexpret.core.test.SimpleCoreTest
+sbt 'testOnly flexpret.core.test.SimpleCoreTest'
 ```
 
 Unit tests are found under `src/test/scala/core/`.
@@ -109,21 +109,20 @@ To run a basic Fibonnaci example in simulation, run:
 # cd into the fib directory.
 cd programs/tests/c-tests/fib/
 
-# Compile the program.
-../../../../scripts/c/riscv_compile.sh fib fib.c
+# Compile the program (assume FlexPRET is built with 1 hardware thread).
+../../../../scripts/c/riscv-compile.sh 1 fib fib.c
 
 # Run the simulation.
 ../../../../emulator/fp-emu +ispm=fib.mem
 
 # Clean the generated files.
-../../../../scripts/c/riscv_clean.sh
+../../../../scripts/c/riscv-clean.sh
 ```
 
-We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv_compile.sh` and `fp-emu` become directly accessible.
+We recommend adding `scripts/c/` and `emulator/` to PATH so that `riscv-compile.sh` and `fp-emu` become directly accessible.
 
 # Directory Structure
 - `build/` Temporary folder used as part of the build
-- `fpga/` Generated Verilog code and scripts for FPGA deployment
 - `programs/` C and assembly programs and test suites
   - `lib/` Libraries, linker scripts, and startup scripts
   - `tests/` C test cases
@@ -168,10 +167,6 @@ To install the 32-bit version of the GCC compiler (Newlib):
 3. Run `./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32` (assuming your preferred installation directory is `/opt/riscv`);
 4. Run `make`.
 
-### Program Configuration
-- `PROG_DIR=[path]` Directory of programs in tests/ to compile and/or run. This is the test program that is executed when running command 'make run'. The default value 'isa' means that an assembler test suite is executed.
-- `PROG_CONFIG=[]` Program configuration, start with target name
-
 ### Regression Test
 To run a C regression test for the current processor configurations
 ```
@@ -180,7 +175,7 @@ make run-c-tests
 ```
 
 # Chisel
-We use Chisel version 3.4 via mill.
+We use Chisel version 3.5.5.
 
 To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and particularly the [documentation section](https://chisel.eecs.berkeley.edu/documentation.html).
 
@@ -191,3 +186,6 @@ To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and
 * David Broman (broman@eecs.berkeley.edu) 
 * Edward Wang (edwardw@eecs.berkeley.edu)
 * Shaokai Lin (shaokai@berkeley.edu)
+* Erling Jellum (erling.r.jellum@ntnu.no)
+* Martin Schoeberl (masca@dtu.dk)
+* Samuel Berkun (sberkun@berkeley.edu)

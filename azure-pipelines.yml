@@ -25,11 +25,9 @@ steps:
     # Update submodules
     git submodule update --init --recursive
   displayName: Prereqs
-- script: |
-    ./test/run_tests.sh || true
-    ./test/run_tests.sh
+- script: sbt test
   displayName: 'Unit tests'
-- script: ./test/basic_build.sh
-  displayName: 'Basic build'
+- script: make emulator
+  displayName: 'Generate verilog and build emulator'
 - script: (export PATH="$HOME/riscv-embed-gcc/bin:$PATH" && cd ./programs/tests/ && make XLEN=32 run-c-tests)
   displayName: 'Run C tests'
