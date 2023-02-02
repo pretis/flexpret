@@ -28,4 +28,41 @@ static uint32_t noc_receive() {
     return wb_read(NOC_DATA);
 }
 
+// Non blocking send word
+static void noc_nsend(uint32_t addr, uint32_t data) {
+    if (NOC_TX_READY(NOC_CSR)) {
+        NOC_DEST = addr;
+        NOC_DATA = data;
+    }
+}
+
+// Non blocking read word
+static uint32_t noc_nreceive() {
+    if (NOC_DATA_AVAILABLE(NOC_CSR)) {
+        return NOC_DATA;
+    }
+}
+
+// Send word within a timeout
+static void noc_tsend(uint32_t addr, uint32_t data, uint32_t timeout) {
+    uint32_t time = rdtime() + timeout;
+    while (rdtime() < time) {
+        if (NOC_TX_READY(NOC_CSR)) {
+            NOC_DEST = addr;
+            NOC_DATA = data;
+            break;
+        }
+    }
+}
+
+// Read word within a timeout
+static uint32_t noc_treceive(uint32_t timeout) {
+    uint32_t time = rdtime() + timeout;
+    while (rdtime() < time) {
+        if (NOC_DATA_AVAILABLE(NOC_CSR)) {
+            return NOC_DATA;
+        }
+    }
+}
+
 #endif
