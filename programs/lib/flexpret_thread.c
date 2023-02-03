@@ -13,6 +13,9 @@
 /**
  * @brief Set a complete schedule.
  * 
+ * This function assumes that a mutex lock
+ * is held by the caller.
+ * 
  * @param slots An array of slot values
  * @param length The length of the array
  * @return int If success, return 0, otherwise an error code.
@@ -32,6 +35,9 @@ int slot_set(slot_t slots[], uint32_t length) {
 
 /**
  * @brief Allocate a slot for a hard real-time thread (HRTT).
+ * 
+ * This function assumes that a mutex lock
+ * is held by the caller.
  * 
  * @param slot The slot to be allocated
  * @param hartid The hartid of the HRTT
@@ -56,6 +62,9 @@ int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
 
 /**
  * @brief Allocate a slot for a soft real-time thread (SRTT).
+ * 
+ * This function assumes that a mutex lock
+ * is held by the caller.
  * 
  * @param slot The slot to be allocated
  * @return int If success, return 0, otherwise an error code.
@@ -111,6 +120,15 @@ tmode_t tmode_get(uint32_t hartid) {
 /**
  * @brief Set the thread mode of a hardware thread.
  * 
+ * This function assumes that a mutex lock
+ * is held by the caller.
+ * 
+ * FIXME: The current hardware does not allow a thread
+ * to put itself to sleep because of the read and write
+ * involved. We should separate the tmodes register
+ * into eight different tmodes so that each thread
+ * can turn itself to sleep.
+ * 
  * @param hartid The hardware thread ID
  * @param val The thread mode to be set
  * @return int If success, return 0, otherwise an error code.
@@ -130,6 +148,12 @@ int tmode_set(uint32_t hartid, tmode_t val) {
 /**
  * @brief Put the thread to sleep based on its current thread mode.
  * 
+ * This function assumes that a mutex lock
+ * is held by the caller.
+ * 
+ * FIXME: tmode_active is a bad name since active is an adjactive.
+ * Should probably renamed to tmode_wakeup.
+ * 
  * If the thread is HRTT, then change the tmode to TMODE_HA.
  * If the thread is SRTT, then change the tmode to TMODE_SA.
  */
@@ -143,6 +167,9 @@ int tmode_active(uint32_t hartid) {
 
 /**
  * @brief Put the thread to sleep based on its current thread mode.
+ * 
+ * This function assumes that a mutex lock
+ * is held by the caller.
  * 
  * If the thread is HRTT, then change the tmode to TMODE_HZ.
  * If the thread is SRTT, then change the tmode to TMODE_SZ.
@@ -200,8 +227,8 @@ int thread_create(
             num_threads_busy += 1;
             in_use[i] = true; // Signal the worker thread to do work.
             // Wake up the thread.
-            if (is_hrtt) tmode_set(i, TMODE_HA);
-            else tmode_set(i, TMODE_SA);
+            // if (is_hrtt) tmode_set(i, TMODE_HA);
+            // else tmode_set(i, TMODE_SA);
             hwlock_release();
             return 0;
         }
@@ -229,8 +256,8 @@ int thread_map(
         num_threads_busy += 1;
         in_use[*hartid] = true; // Signal the worker thread to do work.
         // Wake up the thread.
-        if (is_hrtt) tmode_set(*hartid, TMODE_HA);
-        else tmode_set(*hartid, TMODE_SA);
+        // if (is_hrtt) tmode_set(*hartid, TMODE_HA);
+        // else tmode_set(*hartid, TMODE_SA);
         hwlock_release();
         return 0;
     }
@@ -240,12 +267,15 @@ int thread_map(
 }
 
 int thread_join(thread_t hartid, void **retval) {
+    // FIXME: What if it waits for the long-running thread?
     while(in_use[hartid]); // Wait
     // Get the exit code from the exiting thread.
     hwlock_acquire();
     *retval = exit_code[hartid];
+    // FIXME: To avoid losing lots of cycles,
+    // a worker thread should put itself to sleep.
     // Put the thread to sleep.
-    tmode_sleep(hartid);
+    // tmode_sleep(hartid);
     // FIXME: Should we make idle thread SRTT?
     hwlock_release();
     return 0;
@@ -267,7 +297,7 @@ void thread_exit(void *retval) {
 }
 
 int thread_cancel(thread_t hartid) {
-    hwlock_acquire();
+    hwlock_acquire(); // FIXME: Unnecessary?
     cancel_requested[hartid] = true;
     hwlock_release();
     return 0;
