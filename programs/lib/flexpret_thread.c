@@ -159,8 +159,10 @@ int tmode_set(uint32_t hartid, tmode_t val) {
  */
 int tmode_active(uint32_t hartid) {
     uint32_t tmode = tmode_get(hartid);
-    if (tmode == TMODE_HZ || tmode == TMODE_HA) tmode_set(hartid, TMODE_HA);
-    else if (tmode == TMODE_SZ || tmode == TMODE_SA) tmode_set(hartid, TMODE_SA);
+    if (tmode == TMODE_HZ || tmode == TMODE_HA)
+        tmode_set(hartid, TMODE_HA);
+    else if (tmode == TMODE_SZ || tmode == TMODE_SA)
+        tmode_set(hartid, TMODE_SA);
     else return 1;
     return 0;
 }
@@ -176,21 +178,26 @@ int tmode_active(uint32_t hartid) {
  */
 int tmode_sleep(uint32_t hartid) {
     uint32_t tmode = tmode_get(hartid);
-    if (tmode == TMODE_HA || tmode == TMODE_HZ) tmode_set(hartid, TMODE_HZ);
-    else if (tmode == TMODE_SA || tmode == TMODE_SZ) tmode_set(hartid, TMODE_SZ);
+    if (tmode == TMODE_HA || tmode == TMODE_HZ)
+        tmode_set(hartid, TMODE_HZ);
+    else if (tmode == TMODE_SA || tmode == TMODE_SZ)
+        tmode_set(hartid, TMODE_SZ);
     else return 1;
     return 0;
 }
 
 /* Variables that keep track of the status of threads */
 
-static void*   (*routines[NUM_THREADS])(void *); // An array of function pointers
+// An array of function pointers
+static void*   (*routines[NUM_THREADS])(void *);
 static void**  args[NUM_THREADS];
 static void**  exit_code[NUM_THREADS];
-static bool    in_use[NUM_THREADS]; // Whether a thread is currently executing a routine.
+// Whether a thread is currently executing a routine.
+static bool    in_use[NUM_THREADS];
 static jmp_buf envs[NUM_THREADS];
 static bool    cancel_requested[NUM_THREADS];
-       bool    exit_requested[NUM_THREADS]; // Accessed in startup.c
+// Accessed in startup.c
+bool           exit_requested[NUM_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
@@ -225,10 +232,10 @@ int thread_create(
             routines[i] = start_routine;
             args[i] = arg;
             num_threads_busy += 1;
-            in_use[i] = true; // Signal the worker thread to do work.
-            // Wake up the thread.
-            // if (is_hrtt) tmode_set(i, TMODE_HA);
-            // else tmode_set(i, TMODE_SA);
+            // Signal the worker thread to do work.
+            in_use[i] = true;
+            // FIXME: If the thread is asleep,
+            // wake up the thread.
             hwlock_release();
             return 0;
         }
@@ -254,10 +261,10 @@ int thread_map(
         routines[*hartid] = start_routine;
         args[*hartid] = arg;
         num_threads_busy += 1;
-        in_use[*hartid] = true; // Signal the worker thread to do work.
-        // Wake up the thread.
-        // if (is_hrtt) tmode_set(*hartid, TMODE_HA);
-        // else tmode_set(*hartid, TMODE_SA);
+        // Signal the worker thread to do work.
+        in_use[*hartid] = true;
+        // FIXME: If the thread is asleep,
+        // wake up the thread.
         hwlock_release();
         return 0;
     }
@@ -275,8 +282,7 @@ int thread_join(thread_t hartid, void **retval) {
     // FIXME: To avoid losing lots of cycles,
     // a worker thread should put itself to sleep.
     // Put the thread to sleep.
-    // tmode_sleep(hartid);
-    // FIXME: Should we make idle thread SRTT?
+    // FIXME: Should we make an idle thread an SRTT?
     hwlock_release();
     return 0;
 }
@@ -344,13 +350,16 @@ void worker_main() {
     }
 
     while(!exit_requested[hartid]) {
+        // FIXME:
         // It is hard for a thread to put
         // itself to sleep, because calling
-        // tmode_set(hartid, TMODE_HZ);
+        // tmode_set_hrtt();
         // requires a thread to grab the lock.
         // But as soon as the thread sleeps,
         // the lock will not be freed.
-        // So it's the best if thread 0 can do it.
+        // So for now it's the best if
+        // thread 0 does it. Maybe
+        // the hardware should change.
 
         if (in_use[hartid]) {            
             // Execute the routine with the argument passed in.
