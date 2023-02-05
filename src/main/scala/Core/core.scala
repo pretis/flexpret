@@ -107,6 +107,7 @@ case class FlexpretConfiguration(
   // GPIO
   val gpiPortSizes  = List(1, 1, 1, 1)
   val gpoPortSizes  = List(2, 2, 2, 2)
+
   val initialGpo    = List(
     MEMP_T0, MEMP_SH, MEMP_SH, MEMP_SH
   )
@@ -142,6 +143,33 @@ case class FlexpretConfiguration(
       (if (interruptExpire) List(Causes.ee, Causes.ie) else Nil) ++
       (if (externalInterrupt) List(Causes.external_int) else Nil)
 
+
+  def generateCoreConfigHeader(): String = {
+    val schedulerDefine = if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN" 
+    return s"""
+/**
+  * This flexpret core config file is auto-generated, and based on the 
+  * configuration used to build the flexpret emulator.
+  * 
+  * Do not edit.
+  *
+  */
+#ifndef FLEXPRET_CONFIG_H
+#define FLEXPRET_CONFIG_H
+
+#define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
+#define ISPM_SIZE_KB ${imemConfig.sizeKB}
+#define DSPM_SIZE_KB ${dMemKB}
+#define NUMBER_OF_THREADS ${threads}
+#define CLOCK_PERIOD_NS ${timeInc}
+#define NUM_GPIS ${gpiPortSizes.size}
+#define NUM_GPOS ${gpoPortSizes.size}
+
+#define BUS_ADDR_BITS ${busAddrBits}
+
+#endif
+    """
+  }
 }
 
 class InstMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
