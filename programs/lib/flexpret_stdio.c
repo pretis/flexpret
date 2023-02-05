@@ -26,11 +26,10 @@ void print_int(int val) {
 }
 
 
-    void print_str(const char *mapsstr[]) {
+    void print_str(const char *str) {
     lock_acquire(&lock);
     while (*str != '\0') {
-        // ip_uart_tx_send(&uart, *str);
-        _fp_print(*str);
+        ip_uart_tx_send(&uart, *str);
         str++;
     }
     lock_release(&lock);
