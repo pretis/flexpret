@@ -14,6 +14,10 @@
 #define NOC_TX_READY(val) (val & 0x01)
 #define NOC_DATA_AVAILABLE(val) (val & 0x02)
 
+// Return values
+#define SUCCESS 1
+#define FAILIURE 0
+
 /** Send a word over the NoC.
  * Depending on the value of the timeout, the function will exhibit a different behavior:
  *  * Blocking send is performed if timeout value is UNIT32_MAX,
@@ -25,22 +29,22 @@
  *  * data: The data value to send
  *  * timeout: the timeout in ns
  * Returns:
- *  * int: 1, if sending is successful, 0 otherwise
+ *  * int: SUCCESS, if sending is successful, FAILIURE otherwise
  **/
 static int noc_send(uint32_t addr, uint32_t data, uint32_t timeout) {
     if (timeout == UINT32_MAX) {
         while (!NOC_TX_READY(NOC_CSR));
         NOC_DEST = addr;
         NOC_DATA = data;
-        return 1;
+        return SUCCESS;
     }
     if (timeout == 0) {
         if (NOC_TX_READY(NOC_CSR)) {
             NOC_DEST = addr;
             NOC_DATA = data;
-            return 1;
+            return SUCCESS;
         } else {
-            return 0;
+            return FAILIURE;
         }
     }
     uint32_t time = rdtime() + timeout;
@@ -48,10 +52,10 @@ static int noc_send(uint32_t addr, uint32_t data, uint32_t timeout) {
         if (NOC_TX_READY(NOC_CSR)) {
             NOC_DEST = addr;
             NOC_DATA = data;
-            return 1;
+            return SUCCESS;
         }
     }
-    return 0;
+    return FAILIURE;
 }
 
 
@@ -62,9 +66,8 @@ static void noc_send_arr(uint32_t addr, uint32_t *data, int length) {
     
 }
 
-
 /** Receive a word over the NoC.
- * Depending on the value of the timeout, the function will exhibit a different 
+ * Depending on the value of the timeout, the function will exhibit a different
  * behavior:
  *  * Blocking receive is performed if timeout value is UNIT32_MAX,
  *  * Non blocking receive is performed if the timeout value is 0,
@@ -72,25 +75,29 @@ static void noc_send_arr(uint32_t addr, uint32_t *data, int length) {
  *
  * Args:
  *  * timeout: the timeout in ns
+ *  * data: pointer to where the data will be written, if any
  * Returns:
- *  * uint32_t: the received data, 0 otherwise
+ *  * int: SUCCESS, if sending is successful, FAILIURE otherwise
  **/
-static uint32_t noc_receive(uint32_t timeout) {
+static uint32_t noc_receive(uint32_t timeout, uint32_t* data) {
     if (timeout == UINT32_MAX) {
         while (!NOC_DATA_AVAILABLE(NOC_CSR));
-        return NOC_DATA;
+        *data = NOC_DATA;
+        return SUCCESS;
     }
     if (timeout == 0) {
         if (NOC_DATA_AVAILABLE(NOC_CSR))
-            return NOC_DATA;
-        return 0;
+            *data = NOC_DATA;
+            return SUCCESS;
+        return FAILIURE;
     }
     uint32_t time = rdtime() + timeout;
     while (rdtime() < time) {
         if (NOC_DATA_AVAILABLE(NOC_CSR))
-            return NOC_DATA;
+            *data = NOC_DATA;
+            return SUCCESS;
     }
-    return 0;
+    return FAILIURE;
 }
 
 #endif

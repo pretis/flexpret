@@ -81,17 +81,17 @@ void sdd_uart_tx_run(sdd_uart_config_t *uart) {
         // FIXME: All data that is received from the core is printed. AND
         //  we can only receive some data at the time.
         if(NOC_DATA_AVAILABLE(NOC_CSR)) {
-            length = noc_receive();
+            noc_receive(UINT32_MAX, &length);
             assert(length<256);
             int src = NOC_SOURCE;
-            noc_send(src, 1); // ACK
+            noc_send(src, 1, UINT32_MAX); // ACK
             int word_length = length/4;
             if (length % 4) {
                 word_length++;
             }
 
             for (int i=0; i<word_length; i++) {
-                recv_buffer[i] = noc_receive();
+                noc_receive(UINT32_MAX, &recv_buffer[i]);
             }
 
             uint8_t * rx_data = (uint8_t *) &recv_buffer[0];
