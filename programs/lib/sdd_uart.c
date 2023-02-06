@@ -8,13 +8,13 @@
 #include "tinyalloc/tinyalloc.h"
 
 #include <stdbool.h>
-#include <ip_uart.h>
+#include <sdd_uart.h>
 
 #define BILLION 1000000000UL
 #define READ_LATENCY 300*CLOCK_PERIOD_NS
 
 
-void ip_uart_tx_byte(ip_uart_config_t *uart, char byte) {
+void sdd_uart_tx_byte(sdd_uart_config_t *uart, char byte) {
     // Start bit
     unsigned int next_event = rdtime();
     gpo_clear(uart->port, uart->_mask);
@@ -37,7 +37,7 @@ void ip_uart_tx_byte(ip_uart_config_t *uart, char byte) {
 }
 
 
-void ip_uart_tx_run(ip_uart_config_t *uart) {
+void sdd_uart_tx_run(sdd_uart_config_t *uart) {
     // Calculate nsec per bit
     uart->_ns_per_bit = BILLION/uart->baud;
 
@@ -71,7 +71,7 @@ void ip_uart_tx_run(ip_uart_config_t *uart) {
             received = 0;
             while (received < length) {
                 if(cbuf_get(uart->_cbuf, &tx_byte) == 0) {
-                    ip_uart_tx_byte(uart, (char) tx_byte);
+                    sdd_uart_tx_byte(uart, (char) tx_byte);
                     received++;
                 }
             }   
@@ -96,7 +96,7 @@ void ip_uart_tx_run(ip_uart_config_t *uart) {
 
             uint8_t * rx_data = (uint8_t *) &recv_buffer[0];
             for (int i=0; i<length; i++) {
-                ip_uart_tx_byte(uart, (char) *rx_data);
+                sdd_uart_tx_byte(uart, (char) *rx_data);
                 rx_data++;
             }
         }
@@ -105,7 +105,7 @@ void ip_uart_tx_run(ip_uart_config_t *uart) {
 
 
 // FIXME: uart_config should be const?
-void ip_uart_tx_send(ip_uart_config_t *uart, char *byte, size_t len) {
+void sdd_uart_tx_send(sdd_uart_config_t *uart, char *byte, size_t len) {
     assert(len<256);
     while(cbuf_put_reject(uart->_cbuf, (uint8_t) len) != 0) {}
     for (int i=0; i<len; i++) {
