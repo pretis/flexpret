@@ -1,7 +1,7 @@
 #include <flexpret_stdio.h>
 #include <flexpret_io.h>
 #include <flexpret_lock.h>
-#include <ip_uart.h>
+#include <sdd_uart.h>
 
 #define STDIO_UART_PIN 0
 #define STDIO_UART_BAUD 115200
@@ -13,7 +13,7 @@ lock_t lock = {.locked = false};
 
 void print_str(const char *str) {
     lock_acquire(&lock);
-    ip_uart_config_t uart;
+    sdd_uart_config_t uart;
     uart.baud = STDIO_UART_BAUD;
     uart.pin = 0;
     uart.port = 1;
@@ -22,7 +22,7 @@ void print_str(const char *str) {
     gpo_set(STDIO_UART_PORT, uart._mask);
 
     while (*str != '\0') {
-        ip_uart_tx_byte(&uart, *str);
+        sdd_uart_tx_byte(&uart, *str);
         str++;
     }
 
@@ -32,7 +32,7 @@ void print_str(const char *str) {
 
 void print_int(int val) {
     lock_acquire(&lock);
-    ip_uart_config_t uart;
+    sdd_uart_config_t uart;
     uart.baud = STDIO_UART_BAUD;
     uart.pin = 0;
     uart.port = 1;
@@ -53,7 +53,7 @@ void print_int(int val) {
     }
 
     for (int i=n_digits-1; i>=0; i--) {
-        ip_uart_tx_byte(&uart, buf[i]);
+        sdd_uart_tx_byte(&uart, buf[i]);
     }
     gpo_set(STDIO_UART_PORT, uart._mask);
     lock_release(&lock);

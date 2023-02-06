@@ -2,21 +2,21 @@
 #include <flexpret_lock.h>
 #include <flexpret_noc.h>
 
-#include <ip_uart.h>
+#include <sdd_uart.h>
 
 #define STDIO_UART_PIN 0
 #define STDIO_UART_BAUD 115200
 #define STDIO_UART_PORT 1
 #define STDIO_MAX_DIGITS 32
 
-ip_uart_config_t uart = {.initialized = false};
+sdd_uart_config_t uart = {.initialized = false};
 
 void fp_printer_run() {
     uart.pin = STDIO_UART_PIN;
     uart.baud = STDIO_UART_BAUD;
     uart.port = STDIO_UART_PORT;
     uart.buf_size = 8;
-    ip_uart_tx_run(&uart);
+    sdd_uart_tx_run(&uart);
 }
 
 void fp_printer_int(int val) {
@@ -33,7 +33,7 @@ void fp_printer_int(int val) {
     }
 
     lock_acquire(&uart._lock);
-    ip_uart_tx_send(&uart, &buf[0], n_digits);
+    sdd_uart_tx_send(&uart, &buf[0], n_digits);
     lock_release(&uart._lock);
 }
 
@@ -57,7 +57,7 @@ void fp_printer_str(const char *str) {
 
     if (read_coreid() == 0) {
         lock_acquire(&uart._lock);
-        ip_uart_tx_send(&uart, (char *) str, length);
+        sdd_uart_tx_send(&uart, (char *) str, length);
         lock_release(&uart._lock);
     } else {
         _fp_print(44);
