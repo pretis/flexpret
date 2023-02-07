@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <flexpret_csrs.h>
+#include <flexpret_types.h>
 
 #define NOC_BASE 0x40000020UL
 #define NOC_CSR (*( (volatile uint32_t *) (NOC_BASE + 0x0UL)))
@@ -14,90 +15,95 @@
 #define NOC_TX_READY(val) (val & 0x01)
 #define NOC_DATA_AVAILABLE(val) (val & 0x02)
 
-// Return values
-#define SUCCESS 1
-#define FAILIURE 0
-
-/** Send a word over the NoC.
- * Depending on the value of the timeout, the function will exhibit a different behavior:
- *  * Blocking send is performed if timeout value is UNIT32_MAX,
- *  * Non blocking send is performed if the timeout value is 0,
+/**
+ * @brief Send a word over the NoC. Depending on the value of the timeout, the 
+ * function will exhibit a different behavior:
+ *  * Blocking send is performed if timeout value is TIMEOUT_FOREVER,
+ *  * Non blocking send is performed if the timeout value is TIMEOUT_NEVER,
  *  * And send within the given timeout, otherwise.
  *
- * Args:
- *  * addr: id of the core to send to
- *  * data: The data value to send
- *  * timeout: the timeout in ns
- * Returns:
- *  * int: SUCCESS, if sending is successful, FAILIURE otherwise
+ * @param addr: id of the core to send to
+ * @param data: The data value to send
+ * @param timeout: the timeout in ns
+ *
+ * @return fp_ret_t: FP_SUCCESS, if sending is successful, FP_FAILIURE otherwise
  **/
-static int noc_send(uint32_t addr, uint32_t data, uint32_t timeout) {
-    if (timeout == UINT32_MAX) {
+static fp_ret_t noc_send(uint32_t addr, uint32_t data, timeout_t timeout) {
+    if (timeout == TIMEOUT_FOREVER) {
         while (!NOC_TX_READY(NOC_CSR));
         NOC_DEST = addr;
         NOC_DATA = data;
-        return SUCCESS;
+        return FP_SUCCESS;
     }
-    if (timeout == 0) {
+    if (timeout == TIMEOUT_NEVER) {
         if (NOC_TX_READY(NOC_CSR)) {
             NOC_DEST = addr;
             NOC_DATA = data;
-            return SUCCESS;
+            return FP_SUCCESS;
         } else {
-            return FAILIURE;
+            return FP_FAILIURE;
         }
     }
-    uint32_t time = rdtime() + timeout;
+    timeout_t time = rdtime() + timeout;
     while (rdtime() < time) {
         if (NOC_TX_READY(NOC_CSR)) {
             NOC_DEST = addr;
             NOC_DATA = data;
-            return SUCCESS;
+            return FP_SUCCESS;
         }
     }
-    return FAILIURE;
+    return FP_FAILIURE;
 }
 
-
-// Send array, blocking
-static void noc_send_arr(uint32_t addr, uint32_t *data, int length) {
+/**
+ * @brief Blocking send of an array of words over the NoC. 
+ *
+ * @param addr: id of the core to send to
+ * @param data: pointer to start of the array 
+ * @param length: length of the array 
+ *
+ * @return fp_ret_t: FP_SUCCESS, if sending is successful
+ **/
+static fp_ret_t noc_send_arr(uint32_t addr, uint32_t *data, int length) {
     for (int i = 0; i < length; i++)
-        noc_send(addr, data[i], UINT32_MAX);
-    
+        noc_send(addr, data[i], TIMEOUT_FOREVER);
+    return FP_SUCCESS;
 }
 
-/** Receive a word over the NoC.
- * Depending on the value of the timeout, the function will exhibit a different
- * behavior:
- *  * Blocking receive is performed if timeout value is UNIT32_MAX,
- *  * Non blocking receive is performed if the timeout value is 0,
+/**
+ * Receive a word over the NoC. Depending on the value of the timeout, the function
+ * will exhibit a different behavior:
+ *  * Blocking receive is performed if timeout value is TIMEOUT_FOREVER,
+ *  * Non blocking receive is performed if the timeout value is TIMEOUT_NEVER,
  *  * And receive within the given timeout, otherwise.
  *
- * Args:
- *  * timeout: the timeout in ns
- *  * data: pointer to where the data will be written, if any
- * Returns:
- *  * int: SUCCESS, if sending is successful, FAILIURE otherwise
+ * @param data: pointer to where the data will be written, if any
+ * @param timeout: the timeout in ns
+ * FIXME: Should the data type be passed as well?
+ *
+ * @return fp_ret_t: FP_SUCCESS, if sending is successful, FP_FAILIURE otherwise
  **/
-static uint32_t noc_receive(uint32_t timeout, uint32_t* data) {
-    if (timeout == UINT32_MAX) {
+static fp_ret_t noc_receive(uint32_t* data, timeout_t timeout) {
+    if (timeout == TIMEOUT_FOREVER) {
         while (!NOC_DATA_AVAILABLE(NOC_CSR));
         *data = NOC_DATA;
-        return SUCCESS;
+        return FP_SUCCESS;
     }
-    if (timeout == 0) {
-        if (NOC_DATA_AVAILABLE(NOC_CSR))
+    if (timeout == TIMEOUT_NEVER) {
+        if (NOC_DATA_AVAILABLE(NOC_CSR)) {
             *data = NOC_DATA;
-            return SUCCESS;
-        return FAILIURE;
+            return FP_SUCCESS;
+        }
+        return FP_FAILIURE;
     }
     uint32_t time = rdtime() + timeout;
     while (rdtime() < time) {
-        if (NOC_DATA_AVAILABLE(NOC_CSR))
+        if (NOC_DATA_AVAILABLE(NOC_CSR)) {
             *data = NOC_DATA;
-            return SUCCESS;
+            return FP_SUCCESS;
+        }
     }
-    return FAILIURE;
+    return FP_FAILIURE;
 }
 
 #endif
