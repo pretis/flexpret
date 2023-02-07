@@ -103,7 +103,7 @@ static fp_ret_t noc_receive(uint32_t* data, timeout_t timeout) {
             return FP_SUCCESS;
         }
     }
-    return FP_FAILIURE;
+    return FP_FAILURE;
 }
 
 #endif
