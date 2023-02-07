@@ -10,6 +10,6 @@ int main() {
 
     // Send values to listener
     for (int i = 0; i<10; i++) {
-        noc_send(2, send_values[i]);
+        noc_send(2, send_values[i], TIMEOUT_FOREVER);
     }
 }

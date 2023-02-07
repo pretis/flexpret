@@ -61,8 +61,9 @@ void fp_printer_str(const char *str) {
         lock_release(&uart._lock);
     } else {
         _fp_print(44);
-        noc_send(0, length);
-        uint32_t ack = noc_receive();
+        noc_send(0, length, TIMEOUT_FOREVER);
+        uint32_t ack;
+        noc_receive(&ack, TIMEOUT_FOREVER);
         assert(ack == 1);
         _fp_print(length_words);
         noc_send_arr(0, (uint32_t *) str, length_words);

@@ -6,7 +6,7 @@ int main() {
     _fp_print(43);
     uint32_t read;
     for (int i=0; i<10; i++) {
-        read = noc_receive();
+        noc_receive(&read, TIMEOUT_FOREVER);
         _fp_print(read);
     }
 }
