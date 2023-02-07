@@ -94,7 +94,7 @@ static fp_ret_t noc_receive(uint32_t* data, timeout_t timeout) {
             *data = NOC_DATA;
             return FP_SUCCESS;
         }
-        return FP_FAILIURE;
+        return FP_FAILURE;
     }
     uint32_t time = rdtime() + timeout;
     while (rdtime() < time) {
