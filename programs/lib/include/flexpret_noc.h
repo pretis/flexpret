@@ -41,7 +41,7 @@ static fp_ret_t noc_send(uint32_t addr, uint32_t data, timeout_t timeout) {
             NOC_DATA = data;
             return FP_SUCCESS;
         } else {
-            return FP_FAILIURE;
+            return FP_FAILURE;
         }
     }
     timeout_t time = rdtime() + timeout;
