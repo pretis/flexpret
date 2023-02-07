@@ -9,7 +9,7 @@ typedef uint32_t timeout_t;
 // Return types
 typedef enum {
     FP_SUCCESS = 0,
-    FP_FAILIURE = 1,
+    FP_FAILURE = 1,
     FP_TIMEOUT = 2,
     FP_OUT_OF_MEMORY = 3
 } fp_ret_t;
