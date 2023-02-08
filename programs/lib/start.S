@@ -18,9 +18,9 @@
 .macro setStackPointer
     /* Give each thread 1KB of stack. */
 
-    // 0x4000 = 16KiB = DSPM size
-    // 0x20004000 is the maximum DSPM address.
-    li sp, 0x20004000
+    // 0x4000 = 24KiB = DSPM size
+    // 0x20006000 is the maximum DSPM address.
+    li sp, 0x20006000
     
     // Calculate how much to subtract
     // from the max address based on
