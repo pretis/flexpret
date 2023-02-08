@@ -20,7 +20,6 @@ void print_str(const char *str) {
     uart._mask = (1 << STDIO_UART_PIN);
     uart._ns_per_bit = BILLION / STDIO_UART_BAUD;
     gpo_set(STDIO_UART_PORT, uart._mask);
-
     while (*str != '\0') {
         sdd_uart_tx_byte(&uart, *str);
         str++;
@@ -55,6 +54,8 @@ void print_int(int val) {
     for (int i=n_digits-1; i>=0; i--) {
         sdd_uart_tx_byte(&uart, buf[i]);
     }
+    // Print newline
+    sdd_uart_tx_byte(&uart, '\n');
     gpo_set(STDIO_UART_PORT, uart._mask);
     lock_release(&lock);
 }

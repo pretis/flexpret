@@ -83,7 +83,6 @@ void free(void *ptr) {
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
-    _fp_print(hartid);
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {
@@ -114,6 +113,7 @@ void Reset_Handler() {
     while (1);
 }
 #else
+lock_t _lock = LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
