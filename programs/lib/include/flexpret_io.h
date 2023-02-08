@@ -82,10 +82,10 @@ static inline uint32_t gpo_read(uint32_t port) {
 // CSR_GPI_*
 static inline uint32_t gpi_read(uint32_t port) {
   switch(port) {
-    case 0: return read_csr(CSR_UARCH4); break;
-    case 1: return read_csr(CSR_UARCH5); break;
-    case 2: return read_csr(CSR_UARCH6); break;
-    case 3: return read_csr(CSR_UARCH7); break;
+    case 0: return read_csr(CSR_UARCH0); break;
+    case 1: return read_csr(CSR_UARCH1); break;
+    case 2: return read_csr(CSR_UARCH2); break;
+    case 3: return read_csr(CSR_UARCH3); break;
     default: _fp_abort();
   }
 }
