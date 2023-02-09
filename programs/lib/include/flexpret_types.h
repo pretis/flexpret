@@ -1,3 +1,6 @@
+#ifndef LF_TYPES_H
+#define LF_TYPES_H
+
 #include <stdint.h>
 
 typedef uint32_t timeout_t;
@@ -14,4 +17,4 @@ typedef enum {
     FP_OUT_OF_MEMORY = 3
 } fp_ret_t;
 
-
+#endif

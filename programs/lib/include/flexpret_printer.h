@@ -1,7 +1,13 @@
-#ifndef FLEXPRET_STDIO_H
-#define FLEXPRET_STDIO_H
+#ifndef FLEXPRET_PRINTER_H
+#define FLEXPRET_PRINTER_H
 
-void fp_printer_run();
+typedef struct {
+    int port;
+    int pin;
+    int baudrate;
+} fp_printer_config_t;
+
+void fp_printer_run(fp_printer_config_t *cfg);
 
 void fp_printer_int(int val);
 

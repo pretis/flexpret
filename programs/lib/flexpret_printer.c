@@ -1,3 +1,4 @@
+#include <flexpret_printer.h>
 #include <flexpret_stdio.h>
 #include <flexpret_lock.h>
 #include <flexpret_noc.h>
@@ -9,12 +10,13 @@
 #define STDIO_UART_PORT 1
 #define STDIO_MAX_DIGITS 32
 
-sdd_uart_config_t uart = {.initialized = false};
 
-void fp_printer_run() {
-    uart.pin = STDIO_UART_PIN;
-    uart.baud = STDIO_UART_BAUD;
-    uart.port = STDIO_UART_PORT;
+static sdd_uart_config_t uart = {.initialized = false};
+
+void fp_printer_run(fp_printer_config_t *cfg) {
+    uart.pin = cfg->pin;
+    uart.baud = cfg->baudrate;
+    uart.port = cfg->port;
     uart.buf_size = 8;
     sdd_uart_tx_run(&uart);
 }

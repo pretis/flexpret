@@ -5,7 +5,7 @@
 
 #define STDIO_UART_PIN 0
 #define STDIO_UART_BAUD 115200
-#define STDIO_UART_PORT 1
+#define STDIO_UART_PORT_WRITE_FUNC &gpo_write_1
 #define STDIO_MAX_DIGITS 32
 #define BILLION 1000000000UL
 
@@ -19,13 +19,15 @@ void print_str(const char *str) {
     uart.port = 1;
     uart._mask = (1 << STDIO_UART_PIN);
     uart._ns_per_bit = BILLION / STDIO_UART_BAUD;
-    gpo_set(STDIO_UART_PORT, uart._mask);
+    uart._write_func = STDIO_UART_PORT_WRITE_FUNC;
+
+    uart._write_func(uart._mask);
     while (*str != '\0') {
-        sdd_uart_tx_byte(&uart, *str);
+        _sdd_uart_tx_byte(&uart, *str);
         str++;
     }
 
-    gpo_set(STDIO_UART_PORT, uart._mask);
+    uart._write_func(uart._mask);
     lock_release(&lock);
 }
 
@@ -37,7 +39,9 @@ void print_int(int val) {
     uart.port = 1;
     uart._mask = (1 << STDIO_UART_PIN);
     uart._ns_per_bit = BILLION / STDIO_UART_BAUD;
-    gpo_set(STDIO_UART_PORT, uart._mask);
+    uart._write_func = STDIO_UART_PORT_WRITE_FUNC;
+
+    uart._write_func(uart._mask);
 
     char buf[32];
     int n_digits=0;
@@ -52,10 +56,10 @@ void print_int(int val) {
     }
 
     for (int i=n_digits-1; i>=0; i--) {
-        sdd_uart_tx_byte(&uart, buf[i]);
+        _sdd_uart_tx_byte(&uart, buf[i]);
     }
     // Print newline
-    sdd_uart_tx_byte(&uart, '\n');
-    gpo_set(STDIO_UART_PORT, uart._mask);
+    _sdd_uart_tx_byte(&uart, '\n');
+    uart._write_func(uart._mask);
     lock_release(&lock);
 }

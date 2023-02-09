@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <flexpret_assert.h>
 #include <flexpret_csrs.h>
+#include <flexpret_types.h>
 
 
 // Write a generic value to the tohost CSR
@@ -35,7 +36,12 @@ static inline void _fp_abort() {
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*
 // Write all GPO bits
-// FIXME: Consider using the concept of a port. E.g. void gpo_write(unsigned in port, unsigned int val)
+
+
+static inline void gpo_write_1(uint32_t val) {
+  write_csr(CSR_UARCH5, val);
+}
+
 static inline void gpo_write(uint32_t port, uint32_t val) {
   switch(port) {
     case 0: write_csr(CSR_UARCH4, val); break;
@@ -75,6 +81,11 @@ static inline uint32_t gpo_read(uint32_t port) {
     case 3: return read_csr(CSR_UARCH7); break;
     default: _fp_abort();
   }
+}
+
+// FIXME: Write the remaining gpi_read functions
+static inline uint32_t gpi_read_1() {
+  return read_csr(CSR_UARCH1);
 }
 
 // GPI ports, if port width < 32, then upper bits are zero
