@@ -5,9 +5,6 @@
 
 #include <sdd_uart.h>
 
-#define STDIO_UART_PIN 0
-#define STDIO_UART_BAUD 115200
-#define STDIO_UART_PORT 1
 #define STDIO_MAX_DIGITS 32
 
 
