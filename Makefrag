@@ -1,0 +1,43 @@
+# FLEXPRET_ROOT_DIR and NAME must be defined
+
+LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
+LINKER_SCRIPT := $(LIB_DIR)/linker/flexpret.ld
+CC := riscv32-unknown-elf-gcc
+OBJDUMP := riscv32-unknown-elf-objdump
+OBJCOPY := riscv32-unknown-elf-objcopy
+EMU := $(FLEXPRET_ROOT_DIR)/emulator/fp-emu
+
+NUM_THREADS ?= 1 # default number of threads
+
+.PHONY: compile riscv dump mem run clean
+
+compile: riscv dump mem
+
+riscv: $(NAME).riscv
+%.riscv: *.c
+	$(CC) -I$(LIB_DIR)/include -T $(LINKER_SCRIPT) -Xlinker -Map=output.map \
+     -DNUM_THREADS=$(NUM_THREADS) -g -static -O0 -march=rv32i -mabi=ilp32 \
+     -nostartfiles --specs=nosys.specs -o $*.riscv $(LIB_DIR)/start.S \
+     $(LIB_DIR)/syscalls.c $(LIB_DIR)/tinyalloc/tinyalloc.c $(LIB_DIR)/startup.c \
+     $(LIB_DIR)/flexpret_thread.c $(LIB_DIR)/flexpret_lock.c *.c
+
+
+dump: $(NAME).dump
+%.dump: %.riscv
+	$(OBJDUMP) -S -d $*.riscv > $*.dump
+
+
+mem: $(NAME).mem
+%.mem: %.riscv
+	$(OBJCOPY) -O binary $*.riscv $*.binary.txt
+	xxd -c 4 -e $*.binary.txt | cut -c11-18 > $*.mem
+	xxd -c 4 -e $*.binary.txt > $*.mem.orig
+	rm $*.binary.txt
+
+
+run: $(NAME).mem
+	$(EMU) +ispm=$^;
+
+
+clean:
+	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig
