@@ -52,6 +52,11 @@ static inline void gpo_write(uint32_t port, uint32_t val) {
   }
 }
 
+static inline void gpo_write_0(uint32_t val) { write_csr(CSR_UARCH4, val); }
+static inline void gpo_write_1(uint32_t val) { write_csr(CSR_UARCH5, val); }
+static inline void gpo_write_2(uint32_t val) { write_csr(CSR_UARCH6, val); }
+static inline void gpo_write_3(uint32_t val) { write_csr(CSR_UARCH7, val); }
+
 static inline void gpo_set(uint32_t port, uint32_t mask) {
   switch(port) {
     case 0: set_csr(CSR_UARCH4, mask); break;
@@ -61,6 +66,11 @@ static inline void gpo_set(uint32_t port, uint32_t mask) {
     default: _fp_abort();
   }
 }
+
+static inline void gpo_set_0(uint32_t mask) { set_csr(CSR_UARCH4, mask); }
+static inline void gpo_set_1(uint32_t mask) { set_csr(CSR_UARCH5, mask); }
+static inline void gpo_set_2(uint32_t mask) { set_csr(CSR_UARCH6, mask); }
+static inline void gpo_set_3(uint32_t mask) { set_csr(CSR_UARCH7, mask); }
 
 // For each '1' bit in mask, set corresponding GPO bit to '0'
 static inline void gpo_clear(uint32_t port, uint32_t mask) {
@@ -73,6 +83,11 @@ static inline void gpo_clear(uint32_t port, uint32_t mask) {
   }
 }
 
+static inline void gpo_clear_0(uint32_t mask) { clear_csr(CSR_UARCH4, mask); }
+static inline void gpo_clear_1(uint32_t mask) { clear_csr(CSR_UARCH5, mask); }
+static inline void gpo_clear_2(uint32_t mask) { clear_csr(CSR_UARCH6, mask); }
+static inline void gpo_clear_3(uint32_t mask) { clear_csr(CSR_UARCH7, mask); }
+
 static inline uint32_t gpo_read(uint32_t port) {
   switch(port) {
     case 0: return read_csr(CSR_UARCH4); break;
@@ -83,10 +98,10 @@ static inline uint32_t gpo_read(uint32_t port) {
   }
 }
 
-// FIXME: Write the remaining gpi_read functions
-static inline uint32_t gpi_read_1() {
-  return read_csr(CSR_UARCH1);
-}
+static inline uint32_t gpo_read_0() { return read_csr(CSR_UARCH4); }
+static inline uint32_t gpo_read_1() { return read_csr(CSR_UARCH5); }
+static inline uint32_t gpo_read_2() { return read_csr(CSR_UARCH6); }
+static inline uint32_t gpo_read_3() { return read_csr(CSR_UARCH7); }
 
 // GPI ports, if port width < 32, then upper bits are zero
 // Read GPI bits
@@ -100,6 +115,11 @@ static inline uint32_t gpi_read(uint32_t port) {
     default: _fp_abort();
   }
 }
+
+static inline uint32_t gpi_read_0() { return read_csr(CSR_UARCH0); }
+static inline uint32_t gpi_read_1() { return read_csr(CSR_UARCH1); }
+static inline uint32_t gpi_read_2() { return read_csr(CSR_UARCH2); }
+static inline uint32_t gpi_read_3() { return read_csr(CSR_UARCH3); }
 
 
 #endif // FLEXPRET_IO_H

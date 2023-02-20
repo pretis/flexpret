@@ -23,7 +23,6 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        // FIXME: Panic
         assert(false);
         return 1;
     }

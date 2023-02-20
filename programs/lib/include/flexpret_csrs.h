@@ -93,7 +93,6 @@
 
 #define read_coreid() read_csr(CSR_COREID)
 
-// Read the current hardware thread id (hartid)
-static inline uint32_t read_hartid() { return read_csr(CSR_HARTID); }
+#define read_hartid() read_csr(CSR_HARTID)
 
 #endif // FLEXPRET_CSRS_H

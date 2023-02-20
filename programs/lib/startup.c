@@ -17,12 +17,8 @@
 #include "tinyalloc/tinyalloc.h" // Only include tinyalloc in applications, not bootloader
 #endif
 
-// Memory map
-// 0x20000000 -> 0x20001000 (4KB) Bootloader DMEM
-// 0x20001000 -> 0x20005000 (16KB) App DMEM
-// 0x20005000 -> 0x20006000 (4KB) Thread stacks (1KB each)
-#define DSPM_LIMIT          ((void*)0x20005000) // 0x20005000 is where the stacks start
-#define TA_MAX_HEAP_BLOCK   256
+#define DSPM_LIMIT          ((void*)0x20040000) // 0x40000 = 256K
+#define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
 /* Linker */

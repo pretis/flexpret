@@ -137,7 +137,7 @@ case class FlexpretConfiguration(
 
   // functionality
   val timeBits      = 32
-  val timeInc       = 20
+  val timeInc       = 10
   require(timeBits <= 32)
   val getTime       = delayUntil || interruptExpire
   val hwLock        = true
@@ -250,5 +250,4 @@ class Core(val confIn: FlexpretConfiguration) extends Module {
     datapath.io.int_exts(tid) := io.int_exts(tid)
   }
   //io.int_exts <> datapath.io.int_exts
-
 }

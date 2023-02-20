@@ -233,8 +233,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       data_out := reg_epcs(io.rw.thread)
     }
     when(compare_addr(CSRs.cause)) {
-      // data_out := Cat(reg_causes(io.rw.thread)(CAUSE_WI - 1), 0.U((32 - CAUSE_WI).W), reg_causes(io.rw.thread)(CAUSE_WI - 2, 0))
-      data_out := reg_causes(io.rw.thread)
+      data_out := Cat(reg_causes(io.rw.thread)(CAUSE_WI - 1), 0.U((32 - CAUSE_WI).W), reg_causes(io.rw.thread)(CAUSE_WI - 2, 0))
     }
     when(compare_addr(CSRs.sup0)) {
       data_out := reg_sup0(io.rw.thread)

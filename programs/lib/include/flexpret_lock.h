@@ -16,7 +16,7 @@ typedef struct {
  * Acquire a hardware lock.
  */
 static inline void hwlock_acquire() {
-    while(swap_csr(CSR_HWLOCK, 1) == 0) {}
+    while(swap_csr(CSR_HWLOCK, 1) == 0);
 }
 
 /**

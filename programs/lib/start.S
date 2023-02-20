@@ -16,16 +16,16 @@
 .endm
 
 .macro setStackPointer
-    /* Give each thread 1KB of stack. */
+    /* Give each thread 16KB of stack. */
 
-    // 0x4000 = 24KiB = DSPM size
-    // 0x20006000 is the maximum DSPM address.
-    li sp, 0x20006000
+    // 0x40000 = 256KiB = DSPM size
+    // 0x20040000 is the maximum DSPM address.
+    li sp, 0x20040000
     
     // Calculate how much to subtract
     // from the max address based on
     // thread id.
-    sll t1, t0, 10 // (thread_id) * 2^10
+    sll t1, t0, 14 // (thread_id) * 2^14
 
     // Set the stack pointer.
     sub sp, sp, t1
