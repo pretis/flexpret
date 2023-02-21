@@ -1,3 +1,4 @@
-FLEXPRET_ROOT_DIR=../../../../
-NAME=calloc
-include ../../../../Makefrag
+FLEXPRET_ROOT_DIR = ../../../../
+NAME = calloc
+APP_SOURCES = *.c
+include $(FLEXPRET_ROOT_DIR)/Makefrag

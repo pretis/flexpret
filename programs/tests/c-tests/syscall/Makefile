@@ -1,3 +1,4 @@
-FLEXPRET_ROOT_DIR=../../../../
-NAME=syscall
-include ../../../../Makefrag
+FLEXPRET_ROOT_DIR = ../../../../
+NAME = syscall
+APP_SOURCES = *.c
+include $(FLEXPRET_ROOT_DIR)/Makefrag
