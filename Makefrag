@@ -13,36 +13,33 @@ ifndef APP_SOURCES
 $(error APP_SOURCES is not set)
 endif
 
+# Include specification for how to build libflexpret
+include $(FLEXPRET_ROOT_DIR)/programs/lib/Makefrag-lib
 
-LIB_DIR ?= $(FLEXPRET_ROOT_DIR)/programs/lib
-LIB_SOURCES ?= $(LIB_DIR)/start.S \
-               $(LIB_DIR)/syscalls.c \
-               $(LIB_DIR)/tinyalloc/tinyalloc.c \
-               $(LIB_DIR)/startup.c \
-               $(LIB_DIR)/flexpret_thread.c \
-               $(LIB_DIR)/flexpret_lock.c
+STARTUP_SOURCES = $(LIB_DIR)/start.S $(LIB_DIR)/startup.c
 
 NUM_THREADS ?= 1 # number of threads that resulting program will run on
-CFLAGS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs
+CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -I$(LIB_DIR)/include
 
 LINKER_SCRIPT := $(LIB_DIR)/linker/flexpret.ld
 RISCV_PREFIX := riscv32-unknown-elf-
 CC := $(RISCV_PREFIX)gcc
+AR = $(RISCV_PREFIX)ar
 OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU := $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
-
 
 .PHONY: compile riscv dump mem run clean
 
 # Default target; generates the riscv, dump, and mem files
 compile: riscv dump mem
 
-# Compiles a C program into a riscv ELF file.
-riscv: $(NAME).riscv
-%.riscv: $(LIB_SOURCES) $(APP_SOURCES)
-	$(CC) -I$(LIB_DIR)/include -T $(LINKER_SCRIPT) -Xlinker -Map=$(NAME).map \
-	-DNUM_THREADS=$(NUM_THREADS) $(CFLAGS) -o $*.riscv $^
+# Compiles a C program into a riscv ELF file. Links with libflexpret
+riscv: $(FP_LIB) $(NAME).riscv 
+%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES)
+	$(CC)  -T $(LINKER_SCRIPT) -Xlinker -Map=$(NAME).map \
+	-DNUM_THREADS=$(NUM_THREADS) $(CFLAGS) -o $*.riscv $^ \
+	-L. -l$(FP_LIB)
 
 # Generates a dump file for debugging
 dump: $(NAME).dump
@@ -63,4 +60,4 @@ run: $(NAME).mem
 
 # deletes all generated artifacts
 clean:
-	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig
+	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a
