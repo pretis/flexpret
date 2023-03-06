@@ -6,6 +6,9 @@
  * - Samuel Berkun
  */
 
+
+#include "flexpret_config.h"
+
 .section .text
 .globl _start
 .type _start,@function
@@ -18,9 +21,9 @@
 .macro setStackPointer
     /* Give each thread 16KB of stack. */
 
-    // 0x40000 = 256KiB = DSPM size
-    // 0x20040000 is the maximum DSPM address.
-    li sp, 0x20040000
+    // Initialize stack pointer to the MAX DSPM address
+    // This address is code-generated to flexpret_config.h
+    li sp, DSPM_END
     
     // Calculate how much to subtract
     // from the max address based on

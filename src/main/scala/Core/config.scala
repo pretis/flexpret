@@ -148,7 +148,7 @@ case class FlexpretConfiguration(
 #ifndef FLEXPRET_CONFIG_H
 #define FLEXPRET_CONFIG_H
 
-// Memory ranges
+/* Memory ranges */
 #define ISPM_START 0x00000000
 #define ISPM_END 0x${(1 << iMemAddrBits).toHexString}
 #define ISPM_SIZE_KB ${imemConfig.sizeKB}
@@ -158,22 +158,42 @@ case class FlexpretConfiguration(
 #define BUS_START 0x40000000
 #define BUS_END   0x40000000 + 0x${(1 << busAddrBits).toHexString}
 
-// Scheduling
+/* Scheduling */
 #define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
-#define NUMBER_OF_THREADS ${threads}
+#define NUM_THREADS ${threads}
 
-// Timing
+/* Timing */
 #define CLOCK_PERIOD_NS ${timeInc}
 #define TIME_BITS ${timeBits}
 
-// IO
+/* IO */
 #define NUM_GPIS ${gpiPortSizes.size}
 #define GPI_SIZES {${gpiPortSizes.mkString(",")}}
 #define NUM_GPOS ${gpoPortSizes.size}
-#define GPI_SIZES {${gpoPortSizes.mkString(",")}}
+#define GPO_SIZES {${gpoPortSizes.mkString(",")}}
 
 #endif
     """
+  }
+
+
+  def generateCoreConfigLinkerParams(): String = {
+    return s"""
+/**
+* This flexpret core config file is auto-generated, and based on the
+* configuration used to build the flexpret emulator.
+*
+* Do not edit.
+*
+*/
+ISPM_START = 0x00000000 ;
+ISPM_END = 0x${(1 << iMemAddrBits).toHexString} ;
+DSPM_START = 0x20000000 ;
+DSPM_END = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
+DSPM_SIZE_KB = ${dMemKB} ;
+BUS_START = 0x40000000 ;
+BUS_END   = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
+  """
   }
 
   def writeConfigHeaderToFile(path: String): Unit = {
@@ -182,6 +202,15 @@ case class FlexpretConfiguration(
     file.createNewFile()
     val writer = new PrintWriter(file)
     writer.write(generateCoreConfigHeader())
+    writer.close()
+  }
+
+  def writeLinkerConfigToFile(path: String): Unit = {
+    val file = new File(path)
+    file.getParentFile.mkdirs()
+    file.createNewFile()
+    val writer = new PrintWriter(file)
+    writer.write(generateCoreConfigLinkerParams())
     writer.close()
   }
 }

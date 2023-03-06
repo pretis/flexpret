@@ -103,7 +103,7 @@ clean:
 	rm -rf ./build
 	rm -rf emulator/obj_dir
 	rm -f emulator/Core.sim.v
-	rm -f $(LIB_DIR)/include/flexpret_config.h
+	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
 	rm -rf out
 	
 

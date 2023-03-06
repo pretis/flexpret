@@ -1,6 +1,6 @@
 OUTPUT_ARCH("riscv")
 
-#include "flexpret_config.h"
+INCLUDE flexpret_config.ld
 
 MEMORY
 {

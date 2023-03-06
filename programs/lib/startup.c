@@ -12,9 +12,10 @@
 #include <flexpret_io.h>
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
+#include <flexpret_config.h>
 #include "tinyalloc/tinyalloc.h"
 
-#define DSPM_LIMIT          ((void*)0x20040000) // 0x40000 = 256K
+#define DSPM_LIMIT          ((void*) DSPM_END) // 0x40000 = 256K
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
