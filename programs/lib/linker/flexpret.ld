@@ -1,9 +1,11 @@
 OUTPUT_ARCH("riscv")
 
+#include "flexpret_config.h"
+
 MEMORY
 {
-    ROM (rx)  : ORIGIN = 0x00000000, LENGTH = 256K
-    RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 256K
+    ROM (rx)  : ORIGIN = ISPM_START, LENGTH = ISPM_END - ISPM_START
+    RAM (rwx) : ORIGIN = DSPM_START, LENGTH = DSPM_END - DSPM_START
 }
 
 SECTIONS
