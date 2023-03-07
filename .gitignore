@@ -23,3 +23,6 @@ firrtl.jar
 **/fp-emu
 emulator/obj_dir/
 emulator/Core.sim.v
+
+programs/lib/include/flexpret_config.h
+programs/lib/linker/flexpret_config.ld

@@ -26,22 +26,22 @@ object FlexpretConfiguration {
 }
 
 case class InstMemConfiguration(
-                                 // Set to true to hook up instruction memory from outside the core
-                                 bypass: Boolean,
-                                 // Size of the instruction memory (KB) - for memory mapping purposes
-                                 sizeKB: Int
-                               ) {
+  // Set to true to hook up instruction memory from outside the core
+  bypass: Boolean,
+  // Size of the instruction memory (KB) - for memory mapping purposes
+  sizeKB: Int
+) {
   require(sizeKB >= 0)
 }
 
 case class FlexpretConfiguration(
-                                  threads: Int,
-                                  flex: Boolean,
-                                  imemConfig: InstMemConfiguration,
-                                  dMemKB: Int,
-                                  mul: Boolean,   // FIXME: Unused, to be removed.
-                                  features: String
-                                ) {
+  threads: Int,
+  flex: Boolean,
+  imemConfig: InstMemConfiguration,
+  dMemKB: Int,
+  mul: Boolean,   // FIXME: Unused, to be removed.
+  features: String
+) {
   println("features: " + features)
   val mt = threads > 1
   val stats = features == "all"
@@ -149,28 +149,28 @@ case class FlexpretConfiguration(
 #define FLEXPRET_CONFIG_H
 
 /* Memory ranges */
-#define ISPM_START 0x00000000
-#define ISPM_END 0x${(1 << iMemAddrBits).toHexString}
-#define ISPM_SIZE_KB ${imemConfig.sizeKB}
-#define DSPM_START 0x20000000
-#define DSPM_END 0x20000000 + 0x${(1 << dMemAddrBits).toHexString}
-#define DSPM_SIZE_KB ${dMemKB}
-#define BUS_START 0x40000000
-#define BUS_END   0x40000000 + 0x${(1 << busAddrBits).toHexString}
+#define ISPM_START      0x00000000
+#define ISPM_END        0x${(1 << iMemAddrBits).toHexString}
+#define ISPM_SIZE_KB    ${imemConfig.sizeKB}
+#define DSPM_START      0x20000000
+#define DSPM_END        0x20000000 + 0x${(1 << dMemAddrBits).toHexString}
+#define DSPM_SIZE_KB    ${dMemKB}
+#define BUS_START       0x40000000
+#define BUS_END         0x40000000 + 0x${(1 << busAddrBits).toHexString}
 
 /* Scheduling */
 #define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
-#define NUM_THREADS ${threads}
+#define NUM_THREADS     ${threads}
 
 /* Timing */
 #define CLOCK_PERIOD_NS ${timeInc}
-#define TIME_BITS ${timeBits}
+#define TIME_BITS       ${timeBits}
 
 /* IO */
-#define NUM_GPIS ${gpiPortSizes.size}
-#define GPI_SIZES {${gpiPortSizes.mkString(",")}}
-#define NUM_GPOS ${gpoPortSizes.size}
-#define GPO_SIZES {${gpoPortSizes.mkString(",")}}
+#define NUM_GPIS        ${gpiPortSizes.size}
+#define GPI_SIZES       {${gpiPortSizes.mkString(",")}}
+#define NUM_GPOS        ${gpoPortSizes.size}
+#define GPO_SIZES       {${gpoPortSizes.mkString(",")}}
 
 #endif
     """
@@ -186,13 +186,13 @@ case class FlexpretConfiguration(
 * Do not edit.
 *
 */
-ISPM_START = 0x00000000 ;
-ISPM_END = 0x${(1 << iMemAddrBits).toHexString} ;
-DSPM_START = 0x20000000 ;
-DSPM_END = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
-DSPM_SIZE_KB = ${dMemKB} ;
-BUS_START = 0x40000000 ;
-BUS_END   = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
+ISPM_START    = 0x00000000 ;
+ISPM_END      = 0x${(1 << iMemAddrBits).toHexString} ;
+DSPM_START    = 0x20000000 ;
+DSPM_END      = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
+DSPM_SIZE_KB  = ${dMemKB} ;
+BUS_START     = 0x40000000 ;
+BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
   """
   }
 
