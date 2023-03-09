@@ -1,10 +1,8 @@
-#include "flexpret_thread.h"
-
-#include <setjmp.h>
 #include <stdbool.h>
-
-#include "flexpret_io.h"
-#include "flexpret_lock.h"
+#include <setjmp.h>
+#include <flexpret_io.h>
+#include <flexpret_lock.h>
+#include <flexpret_thread.h>
 
 /*************************************************
  * FlexPRET's hardware thread scheduling functions
@@ -185,23 +183,22 @@ int tmode_sleep(uint32_t hartid) {
     tmode_set(hartid, TMODE_HZ);
   else if (tmode == TMODE_SA || tmode == TMODE_SZ)
     tmode_set(hartid, TMODE_SZ);
-  else
-    return 1;
+    else return 1;
   return 0;
 }
 
 /* Variables that keep track of the status of threads */
 
 // An array of function pointers
-static void *(*routines[NUM_THREADS])(void *);
-static void **args[NUM_THREADS];
-static void **exit_code[NUM_THREADS];
+static void*   (*routines[NUM_THREADS])(void *);
+static void**  args[NUM_THREADS];
+static void**  exit_code[NUM_THREADS];
 // Whether a thread is currently executing a routine.
-static bool in_use[NUM_THREADS];
+static bool    in_use[NUM_THREADS];
 static jmp_buf envs[NUM_THREADS];
-static bool cancel_requested[NUM_THREADS];
+static bool    cancel_requested[NUM_THREADS];
 // Accessed in startup.c
-bool exit_requested[NUM_THREADS];
+bool           exit_requested[NUM_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
@@ -216,13 +213,17 @@ uint32_t num_threads_busy = 0;
 // some pre-registered clean-up handlers.
 uint32_t num_threads_exited = 0;
 
+
 /* Pthreads-like threading library functions */
 
 // Assign a routine to the first available
 // hardware thread.
-int thread_create(bool is_hrtt,  // HRTT = true, SRTT = false
-                  thread_t *restrict hartid, void *(*start_routine)(void *),
-                  void *restrict arg) {
+int thread_create(
+    bool is_hrtt,   // HRTT = true, SRTT = false
+    thread_t *restrict hartid,
+    void *(*start_routine)(void *),
+    void *restrict arg
+) {
   // Allocate an available thread.
   // Cannot allocate to thread 0.
   hwlock_acquire();
@@ -248,9 +249,12 @@ int thread_create(bool is_hrtt,  // HRTT = true, SRTT = false
 // Assign a routine to a _specific_
 // hardware thread. If the thread is in use,
 // return 1. Otherwise, map the routine and return 0.
-int thread_map(bool is_hrtt,               // HRTT = true, SRTT = false
-               thread_t *restrict hartid,  // hartid requested by the user
-               void *(*start_routine)(void *), void *restrict arg) {
+int thread_map(
+    bool is_hrtt,   // HRTT = true, SRTT = false
+    thread_t *restrict hartid, // hartid requested by the user
+    void *(*start_routine)(void *),
+    void *restrict arg
+) {
   // Allocate an available thread.
   // Cannot allocate to thread 0.
   hwlock_acquire();
@@ -272,8 +276,7 @@ int thread_map(bool is_hrtt,               // HRTT = true, SRTT = false
 
 int thread_join(thread_t hartid, void **retval) {
   // FIXME: What if it waits for the long-running thread?
-  while (in_use[hartid])
-    ;  // Wait
+    while(in_use[hartid]); // Wait
   // Get the exit code from the exiting thread.
   hwlock_acquire();
   *retval = exit_code[hartid];
@@ -301,7 +304,7 @@ void thread_exit(void *retval) {
 }
 
 int thread_cancel(thread_t hartid) {
-  hwlock_acquire();  // FIXME: Unnecessary?
+    hwlock_acquire(); // FIXME: Unnecessary?
   cancel_requested[hartid] = true;
   hwlock_release();
   return 0;
@@ -339,14 +342,15 @@ void worker_main() {
     // Print a magic number that indicates
     // the handling of a cancellation request.
     _fp_print(6662);
-  } else if (val != 0) {
+    }
+    else if (val != 0) {
     // UNREACHABLE
     // FIXME: Use an assert() here instead.
     _fp_print(666);
     _fp_finish();
   }
 
-  while (!exit_requested[hartid]) {
+    while(!exit_requested[hartid]) {
     // FIXME:
     // It is hard for a thread to put
     // itself to sleep, because calling
