@@ -18,6 +18,7 @@ steps:
     tar zxf riscv.tgz
     mv xpack-riscv-none-embed-gcc-8.3.0-2.3 ~/riscv-embed-gcc
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-as ~/riscv-embed-gcc/bin/riscv32-unknown-elf-as
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ar ~/riscv-embed-gcc/bin/riscv32-unknown-elf-ar
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-gcc ~/riscv-embed-gcc/bin/riscv32-unknown-elf-gcc
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ld ~/riscv-embed-gcc/bin/riscv32-unknown-elf-ld
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objdump ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objdump
