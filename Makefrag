@@ -37,22 +37,22 @@ compile: riscv dump mem
 # Compiles a C program into a riscv ELF file. Links with libflexpret
 riscv: $(FP_LIB) $(NAME).riscv 
 %.riscv: $(STARTUP_SOURCES) $(APP_SOURCES)
-	$(CC)  -T $(LINKER_SCRIPT) -Xlinker -Map=$(NAME).map \
+	@ $(CC) -T $(LINKER_SCRIPT) -Xlinker -Map=$(NAME).map \
 	-DNUM_THREADS=$(NUM_THREADS) $(CFLAGS) -o $*.riscv $^ \
 	-L. -l$(FP_LIB)
 
 # Generates a dump file for debugging
 dump: $(NAME).dump
 %.dump: %.riscv
-	$(OBJDUMP) -S -d $^ > $@
+	@$(OBJDUMP) -S -d $^ > $@
 
 # Generates the .mem file, that can be run with fp-emu
 mem: $(NAME).mem
 %.mem: %.riscv
-	$(OBJCOPY) -O binary $*.riscv $*.binary.txt
-	xxd -c 4 -e $*.binary.txt | cut -c11-18 > $*.mem
-	xxd -c 4 -e $*.binary.txt > $*.mem.orig
-	rm $*.binary.txt # Delete the temporary binary file
+	@$(OBJCOPY) -O binary $*.riscv $*.binary.txt
+	@xxd -c 4 -e $*.binary.txt | cut -c11-18 > $*.mem
+	@xxd -c 4 -e $*.binary.txt > $*.mem.orig
+	@rm $*.binary.txt # Delete the temporary binary file
 
 # runs the program (generated .mem file) using fp-emu 
 run: $(NAME).mem

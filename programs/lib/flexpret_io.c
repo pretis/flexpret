@@ -3,16 +3,16 @@
 #include <stdint.h>
 
 // Write a generic value to the tohost CSR
-void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
+inline void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
 
 // Print the given value in the simulation
-void _fp_print(uint32_t val) {
+inline void _fp_print(uint32_t val) {
   write_csr(CSR_TOHOST, 0xbaaabaaa);
   write_csr(CSR_TOHOST, val);
 }
 
 // Finish/stop the simulation
-void _fp_finish() { write_csr(CSR_TOHOST, 0xdeaddead); }
+inline void _fp_finish() { write_csr(CSR_TOHOST, 0xdeaddead); }
 
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*

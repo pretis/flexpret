@@ -1,6 +1,8 @@
 .bloop/
 .metals/
 .vscode/
+.idea
+.bsp
 project/
 target/
 build/
