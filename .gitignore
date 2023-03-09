@@ -21,6 +21,7 @@ firrtl.jar
 **/*.riscv
 **/*.map
 **/*.orig
+**/*.a
 
 **/fp-emu
 emulator/obj_dir/
