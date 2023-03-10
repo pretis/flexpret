@@ -1,4 +1,21 @@
-#include <flexpret_lock.h>
+#include "flexpret_lock.h"
+
+/**
+ * Acquire a hardware lock.
+ */
+void hwlock_acquire() {
+    while(swap_csr(CSR_HWLOCK, 1) == 0);
+}
+
+/**
+ * Release a hardware lock.
+ */
+void hwlock_release() {
+    if (swap_csr(CSR_HWLOCK, 0) != 1) {
+        _fp_print(666); // FIXME: Replace this with an assert().
+        _fp_finish();
+    };
+}
 
 int do_acquire(lock_t* lock) {
     hwlock_acquire();
