@@ -39,7 +39,7 @@ compile: $(FP_LIB) riscv dump mem
 
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
-%.riscv: $(APP_SOURCES) $(STARTUP_SOURCES)
+%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES)
 	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^ $(LLIBS)
 
 # Generates a dump file for debugging
