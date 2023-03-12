@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <flexpret_io.h>
+#include <flexpret.h>
 #include <flexpret_lock.h>
 
 int main() {

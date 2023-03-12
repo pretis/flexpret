@@ -2,9 +2,6 @@
 #define FLEXPRET_LOCK_H
 
 #include <stdbool.h>
-#include <flexpret_csrs.h>
-#include <flexpret_io.h>
-
 
 #define LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX }
 typedef struct _lock_t {

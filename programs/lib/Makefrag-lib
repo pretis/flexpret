@@ -13,4 +13,4 @@ $(FP_LIB): $(LIB_OBJS)
 	@ rm $(LIB_OBJS)
 
 %.o: %.c
-	@ $(CC) $(CFLAGS) -c -o $@ $<
+	@ $(CC) $(CFLAGS) $(INCS) -c -o $@ $<
