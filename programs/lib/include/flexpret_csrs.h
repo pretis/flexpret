@@ -82,6 +82,8 @@
   asm volatile ("rdinstret %0" : "=r"(__tmp)); \
   __tmp; })
 
+#define read_hartid() read_csr(CSR_HARTID)
+
 #endif
 
 #endif // FLEXPRET_CSRS_H

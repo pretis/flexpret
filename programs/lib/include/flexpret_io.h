@@ -1,8 +1,8 @@
-#include <stdint.h>
-#include <flexpret_csrs.h>
-
 #ifndef FLEXPRET_IO_H
 #define FLEXPRET_IO_H
+
+#include <stdint.h>
+#include "flexpret_csrs.h"
 
 // Write a generic value to the tohost CSR
 static inline void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
@@ -14,9 +14,7 @@ static inline void _fp_print(uint32_t val) {
 }
 
 // Finish/stop the simulation
-static inline void _fp_finish() {
-  write_csr(CSR_TOHOST, 0xdeaddead);
-}
+static inline void _fp_finish() { write_csr(CSR_TOHOST, 0xdeaddead); }
 
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*
@@ -52,7 +50,4 @@ static inline uint32_t gpi_read_1() { return read_csr(CSR_UARCH1); }
 static inline uint32_t gpi_read_2() { return read_csr(CSR_UARCH2); }
 static inline uint32_t gpi_read_3() { return read_csr(CSR_UARCH3); }
 
-// Read the current hardware thread id (hartid)
-static inline uint32_t read_hartid() { return read_csr(CSR_HARTID); }
-
-#endif // FLEXPRET_IO_H
+#endif
