@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <flexpret_io.h>
+#include <flexpret.h>
 
 // A humble Fibonacci function.
 uint32_t fib(uint32_t n) {

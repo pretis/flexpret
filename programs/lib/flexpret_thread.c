@@ -3,6 +3,7 @@
 #include <flexpret_io.h>
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
+#include <flexpret_config.h>
 
 /*************************************************
  * FlexPRET's hardware thread scheduling functions

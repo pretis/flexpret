@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <flexpret_io.h>
+#include <flexpret.h>
 
 int main() {
     _fp_print(gpo_read_0());    // Expect 0.

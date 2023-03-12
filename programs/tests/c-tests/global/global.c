@@ -1,6 +1,6 @@
 // This test checks if global variables are properly initialized.
 #include <stdint.h>
-#include <flexpret_io.h>
+#include <flexpret.h>
 
 int x = 1; 
 int y = 2;

@@ -1,7 +1,7 @@
 /* A threaded version of add.c */
 #include <stdlib.h>
 #include <stdint.h>
-#include <flexpret_io.h>
+#include <flexpret.h>
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
