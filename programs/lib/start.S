@@ -19,7 +19,8 @@
 .endm
 
 .macro setStackPointer
-    /* Give each thread 16KB of stack. */
+    /* FIXME: Stack size should be configurable 
+    /* Give each thread 1KB of stack. */
 
     // Initialize stack pointer to the MAX DSPM address
     // This address is code-generated to flexpret_config.h
@@ -28,7 +29,7 @@
     // Calculate how much to subtract
     // from the max address based on
     // thread id.
-    sll t1, t0, 14 // (thread_id) * 2^14
+    sll t1, t0, 10 // (thread_id) * 2^10
 
     // Set the stack pointer.
     sub sp, sp, t1
