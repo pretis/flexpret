@@ -1,22 +1,31 @@
 #!/bin/bash
+# Get the directory of the script and the verilator emulation
+
+script_dir=$(dirname "$0")
+script_name=$(basename "$0")
+emu="$script_dir/fp-verilator"
+working_dir=$(pwd)
 
 # Check if exactly one argument is provided
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 [ispm]"
+if [ $# -lt 1 ]; then
+  echo "Usage: $script_name ispm-file [--trace]"
   exit 1
 fi
 
-# Get the directory of the script and the verilator emulation
-script_dir = $(dirname "$0")
-emu = "$script_dir/fp-verilator"
-working_dir = $(pwd)
+trace=""
+if [ $# -eq 2 ]; then
+  if [ ! "$2" = "--trace" ]; then
+    echo "Usage: $script_name ispm-file [--trace]"
+    exit 1
+  fi
+  trace="--trace"
+fi
 
 # Check if the file exists
 if [ ! -f "$1" ]; then
   echo "File not found: $1"
   exit 1
 fi
-
 
 
 # Check if the file exists
@@ -35,10 +44,10 @@ cp "$1" "$script_dir/ispm.mem"
 cd $script_dir
 
 # Execute the emulator
-$emu
+$emu --trace
 
 # Remove the copied file
-rm ispm.mem
+# rm ispm.mem
 
 # Go back to start
 cd $working_dir
