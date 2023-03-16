@@ -29,12 +29,6 @@ static inline void _fp_abort() {
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*
 // Write all GPO bits
-
-
-static inline void gpo_write_1(uint32_t val) {
-  write_csr(CSR_UARCH5, val);
-}
-
 static inline void gpo_write(uint32_t port, uint32_t val) {
   switch(port) {
     case 0: write_csr(CSR_UARCH4, val); break;

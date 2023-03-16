@@ -129,7 +129,7 @@ void Reset_Handler() {
     // Initialize tinyalloc.
     ta_init( 
         &end, // start of the heap space
-        DSPM_END,
+        (void *) DSPM_END,
         TA_MAX_HEAP_BLOCK, 
         16, // split_thresh: 16 bytes (Only used when reusing blocks.)
         TA_ALIGNMENT

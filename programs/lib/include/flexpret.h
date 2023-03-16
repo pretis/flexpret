@@ -8,6 +8,7 @@
 #include "flexpret_thread.h"
 #include "flexpret_assert.h"
 #include "flexpret_types.h"
+#include "flexpret_exceptions.h"
 
 
 #include <stdbool.h>

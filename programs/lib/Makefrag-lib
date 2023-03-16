@@ -5,7 +5,8 @@ LIB_DIR = $(FLEXPRET_ROOT_DIR)/programs/lib
 LIB_SOURCES = $(LIB_DIR)/syscalls.c \
 			   $(LIB_DIR)/flexpret_thread.c \
 			   $(LIB_DIR)/flexpret_lock.c \
-			   $(LIB_DIR)/tinyalloc/tinyalloc.c
+			   $(LIB_DIR)/tinyalloc/tinyalloc.c \
+			   $(LIB_DIR)/flexpret_exceptions.c
 
 LIB_OBJS = $(LIB_SOURCES:.c=.o)
 $(FP_LIB): $(LIB_OBJS)
