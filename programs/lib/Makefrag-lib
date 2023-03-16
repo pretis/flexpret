@@ -1,10 +1,10 @@
 # Makefile fragment that specifies adding the required source files to the build
-LIB_DIR=$(FLEXPRET_ROOT_DIR)/programs/lib
-LIB_SOURCES += $(LIB_DIR)/syscalls.c \
-			   $(LIB_DIR)/flexpret_thread.c \
-			   $(LIB_DIR)/flexpret_lock.c \
-			   $(LIB_DIR)/tinyalloc/tinyalloc.c \
-			   $(LIB_DIR)/flexpret_exceptions.c 
+FP_LIB_DIR=$(FLEXPRET_ROOT_DIR)/programs/lib
+LIB_SOURCES += $(FP_LIB_DIR)/syscalls.c \
+			   $(FP_LIB_DIR)/flexpret_thread.c \
+			   $(FP_LIB_DIR)/flexpret_lock.c \
+			   $(FP_LIB_DIR)/tinyalloc/tinyalloc.c \
+			   $(FP_LIB_DIR)/flexpret_exceptions.c 
 
-LIB_INCS += -I$(LIB_DIR)/include
-STARTUP_SOURCES += $(LIB_DIR)/start.S $(LIB_DIR)/startup.c 
+LIB_INCS += -I$(FP_LIB_DIR)/include
+STARTUP_SOURCES += $(FP_LIB_DIR)/start.S $(FP_LIB_DIR)/startup.c 
