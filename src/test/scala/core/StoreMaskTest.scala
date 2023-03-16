@@ -10,6 +10,8 @@ import chisel3._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import Core.StoreMask
 import Core.FlexpretConstants._

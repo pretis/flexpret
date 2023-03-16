@@ -7,6 +7,8 @@ License: See LICENSE.txt
 package flexpret.core.test
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import Core.FlexpretConstants._
 

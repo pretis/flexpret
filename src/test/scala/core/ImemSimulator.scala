@@ -9,6 +9,8 @@ package flexpret.core.test
 import org.scalatest._
 
 import chisel3._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import chiseltest._
 
