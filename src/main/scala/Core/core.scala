@@ -85,9 +85,6 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
 class Core(confIn: FlexpretConfiguration) extends Module {
   implicit val conf = confIn
 
-  // Write flexpret_config.h and flexpret_config.ld to file
-  conf.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
-  conf.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
 
   val io = IO(new CoreIO)
 
