@@ -6,6 +6,9 @@
 #include "flexpret_io.h"
 #include "flexpret_lock.h"
 #include "flexpret_thread.h"
+#include "flexpret_assert.h"
+#include "flexpret_types.h"
+
 
 #include <stdbool.h>
 #include <stdint.h>
