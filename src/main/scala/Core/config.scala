@@ -27,7 +27,7 @@ object FlexpretConfiguration {
     new FlexpretConfiguration(
       1,true,
       InstMemConfiguration(bypass=false, 256),
-      256,
+      24,
       false,
       "all",
       0
@@ -161,13 +161,13 @@ case class FlexpretConfiguration(
 
 /* Memory ranges */
 #define ISPM_START      0x00000000
-#define ISPM_END        0x${(1 << iMemAddrBits).toHexString}
+#define ISPM_END        ISPM_START + 0x${(iMemDepth*4).toHexString}
 #define ISPM_SIZE_KB    ${imemConfig.sizeKB}
 #define DSPM_START      0x20000000
-#define DSPM_END        0x20000000 + 0x${(1 << dMemAddrBits).toHexString}
+#define DSPM_END        DSPM_START + 0x${(dMemDepth*4).toHexString}
 #define DSPM_SIZE_KB    ${dMemKB}
 #define BUS_START       0x40000000
-#define BUS_END         0x40000000 + 0x${(1 << busAddrBits).toHexString}
+#define BUS_END         BUS_START + 0x${(1 << busAddrBits).toHexString}
 
 /* Scheduling */
 #define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
