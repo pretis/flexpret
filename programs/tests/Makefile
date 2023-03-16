@@ -25,7 +25,7 @@ all: run-c-tests
 
 # .out file is created from compiled .mem file by running the emulator
 %.out: %.mem
-	$(EMU) +ispm=$< > $@ 2>&1
+	$(EMU) $< > $@ 2>&1
 
 # .mem file is created by compiling using the Makefile in the test dir
 %.mem:

@@ -10,7 +10,6 @@ package flexpret.core
 import chisel3._
 import chisel3.util.{Cat, log2Ceil, MuxLookup, MuxCase}
 import Core.FlexpretConstants._
-import chisel3.experimental.chiselName
 
 class RegisterFileReadIO(val threadBits: Int) extends Bundle {
   val thread = Input(UInt(threadBits.W))
@@ -29,7 +28,6 @@ object RegisterFile {
   def apply(readPorts: Int = 2, writePorts: Int = 1)(implicit conf: FlexpretConfiguration): RegisterFile = new RegisterFile(conf.threads, readPorts=readPorts, writePorts=writePorts)
 }
 
-@chiselName
 class RegisterFile(val threads: Int, val readPorts: Int = 2, val writePorts: Int = 1) extends Module {
   /* Number of bits. */
   val threadBits = log2Ceil(threads)

@@ -60,7 +60,7 @@ class RegisterFileTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "read back what we read before even if we are reading 0 next" in {
-    test(registerFile).withAnnotations(Seq(VerilatorBackendAnnotation)) { c =>
+    test(registerFile) { c =>
       val thread = 0
       val addr = 31
       val data = "hf00df00d".U
@@ -182,7 +182,7 @@ class RegisterFileTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "not leak when reading/writing an invalid thread" in {
-    test(registerFile).withAnnotations(Seq(VerilatorBackendAnnotation)) { c =>
+    test(registerFile) { c =>
       val addr = 31
       val data0 = "hf00df00d".U
       val data1 = "hf00df11d".U

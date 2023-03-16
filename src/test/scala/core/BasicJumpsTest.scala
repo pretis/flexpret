@@ -56,9 +56,9 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
       } .fork {
         for (i <- 0 to cycles) {
           c.clock.step()
-          if (c.io.host.to_host.peek.litValue == 8) correct = true
+          if (c.io.host.to_host.peek().litValue == 8) correct = true
         }
-      } .join
+      }.join()
 
       assert(correct, "jal should have jumped correctly")
     }
@@ -118,7 +118,7 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
       } .fork {
         for (i <- 0 to cycles) {
           c.clock.step()
-          if (c.io.host.to_host.peek.litValue == 0x10) correct = true
+          if (c.io.host.to_host.peek().litValue == 0x10) correct = true
         }
       } .join
 

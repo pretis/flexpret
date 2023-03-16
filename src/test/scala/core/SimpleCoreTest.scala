@@ -48,9 +48,9 @@ class SimpleCoreTest extends AnyFlatSpec with ChiselScalatestTester {
         imemSim.sim(cycles=50)
       } .fork {
         for (i <- 0 to 50) {
-          val prev = c.io.gpio.out(0).peek.litValue
+          val prev = c.io.gpio.out(0).peek().litValue
           c.clock.step()
-          val after = c.io.gpio.out(0).peek.litValue
+          val after = c.io.gpio.out(0).peek().litValue
           if (after == 1 && prev == 0) upTransitioned = true
           if (after == 0 && prev == 1) downTransitioned = true
         }
@@ -83,7 +83,7 @@ class SimpleCoreTest extends AnyFlatSpec with ChiselScalatestTester {
         for (i <- 0 to cycles) {
           c.clock.step()
         }
-        val toHostVal = c.io.host.to_host.peek.litValue
+        val toHostVal = c.io.host.to_host.peek().litValue
         assert(toHostVal == 88884444)
       } .join
     }
@@ -154,7 +154,7 @@ loop:
       } .fork {
         for (i <- 0 to cycles) {
           c.clock.step()
-          if (c.io.host.to_host.peek.litValue == 1024) seen1024 = true
+          if (c.io.host.to_host.peek().litValue == 1024) seen1024 = true
         }
       } .join
 

@@ -10,7 +10,6 @@ package flexpret.core
 import chisel3._
 import chisel3.util.log2Ceil
 import chisel3.util.MixedVec
-import chisel3.experimental.chiselName
 import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents of ISPM from file
 
 // Remove this eventually
@@ -83,7 +82,6 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   //val int_exts = Input(Vec(conf.threads, Bool()))
 }
 
-@chiselName
 class Core(confIn: FlexpretConfiguration) extends Module {
   implicit val conf = confIn
 
@@ -91,7 +89,7 @@ class Core(confIn: FlexpretConfiguration) extends Module {
   conf.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
   conf.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
 
-  val io = IO(new CoreIO())
+  val io = IO(new CoreIO)
 
   val control = Module(new Control())
   val datapath = Module(new Datapath())

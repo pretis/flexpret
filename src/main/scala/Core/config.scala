@@ -6,7 +6,6 @@ import Core.FlexpretConstants._
 import Core._
 
 import java.io._
-import sbt._
 
 object FlexpretConfiguration {
   /**
@@ -21,6 +20,16 @@ object FlexpretConfiguration {
       parsed.get.group(4).toInt,
       confString contains "mul",
       parsed.get.group(5)
+    )
+  }
+  def defaultCfg(): FlexpretConfiguration = {
+    new FlexpretConfiguration(
+      1,true,
+      InstMemConfiguration(bypass=false, 256),
+      256,
+      false,
+      "all",
+      0
     )
   }
 }

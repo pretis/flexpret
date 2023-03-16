@@ -75,7 +75,7 @@ unit-test:
 	sbt 'test'
 
 integration-test: emulator
-	make -C programs/tests tests
+	make -C programs/tests
 
 test: unit-test integration-test
 # -----------------------------------------------------------------------------
@@ -95,6 +95,7 @@ clean:
 	rm -f emulator/*.v
 	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
 	rm -rf out
+	make -C programs/tests clean
 	
 
 # Clean for all configurations, targets, and test outputs.
