@@ -49,7 +49,7 @@ class FpgaTopIO extends Bundle {
 }
 
 class FpgaTop(cfg: FlexpretConfiguration) extends Module {
-    val io = IO(new VerilatorTopIO)
+    val io = IO(new FpgaTopIO)
     val core = Module(new Core(cfg))
     // Drive gpio input of each core to 0 by default
     core.io.gpio.in.map(_ := 0.U)
