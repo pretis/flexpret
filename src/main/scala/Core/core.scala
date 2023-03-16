@@ -11,6 +11,7 @@ import chisel3._
 import chisel3.util.log2Ceil
 import chisel3.util.MixedVec
 import chisel3.experimental.chiselName
+import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents of ISPM from file
 
 // Remove this eventually
 import Core._

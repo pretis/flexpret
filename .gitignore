@@ -24,7 +24,7 @@ firrtl.jar
 **/*.dump
 **/*.a
 
-**/fp-emu
+**/fp-verilator
 
 # Misc
 .vscode/
@@ -32,7 +32,7 @@ project/
 target/
 .bloop/
 emulator/obj_dir/
-emulator/Core.sim.v
+emulator/*.v
 
 programs/lib/include/flexpret_config.h
 programs/lib/linker/flexpret_config.ld

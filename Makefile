@@ -25,6 +25,8 @@ EMULATOR_DIR = emulator
 SCRIPTS_DIR = scripts
 BUILD_DIR = build
 LIB_DIR = programs/lib
+RESOURCE_DIR = src/main/resources
+
 
 # Compiler options.
 CXX = g++
@@ -55,7 +57,6 @@ verilog_raw: $(VERILOG_RAW)
 
 $(VERILOG_RAW): $(SRC_DIR)/$(MODULE)/*.scala
 	sbt 'run "$(CORE_CONFIG)" --no-dedup --target-dir $(BUILD_DIR)'
-	mv build/Core.v $(VERILOG_RAW)
 
 # Provide rules for simulator
 include $(EMULATOR_DIR)/emulator.mk
@@ -67,7 +68,7 @@ emulator: $(EMULATOR_BIN)
 # -----------------------------------------------------------------------------
 #  Tests
 # -----------------------------------------------------------------------------
-test:
+unit-test:
 	sbt 'test'
 
 # -----------------------------------------------------------------------------

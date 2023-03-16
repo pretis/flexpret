@@ -40,7 +40,8 @@ case class FlexpretConfiguration(
   imemConfig: InstMemConfiguration,
   dMemKB: Int,
   mul: Boolean,   // FIXME: Unused, to be removed.
-  features: String
+  features: String,
+  coreId: Int = 0
 ) {
   println("features: " + features)
   val mt = threads > 1

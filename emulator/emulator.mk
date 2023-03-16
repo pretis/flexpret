@@ -3,14 +3,18 @@
 # Edward Wang <edwardw@eecs.berkeley.edu>
 # Shaokai Lin <shaokai@berkeley.edu>
 
-EMULATOR_BIN = $(EMULATOR_DIR)/fp-emu
+EMULATOR_BIN = $(EMULATOR_DIR)/fp-verilator
 HDL_SCRIPTS = $(SCRIPTS_DIR)/hdl
 
 $(EMULATOR_BIN): $(VERILOG_RAW) $(EMULATOR_DIR)/main.cpp $(HDL_SCRIPTS)/simify_verilog.py
 	# Inject the right simulation constructs
-	$(HDL_SCRIPTS)/simify_verilog.py $(VERILOG_RAW) > $(EMULATOR_DIR)/Core.sim.v
+	# $(HDL_SCRIPTS)/simify_verilog.py $(VERILOG_RAW) > $(EMULATOR_DIR)/Core.sim.v
 	
-	(cd $(EMULATOR_DIR) && verilator --cc Core.sim.v --exe --trace --build main.cpp)
+	# Copy required resources
+	cp $(VERILOG_RAW) $(EMULATOR_DIR)/$(MODULE).v
+	cp $(RESOURCE_DIR)/DualPortBram.v $(EMULATOR_DIR)/
+
+	(cd $(EMULATOR_DIR) && verilator --cc $(MODULE).v --exe --trace --build main.cpp)
 
 	cp $(EMULATOR_DIR)/obj_dir/VCore $(EMULATOR_BIN)
 
