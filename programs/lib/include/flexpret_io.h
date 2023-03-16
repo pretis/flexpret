@@ -2,11 +2,7 @@
 #define FLEXPRET_IO_H
 
 #include <stdint.h>
-#include <stdbool.h>
-#include <flexpret_assert.h>
-#include <flexpret_csrs.h>
-#include <flexpret_types.h>
-
+#include "flexpret_csrs.h"
 
 // Write a generic value to the tohost CSR
 static inline void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
@@ -20,11 +16,8 @@ static inline void _fp_print(uint32_t val) {
   swap_csr(CSR_HWLOCK, 0);
 }
 
-// Finish/stop the simulation. Simulation environment will terminate when all
-//  cores have made a call to `_fp_finish`
-static inline void _fp_finish() {
-  write_csr(CSR_TOHOST, 0xdeaddead);
-}
+// Finish/stop the simulation
+static inline void _fp_finish() { write_csr(CSR_TOHOST, 0xdeaddead); }
 
 // Abort simulation. Simulation environment will terminate if any core makes this call
 // FIXME: Get line number which triggered abort also out
@@ -121,5 +114,4 @@ static inline uint32_t gpi_read_1() { return read_csr(CSR_UARCH1); }
 static inline uint32_t gpi_read_2() { return read_csr(CSR_UARCH2); }
 static inline uint32_t gpi_read_3() { return read_csr(CSR_UARCH3); }
 
-
-#endif // FLEXPRET_IO_H
+#endif

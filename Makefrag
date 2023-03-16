@@ -1,0 +1,64 @@
+
+# FLEXPRET_ROOT_DIR, NAME, and APP_SOURCES must be defined in the Makefile that this is included from
+
+ifndef FLEXPRET_ROOT_DIR
+$(error FLEXPRET_ROOT_DIR is not set)
+endif
+
+ifndef NAME
+$(error NAME (name of program) is not set)
+endif
+
+ifndef APP_SOURCES
+$(error APP_SOURCES is not set)
+endif
+
+# Include specification for how to build libflexpret
+include $(FLEXPRET_ROOT_DIR)/programs/lib/Makefrag-lib
+
+STARTUP_SOURCES = $(LIB_DIR)/start.S $(LIB_DIR)/startup.c
+
+LINKER_SCRIPT := $(LIB_DIR)/linker/flexpret.ld
+RISCV_PREFIX := riscv32-unknown-elf-
+CC := $(RISCV_PREFIX)gcc
+AR = $(RISCV_PREFIX)ar
+OBJDUMP := $(RISCV_PREFIX)objdump
+OBJCOPY := $(RISCV_PREFIX)objcopy
+EMU := $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
+
+CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs 
+INCS = -I$(LIB_DIR)/include
+LFLAGS = -T $(LINKER_SCRIPT) -L $(LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
+LLIBS = -L. -l$(FP_LIB)
+
+
+.PHONY: compile riscv dump mem run clean
+
+# Default target; generates the riscv, dump, and mem files
+compile: $(FP_LIB) riscv dump mem
+
+# Compiles a C program into a riscv ELF file.
+riscv: $(NAME).riscv
+%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES)
+	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^ $(LLIBS)
+
+# Generates a dump file for debugging
+dump: $(NAME).dump
+%.dump: %.riscv
+	@$(OBJDUMP) -S -d $^ > $@
+
+# Generates the .mem file, that can be run with fp-emu
+mem: $(NAME).mem
+%.mem: %.riscv
+	@$(OBJCOPY) -O binary $*.riscv $*.binary.txt
+	@xxd -c 4 -e $*.binary.txt | cut -c11-18 > $*.mem
+	@xxd -c 4 -e $*.binary.txt > $*.mem.orig
+	@rm $*.binary.txt # Delete the temporary binary file
+
+# runs the program (generated .mem file) using fp-emu 
+run: $(NAME).mem
+	$(EMU) +ispm=$^;
+
+# deletes all generated artifacts
+clean:
+	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a

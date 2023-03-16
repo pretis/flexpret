@@ -1,6 +1,8 @@
 .bloop/
 .metals/
 .vscode/
+.idea
+.bsp
 project/
 target/
 build/
@@ -20,6 +22,8 @@ firrtl.jar
 **/*.map
 **/*.orig
 **/*.dump
+**/*.a
+
 **/fp-emu
 
 # Misc
@@ -29,3 +33,6 @@ target/
 .bloop/
 emulator/obj_dir/
 emulator/Core.sim.v
+
+programs/lib/include/flexpret_config.h
+programs/lib/linker/flexpret_config.ld

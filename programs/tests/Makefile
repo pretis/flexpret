@@ -1,74 +1,47 @@
-XLEN ?= 32
-
-default: all
-
-# Project root directory
-base_dir = $(abspath ../../)
-$(info $$base_dir value -- ${base_dir})
-
-# FlexPRET generated source (Verilog)
-generated_dir = $(base_dir)/out
-$(info $$generated_dir value -- ${generated_dir})
-
-# Verilator C++ emulator
-emu = fp-emu
-emu_dir = $(base_dir)/emulator
-$(info $$emu_dir value -- ${emu_dir})
-
-# Test directories
-tests_dir = $(base_dir)/programs/tests
-$(info $$tests_dir value -- ${tests_dir})
-c_tests_dir = $(tests_dir)/c-tests
-
-# Scripts dir
-scripts_dir = $(base_dir)/scripts
-
-# C library dir
-clib_dir = $(base_dir)/programs/lib
-
-# check RISCV environment variable
-ifndef RISCV
-$(Error: Please set environment variable RISCV to the installation path of RISCV tool binaries.)
-endif
-
-# Compilation
-RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
-RISCV_GCC ?= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS ?= -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles -specs=nosys.specs
-RISCV_LINK ?= -T ../lib/linker/flexpret.ld
-RISCV_LINK_OPTS ?= 
-RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
-RISCV_OBJDUMP_OPTS ?= -S -d
-RISCV_OBJCOPY ?= $(RISCV_PREFIX)objcopy
-RISCV_OBJCOPY_OPTS ?= -O binary
-
-INCS  += -I$(clib_dir)/include
-OBJS  :=
-
-#--------------------------------------------------------------------
-# Build emulator
-#--------------------------------------------------------------------
-
-$(base_dir)/emulator/$(emu):
-	cd $(base_dir) && $(MAKE) emulator
+FLEXPRET_ROOT_DIR = ../..
+EMU=$(FLEXPRET_ROOT_DIR)/emulator/fp-emu
 
 
 #--------------------------------------------------------------------
-# Run C tests
+# Basic C tests 
 #--------------------------------------------------------------------
+C_TESTS_DIRS = \
+	add \
+	fib \
+	malloc \
+	calloc \
+	realloc \
+	lbu \
+	global \
+	syscall \
+    gpio \
+	hwlock
 
-include $(tests_dir)/Makefrag-tests
+# Transform list into e.g. c-tests/add/add/out
+C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
 
-#--------------------------------------------------------------------
-# General 
-#--------------------------------------------------------------------
+# Default option.
+all: run-c-tests
 
-all: $(base_dir)/emulator/$(emu) run-c-tests
+# .out file is created from compiled .mem file by running the emulator
+%.out: %.mem
+	$(EMU) +ispm=$< > $@ 2>&1
 
+# .mem file is created by compiling using the Makefile in the test dir
+%.mem:
+	make -C $(dir $@) compile
+
+# If emulator not present, build the default. 
+$(EMU):
+	make -C $(FLEXPRET_ROOT_DIR) emulator	
+
+# Run single threaded c-tests
+run-c-tests: $(EMU) $(C_TESTS_RES)
+
+# Remove all generated files by calling make clean in all the test dirs
 clean:
-	cd $(c_tests_dir) && rm -f *.vcd *.mem *.riscv *.map *.out *.dump
+	for test in $(C_TESTS_DIRS) ; do \
+        make -C c-tests/$$test clean ; \
+    done
 
-cleanall: clean
-	cd $(base_dir) && $(MAKE) clean
-
-.PHONY: run-c-tests clean cleanall
+.phony: clean run-c-test

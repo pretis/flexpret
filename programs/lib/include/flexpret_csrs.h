@@ -89,6 +89,8 @@
   asm volatile ("rdinstret %0" : "=r"(__tmp)); \
   __tmp; })
 
+#define read_hartid() read_csr(CSR_HARTID)
+
 #endif
 
 #define read_coreid() read_csr(CSR_COREID)

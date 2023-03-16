@@ -24,6 +24,7 @@ FPGA_DIR = fpga
 EMULATOR_DIR = emulator
 SCRIPTS_DIR = scripts
 BUILD_DIR = build
+LIB_DIR = programs/lib
 
 # Compiler options.
 CXX = g++
@@ -77,11 +78,11 @@ VERILOG_RAW = build/$(MODULE).v
 verilog_raw: $(VERILOG_RAW)
 
 $(FIRRTL_RAW): $(SRC_DIR)/$(MODULE)/*.scala $(FIRRTL_JAR) $(MILL_BIN)
-	$(MILL_BIN) flexpret.run "$(CORE_CONFIG)" --compiler high --target-dir "build/"
+	$(MILL_BIN) flexpret.run "$(CORE_CONFIG)" --compiler high --target-dir $(BUILD_DIR)
 	# high-firrtl is dumped into $(FIRRTL_RAW)
 
 $(VERILOG_RAW): $(SRC_DIR)/$(MODULE)/*.scala
-	sbt 'run "$(CORE_CONFIG)" --no-dedup --target-dir "build/"'
+	sbt 'run "$(CORE_CONFIG)" --no-dedup --target-dir $(BUILD_DIR)'
 	mv build/Core.v $(VERILOG_RAW)
 
 # Provide rules for simulator
@@ -111,7 +112,8 @@ clean:
 	rm -f $(EMULATOR_BIN)
 	rm -rf ./build
 	rm -rf emulator/obj_dir
-	rm -f emulator/$(MODULE).sim.v
+	rm -f emulator/Core.sim.v
+	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
 	rm -rf out
 	
 

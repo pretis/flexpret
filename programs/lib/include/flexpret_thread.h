@@ -1,3 +1,6 @@
+#ifndef FLEXPRET_THREAD_H
+#define FLEXPRET_THREAD_H
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -69,3 +72,5 @@ void thread_exit(void *retval);
 int thread_cancel(thread_t thread);
 void thread_testcancel();
 void worker_main();
+
+#endif

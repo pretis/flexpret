@@ -7,17 +7,10 @@
  */
 
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
-#include <stdint.h>
-#include <stdbool.h>
-#include <flexpret_io.h>
-#include <flexpret_exceptions.h>
-#ifndef BOOTLOADER 
-#include <flexpret_lock.h>
-#include <flexpret_thread.h>
-#include "tinyalloc/tinyalloc.h" // Only include tinyalloc in applications, not bootloader
-#endif
+#include <flexpret.h>
 
-#define DSPM_LIMIT          ((void*)0x20040000) // 0x40000 = 256K
+#include "tinyalloc/tinyalloc.h"
+
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
@@ -136,7 +129,7 @@ void Reset_Handler() {
     // Initialize tinyalloc.
     ta_init( 
         &end, // start of the heap space
-        DSPM_LIMIT,
+        DSPM_END,
         TA_MAX_HEAP_BLOCK, 
         16, // split_thresh: 16 bytes (Only used when reusing blocks.)
         TA_ALIGNMENT
