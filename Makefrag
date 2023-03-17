@@ -64,4 +64,4 @@ recompile: clean compile
 
 # deletes all generated artifacts
 clean:
-	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a
+	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
