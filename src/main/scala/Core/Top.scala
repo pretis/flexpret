@@ -3,18 +3,24 @@ import chisel3._
 import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents of ISPM from file
 
 
-class VerilatorTopIO extends Bundle {
-    val stop = Output(Bool())
-}
 
-class VerilatorTop(cfg: FlexpretConfiguration) extends Module {
+abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 
     // Write flexpret_config.h and flexpret_config.ld to file
     cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
     cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
+    
+    val core = Module(new Core(cfg))
+
+} 
+
+class VerilatorTopIO extends Bundle {
+    val stop = Output(Bool())
+}
+
+class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop {
 
     val io = IO(new VerilatorTopIO)
-    val core = Module(new Core(cfg))
     val regPrintNext = RegInit(false.B)
 
     io.stop := false.B
@@ -53,13 +59,10 @@ class FpgaTopIO extends Bundle {
   
 }
 
-class FpgaTop(cfg: FlexpretConfiguration) extends Module {
-    // Write flexpret_config.h and flexpret_config.ld to file
-    cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
-    cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
+class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop {
 
     val io = IO(new FpgaTopIO)
-    val core = Module(new Core(cfg))
+    
     // Drive gpio input of each core to 0 by default
     core.io.gpio.in.map(_ := 0.U)
 
