@@ -260,6 +260,7 @@ object CSRs {
   val tohost    = 0x51e
   val fromhost  = 0x51f
   val hwlock    = 0x520
+  val sleeper   = 0x530
   val cycle     = 0xc00
   val time      = 0xc01
   val instret   = 0xc02
