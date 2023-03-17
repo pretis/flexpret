@@ -14,12 +14,12 @@
 #define EXC_CAUSE_BREAKPOINT              0x7
 #define EXC_CAUSE_MISALIGNED_LOAD         0x8
 #define EXC_CAUSE_MISALIGNED_STORE        0x9
-#define EXC_CAUSE_FAULT_LOAD              0xa
-#define EXC_CAUSE_FAULT_STORE             0xb
-#define EXC_CAUSE_ACCELERATOR_DISABLED    0xc
-#define EXC_CAUSE_EXCEPTION_EXPIRE        0xd
-#define EXC_CAUSE_INTERRUPT_EXPIRE        0x1d
-#define EXC_CAUSE_EXTERNAL_INT            0x1e
+#define EXC_CAUSE_FAULT_LOAD              0xA
+#define EXC_CAUSE_FAULT_STORE             0xB
+#define EXC_CAUSE_ACCELERATOR_DISABLED    0xC
+#define EXC_CAUSE_EXCEPTION_EXPIRE        0xD
+#define EXC_CAUSE_INTERRUPT_EXPIRE        0x8000000D
+#define EXC_CAUSE_EXTERNAL_INT            0x8000000E
 
 /**
  * @brief Interrupt Service Routine (ISR) function prototype
