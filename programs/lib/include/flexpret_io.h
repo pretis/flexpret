@@ -10,10 +10,10 @@ static inline void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
 
 // Print the given value in the simulation
 static inline void _fp_print(uint32_t val) {
-  while(swap_csr(CSR_HWLOCK, 1) == 0);
+  // while(swap_csr(CSR_HWLOCK, 1) == 0);
   write_csr(CSR_TOHOST, 0xbaaabaaa);
   write_csr(CSR_TOHOST, val);
-  swap_csr(CSR_HWLOCK, 0);
+  // swap_csr(CSR_HWLOCK, 0);
 }
 
 // Finish/stop the simulation

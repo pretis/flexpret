@@ -28,16 +28,19 @@ int main() {
     // to thread 1 again after it returns from
     // t1_do_work and the exception does not get triggered.
     int errno = thread_map(HRTT, &tid[0], t1_do_work, NULL);
-    if (errno != 0) _fp_print(666);
+    assert(errno == 0);
     void * exit_code_t1;
     thread_join(tid[0], &exit_code_t1);
 
     // Map t2_do_work to thread 2 specifically.
     // Expect an exception raised by thread 2.
-    errno = thread_map(HRTT, &tid[1], t2_do_work, NULL);
-    if (errno != 0) _fp_print(666);
+    errno = thread_map(HRTT, &tid[0], t2_do_work, NULL);
+    assert(errno == 0);
+    
     void * exit_code_t2;
     thread_join(tid[1], &exit_code_t2);
+
+    _fp_print(42);
 
     return 0;
 }

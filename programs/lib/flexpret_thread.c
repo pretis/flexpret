@@ -344,9 +344,7 @@ void worker_main() {
     }
     else if (val != 0) {
         // UNREACHABLE
-        // FIXME: Use an assert() here instead.
-        _fp_print(666);
-        _fp_finish();
+        assert(false);
     }
 
     while(!exit_requested[hartid]) {

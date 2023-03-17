@@ -12,8 +12,7 @@ void hwlock_acquire() {
  */
 void hwlock_release() {
     if (swap_csr(CSR_HWLOCK, 0) != 1) {
-        _fp_print(666); // FIXME: Replace this with an assert().
-        _fp_finish();
+        assert(false);
     };
 }
 
