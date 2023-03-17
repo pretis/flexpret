@@ -31,7 +31,7 @@ INCS = $(LIB_INCS) $(APP_INCS)
 LFLAGS = -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
 
 
-.PHONY: compile riscv dump mem run clean
+.PHONY: compile riscv dump mem run clean recompile
 
 # Default target; generates the riscv, dump, and mem files
 compile: riscv dump mem
@@ -58,6 +58,9 @@ mem: $(NAME).mem
 # runs the program (generated .mem file) using fp-emu 
 run: $(NAME).mem
 	@$(EMU) $^;
+
+# Clean and recompile
+recompile: clean compile
 
 # deletes all generated artifacts
 clean:
