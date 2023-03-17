@@ -9,7 +9,7 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
     // Write flexpret_config.h and flexpret_config.ld to file
     cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
     cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
-    
+
     val core = Module(new Core(cfg))
 
 } 
@@ -18,7 +18,7 @@ class VerilatorTopIO extends Bundle {
     val stop = Output(Bool())
 }
 
-class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop {
+class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
 
     val io = IO(new VerilatorTopIO)
     val regPrintNext = RegInit(false.B)
@@ -59,7 +59,7 @@ class FpgaTopIO extends Bundle {
   
 }
 
-class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop {
+class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
 
     val io = IO(new FpgaTopIO)
     
