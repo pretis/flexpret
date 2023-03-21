@@ -24,7 +24,7 @@ firrtl.jar
 **/*.dump
 **/*.a
 
-**/fp-verilator
+**/fp-emu
 
 # Misc
 .vscode/

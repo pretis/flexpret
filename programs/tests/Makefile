@@ -38,7 +38,7 @@ all: run-c-tests run-mt-c-tests
 
 # .out file is created from compiled .mem file by running the emulator
 %.out: %.mem
-	$(EMU) $< > $@ 2>&1
+	$(EMU) +ispm=$< | tee $@
 	@$(RES_PARSER) $@
 	
 

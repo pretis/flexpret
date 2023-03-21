@@ -18,4 +18,6 @@ LIB_INCS += -I$(FP_LIB_DIR)/include
 # Default is startup.c, but the application can set this variable to use their own startup file
 STARTUP_FILE ?= $(FP_LIB_DIR)/startup.c
 
-STARTUP_SOURCES = $(STARTUP_FILE) $(FP_LIB_DIR)/startup.c 
+# FIXME: This is extremely brittle. start.C HAS TO BE THE FIRST source file passed to gcc in order
+#	to have the ResetHandler be linked to 0x00.
+STARTUP_SOURCES = $(FP_LIB_DIR)/start.S $(STARTUP_FILE) 
