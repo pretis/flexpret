@@ -3,8 +3,7 @@
 # Edward Wang <edwardw@eecs.berkeley.edu>
 # Shaokai Lin <shaokai@berkeley.edu>
 
-EMULATOR_BIN = $(EMULATOR_DIR)/fp-verilator
-EMULATOR_WRAPPER = $(EMULATOR_DIR)/fp-emu
+EMULATOR_BIN = $(EMULATOR_DIR)/fp-emu
 VERILATOR_MODULE=VerilatorTop
 
 $(EMULATOR_BIN): $(VERILOG_VERILATOR) $(EMULATOR_DIR)/main.cpp
@@ -17,4 +16,4 @@ $(EMULATOR_BIN): $(VERILOG_VERILATOR) $(EMULATOR_DIR)/main.cpp
 	
 	# Copy the emulator binary
 	@cp $(EMULATOR_DIR)/obj_dir/V$(VERILATOR_MODULE) $(EMULATOR_BIN)
-	@echo "Emulator usage: Run '$(EMULATOR_WRAPPER) ispm_file --trace'"
+	@echo "Emulator usage: Run '$(EMULATOR_BIN) --trace +ispm=program.mem'"

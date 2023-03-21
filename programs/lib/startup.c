@@ -34,7 +34,6 @@ int main(void);
 /**
  * Allocate a requested memory and return a pointer to it.
  */
-#ifndef BOOTLOADER
 void *malloc(size_t size) {
     return ta_alloc(size);
 }
@@ -62,46 +61,12 @@ void *realloc(void *ptr, size_t size) {
 void free(void *ptr) {
     ta_free(ptr);
 }
-#endif // BOOTLOADER
 
 /**
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
-#ifdef BOOTLOADER
-void Reset_Handler() {
-    // Get hartid
-    uint32_t hartid = read_hartid();
-    // Only thread 0 performs the setup,
-    // the other threads busy wait until ready.
-    if (hartid == 0) {
-        // Copy .data section into the RAM
-        uint32_t size   = &__data_end__ - &__data_start__;
-        uint32_t *pDst  = (uint32_t*)&__data_start__;       // RAM
-        uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
 
-        for (uint32_t i = 0; i < size; i++) {
-            *pDst++ = *pSrc++;
-        }
-
-        // Init. the .bss section to zero in RAM
-        size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
-        pDst = (uint32_t*)&__bss_start__;
-        for(uint32_t i = 0; i < size; i++) {
-            *pDst++ = 0;
-        }
-        
-    }
-    // Jump to main (which should be the bootloader)
-    main();
-
-    // Exit the program.
-    _exit(0);
-    
-    // Infinite loop
-    while (1);
-}
-#else
 lock_t _lock = LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
@@ -225,4 +190,3 @@ void Reset_Handler() {
         while (1);
     }
 }
-#endif

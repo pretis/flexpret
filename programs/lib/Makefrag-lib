@@ -1,7 +1,7 @@
 # Makefile fragment that specifies adding the required source files to the build
 FP_LIB_DIR=$(FLEXPRET_ROOT_DIR)/programs/lib
 
-ifeq ($(BOOTLOADER),true)
+ifeq ($(MINIMAL_LIBFLEXPRET),true)
 LIB_SOURCES += \
 	$(FP_LIB_DIR)/flexpret_exceptions.c 
 else
@@ -14,4 +14,8 @@ LIB_SOURCES += \
 endif
 
 LIB_INCS += -I$(FP_LIB_DIR)/include
-STARTUP_SOURCES += $(FP_LIB_DIR)/start.S $(FP_LIB_DIR)/startup.c 
+
+# Default is startup.c, but the application can set this variable to use their own startup file
+STARTUP_FILE ?= $(FP_LIB_DIR)/startup.c
+
+STARTUP_SOURCES = $(STARTUP_FILE) $(FP_LIB_DIR)/startup.c 

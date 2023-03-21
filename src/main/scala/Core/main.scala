@@ -43,7 +43,7 @@ object CoreMain {
     } else if (target == "fpga"){
       fpgaMain(args.slice(1, args.length))
     } else {
-      sys.error(s"Unrecognized target $target. Currently only supports `emulator`")
+      sys.error(s"Unrecognized target $target. Currently only supports `emulator` and `fpga`")
     }
   } 
 }

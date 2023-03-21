@@ -12,20 +12,21 @@
 
 uint64_t timestamp = 0;
 
+
 double sc_time_stamp() {
   return timestamp;
 }
 
 int main(int argc, char* argv[]) {
-  Verilated::commandArgs(argc, argv);
   bool trace_enabled = false;
-  if (argc == 2) {
-    if (!strcmp(argv[1], "--trace")) {
+  for (int i = 1; i< argc; i++) {
+    if (!strcmp(argv[i], "--trace")) {
       std::cout << "Tracing enabled" << std::endl;
       trace_enabled = true;
     }
   }
 
+  Verilated::commandArgs(argc, argv);
   Verilated::traceEverOn(true);
 
 
@@ -40,7 +41,7 @@ int main(int argc, char* argv[]) {
 
 
   // FIXME: Set this via command-line arguments.
-  while (timestamp < 3000000 && !Verilated::gotFinish()) {
+  while (!Verilated::gotFinish()) {
     top->clock = 1;
     top->eval();
     timestamp++;
