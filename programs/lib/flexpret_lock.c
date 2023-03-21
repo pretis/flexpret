@@ -12,8 +12,7 @@ void hwlock_acquire() {
  */
 void hwlock_release() {
     if (swap_csr(CSR_HWLOCK, 0) != 1) {
-        _fp_print(666); // FIXME: Replace this with an assert().
-        _fp_finish();
+        assert(false);
     };
 }
 
@@ -36,13 +35,7 @@ void lock_acquire(lock_t* lock) {
 
 void lock_release(lock_t* lock) {
     hwlock_acquire();
-    uint32_t hartid = read_hartid();
-    if (hartid != lock->owner) {
-        // FIXME: Replace this with an assert.
-        _fp_print(6661);
-        hwlock_release();
-        return;
-    }
+    assert(read_hartid() == lock->owner);
     lock->locked = false;
     lock->owner  = UINT32_MAX;
     hwlock_release();

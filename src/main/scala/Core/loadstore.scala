@@ -209,5 +209,10 @@ class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
   io.store_misaligned := store_misaligned
   io.store_fault      := store_fault
 
+  // Assertions
+  assert(!load_misaligned, "Load misaligned")
+  assert(!load_fault, "Load fault")
+  assert(!store_misaligned, "Store misaligned")
+  assert(!store_fault, "Store fault")
 }
 

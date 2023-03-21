@@ -1,9 +1,6 @@
 #include <stdbool.h>
 #include <setjmp.h>
-#include <flexpret_io.h>
-#include <flexpret_lock.h>
-#include <flexpret_thread.h>
-#include <flexpret_config.h>
+#include "flexpret.h"
 
 /*************************************************
  * FlexPRET's hardware thread scheduling functions
@@ -23,7 +20,7 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        // FIXME: Panic
+        assert(false);
         return 1;
     }
     uint32_t val = 0;
@@ -47,10 +44,12 @@ int slot_set(slot_t slots[], uint32_t length) {
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
+        assert(false);
         return 1;
     }
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
+        assert(false);
         return 2;
     }
     uint32_t mask = 0xf << (slot * 4);
@@ -345,9 +344,7 @@ void worker_main() {
     }
     else if (val != 0) {
         // UNREACHABLE
-        // FIXME: Use an assert() here instead.
-        _fp_print(666);
-        _fp_finish();
+        assert(false);
     }
 
     while(!exit_requested[hartid]) {

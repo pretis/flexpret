@@ -6,17 +6,15 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
-import chisel3._
-
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import Core.FlexpretConstants._
 
 import flexpret.core._
 
-class BasicJumpsTest extends FlatSpec with ChiselScalatestTester {
+class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Basic jumps"
 
   val threads = 1
@@ -58,9 +56,9 @@ class BasicJumpsTest extends FlatSpec with ChiselScalatestTester {
       } .fork {
         for (i <- 0 to cycles) {
           c.clock.step()
-          if (c.io.host.to_host.peek.litValue == 8) correct = true
+          if (c.io.host.to_host.peek().litValue == 8) correct = true
         }
-      } .join
+      }.join()
 
       assert(correct, "jal should have jumped correctly")
     }
@@ -120,7 +118,7 @@ class BasicJumpsTest extends FlatSpec with ChiselScalatestTester {
       } .fork {
         for (i <- 0 to cycles) {
           c.clock.step()
-          if (c.io.host.to_host.peek.litValue == 0x10) correct = true
+          if (c.io.host.to_host.peek().litValue == 0x10) correct = true
         }
       } .join
 

@@ -66,6 +66,8 @@ void free(void *ptr) {
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
+
+lock_t _lock = LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
@@ -82,21 +84,21 @@ void Reset_Handler() {
             *pDst++ = *pSrc++;
         }
 
-        // Init. the .bss section to zero in RAM
+                // Init. the .bss section to zero in RAM
         size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
         pDst = (uint32_t*)&__bss_start__;
         for(uint32_t i = 0; i < size; i++) {
             *pDst++ = 0;
         }
 
-        // Initialize tinyalloc.
-        ta_init( 
-            &end, // start of the heap space
-            (void*) DSPM_END,
-            TA_MAX_HEAP_BLOCK, 
-            16, // split_thresh: 16 bytes (Only used when reusing blocks.)
-            TA_ALIGNMENT
-        );
+    // Initialize tinyalloc.
+    ta_init( 
+        &end, // start of the heap space
+        (void *) DSPM_END,
+        TA_MAX_HEAP_BLOCK, 
+        16, // split_thresh: 16 bytes (Only used when reusing blocks.)
+        TA_ALIGNMENT
+    );
 
         /**
          * Configure flexible scheduling
@@ -148,6 +150,9 @@ void Reset_Handler() {
         // Wait for thread 0 to finish setup.
         while (!__ready__);
     }
+
+    // Setup exception handling
+    setup_exceptions();
 
     // Call main().
     if (hartid == 0) {

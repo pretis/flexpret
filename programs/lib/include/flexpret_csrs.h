@@ -1,7 +1,14 @@
 #ifndef FLEXPRET_CSRS_H
 #define FLEXPRET_CSRS_H
 
+#include <stdint.h>
+
 #define CSR_SLOTS       0x503
+#define CSR_COMPARE     0x507
+#define CSR_EVEC        0x508 
+#define CSR_CAUSE       0x509 
+#define CSR_STATUS      0x50a
+#define CSR_COREID      0x510
 #define CSR_TMODES      0x504
 
 #define CSR_HARTID      0x50b
@@ -85,5 +92,9 @@
 #define read_hartid() read_csr(CSR_HARTID)
 
 #endif
+
+#define read_coreid() read_csr(CSR_COREID)
+
+#define read_hartid() read_csr(CSR_HARTID)
 
 #endif // FLEXPRET_CSRS_H

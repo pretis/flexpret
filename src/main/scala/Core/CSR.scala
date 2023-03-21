@@ -295,6 +295,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     data_out := status(io.rw.thread)
   }
 
+  when(compare_addr(CSRs.core_id)) {
+    data_out := conf.coreId.U
+  }
+
   // ************************************************************
   // State update (override any CSR write)
 

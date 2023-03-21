@@ -6,18 +6,16 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-import Core.FlexpretConstants._
 
 import flexpret.core.{RegisterFile, RegisterFileReadIO, RegisterFileWriteIO}
-import flexpret.core.FlexpretConfiguration
 
-class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
+class RegisterFileTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"
 
   val threads = 3
@@ -62,7 +60,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "read back what we read before even if we are reading 0 next" in {
-    test(registerFile).withAnnotations(Seq(VerilatorBackendAnnotation)) { c =>
+    test(registerFile) { c =>
       val thread = 0
       val addr = 31
       val data = "hf00df00d".U
@@ -184,7 +182,7 @@ class RegisterFileTest extends FlatSpec with ChiselScalatestTester {
   }
 
   it should "not leak when reading/writing an invalid thread" in {
-    test(registerFile).withAnnotations(Seq(VerilatorBackendAnnotation)) { c =>
+    test(registerFile) { c =>
       val addr = 31
       val data0 = "hf00df00d".U
       val data1 = "hf00df11d".U

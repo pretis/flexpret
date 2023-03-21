@@ -6,13 +6,12 @@ import Core.FlexpretConstants._
 import Core._
 
 import java.io._
-import sbt._
 
 object FlexpretConfiguration {
   /**
    * Parse a given configuration string into a FlexpretConfiguration.
    */
-  def parseString(confString: String): FlexpretConfiguration = {
+  def parseString(confString: String, coreId:Int=0): FlexpretConfiguration = {
     val parsed = """(\d+)t(.*)-(\d+)i-(\d+)d.*-(.*)""".r.findFirstMatchIn(confString)
     new FlexpretConfiguration(
       parsed.get.group(1).toInt,
@@ -20,7 +19,18 @@ object FlexpretConfiguration {
       InstMemConfiguration(bypass=false, parsed.get.group(3).toInt),
       parsed.get.group(4).toInt,
       confString contains "mul",
-      parsed.get.group(5)
+      parsed.get.group(5),
+      coreId
+    )
+  }
+  def defaultCfg(): FlexpretConfiguration = {
+    new FlexpretConfiguration(
+      1,true,
+      InstMemConfiguration(bypass=false, 256),
+      24,
+      false,
+      "all",
+      0
     )
   }
 }
@@ -40,7 +50,8 @@ case class FlexpretConfiguration(
   imemConfig: InstMemConfiguration,
   dMemKB: Int,
   mul: Boolean,   // FIXME: Unused, to be removed.
-  features: String
+  features: String,
+  coreId: Int = 0
 ) {
   println("features: " + features)
   val mt = threads > 1
@@ -120,6 +131,10 @@ case class FlexpretConfiguration(
     MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH, MEMP_SH
   )
 
+  // Bootloader region
+  val dMemBtlSize = 0x1000
+  val iMemBtlSize = 0x1000
+
   // functionality
   val timeBits      = 32
   val timeInc       = 10
@@ -150,13 +165,18 @@ case class FlexpretConfiguration(
 
 /* Memory ranges */
 #define ISPM_START      0x00000000
-#define ISPM_END        0x${(1 << iMemAddrBits).toHexString}
+#define ISPM_END        (ISPM_START + 0x${(iMemDepth*4).toHexString})
 #define ISPM_SIZE_KB    ${imemConfig.sizeKB}
 #define DSPM_START      0x20000000
-#define DSPM_END        0x20000000 + 0x${(1 << dMemAddrBits).toHexString}
+#define DSPM_END        (DSPM_START + 0x${(dMemDepth*4).toHexString})
 #define DSPM_SIZE_KB    ${dMemKB}
 #define BUS_START       0x40000000
-#define BUS_END         0x40000000 + 0x${(1 << busAddrBits).toHexString}
+#define BUS_END         (BUS_START + 0x${(1 << busAddrBits).toHexString})
+#define ISPM_BTL_SIZE   0x${dMemBtlSize.toHexString}
+#define DSPM_BTL_SIZE   0x${iMemBtlSize.toHexString}
+#define ISPM_APP_START  (ISPM_START + 0x${dMemBtlSize.toHexString})
+#define DSPM_APP_START  (DSPM_START + 0x${iMemBtlSize.toHexString})
+
 
 /* Scheduling */
 #define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
@@ -188,7 +208,9 @@ case class FlexpretConfiguration(
 */
 ISPM_START    = 0x00000000 ;
 ISPM_END      = 0x${(1 << iMemAddrBits).toHexString} ;
+ISPM_APP_START = 0x${iMemBtlSize.toHexString} ;
 DSPM_START    = 0x20000000 ;
+DSPM_APP_START = 0x${dMemBtlSize.toHexString} ;
 DSPM_END      = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
 DSPM_SIZE_KB  = ${dMemKB} ;
 BUS_START     = 0x40000000 ;

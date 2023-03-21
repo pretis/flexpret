@@ -4,4 +4,5 @@ set -ex
 set -euo pipefail
 
 ./test/init.sh
-./mill flexpret.test
+#./mill flexpret.test
+sbt test

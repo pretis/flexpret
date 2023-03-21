@@ -6,22 +6,21 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
 import chisel3._
-import chisel3.stage.ChiselStage
-import chisel3.util.DecoupledIO
+import org.scalatest.flatspec.AnyFlatSpec
 
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import Core.StoreMask
 import Core.FlexpretConstants._
 
-class StoreMaskTest extends FlatSpec with ChiselScalatestTester {
+class StoreMaskTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "StoreMask"
 
   /* Simple module for testing purposes */
-  class StoreMaskModule extends MultiIOModule {
+  class StoreMaskModule extends Module {
     val address = IO(Input(UInt(4.W)))
     val memType = IO(Input(UInt(4.W)))
     val mask = IO(Output(UInt(4.W)))

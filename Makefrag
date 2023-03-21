@@ -13,34 +13,34 @@ ifndef APP_SOURCES
 $(error APP_SOURCES is not set)
 endif
 
+all: compile
+
 # Include specification for how to build libflexpret
 include $(FLEXPRET_ROOT_DIR)/programs/lib/Makefrag-lib
 
-STARTUP_SOURCES = $(LIB_DIR)/start.S $(LIB_DIR)/startup.c
-
-LINKER_SCRIPT := $(LIB_DIR)/linker/flexpret.ld
-RISCV_PREFIX := riscv32-unknown-elf-
-CC := $(RISCV_PREFIX)gcc
+LINKER_SCRIPT ?= $(FP_LIB_DIR)/linker/flexpret.ld
+RISCV_PREFIX = riscv32-unknown-elf-
+CC = $(RISCV_PREFIX)gcc
 AR = $(RISCV_PREFIX)ar
 OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
-EMU := $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
+EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs 
-INCS = -I$(LIB_DIR)/include
-LFLAGS = -T $(LINKER_SCRIPT) -L $(LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
-LLIBS = -L. -l$(FP_LIB)
+CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs $(APP_DEFS)
+INCS = $(LIB_INCS) $(APP_INCS)
+LFLAGS = -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
 
 
-.PHONY: compile riscv dump mem run clean
+.PHONY: compile riscv dump mem run clean recompile
 
 # Default target; generates the riscv, dump, and mem files
-compile: $(FP_LIB) riscv dump mem
+compile: riscv dump mem
 
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
-%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES)
-	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^ $(LLIBS)
+
+%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
 
 # Generates a dump file for debugging
 dump: $(NAME).dump
@@ -57,8 +57,11 @@ mem: $(NAME).mem
 
 # runs the program (generated .mem file) using fp-emu 
 run: $(NAME).mem
-	$(EMU) +ispm=$^;
+	@$(EMU) $^;
+
+# Clean and recompile
+recompile: clean compile
 
 # deletes all generated artifacts
 clean:
-	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a
+	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app

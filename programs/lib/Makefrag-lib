@@ -1,16 +1,23 @@
-# Makefile fragment that specifies how to build libflexpret
+# Makefile fragment that specifies adding the required source files to the build
+FP_LIB_DIR=$(FLEXPRET_ROOT_DIR)/programs/lib
 
-FP_LIB =flexpret
-LIB_DIR = $(FLEXPRET_ROOT_DIR)/programs/lib
-LIB_SOURCES = $(LIB_DIR)/syscalls.c \
-			   $(LIB_DIR)/flexpret_thread.c \
-			   $(LIB_DIR)/flexpret_lock.c \
-			   $(LIB_DIR)/tinyalloc/tinyalloc.c
+ifeq ($(MINIMAL_LIBFLEXPRET),true)
+LIB_SOURCES += \
+	$(FP_LIB_DIR)/flexpret_exceptions.c 
+else
+LIB_SOURCES += \
+	$(FP_LIB_DIR)/syscalls.c \
+	$(FP_LIB_DIR)/flexpret_thread.c \
+	$(FP_LIB_DIR)/flexpret_lock.c \
+	$(FP_LIB_DIR)/tinyalloc/tinyalloc.c \
+	$(FP_LIB_DIR)/flexpret_exceptions.c 
+endif
 
-LIB_OBJS = $(LIB_SOURCES:.c=.o)
-$(FP_LIB): $(LIB_OBJS)
-	@ $(AR) rcs lib$@.a $^
-	@ rm $(LIB_OBJS)
+LIB_INCS += -I$(FP_LIB_DIR)/include
 
-%.o: %.c
-	@ $(CC) $(CFLAGS) $(INCS) -c -o $@ $<
+# Default is startup.c, but the application can set this variable to use their own startup file
+STARTUP_FILE ?= $(FP_LIB_DIR)/startup.c
+
+# FIXME: This is extremely brittle. start.C HAS TO BE THE FIRST source file passed to gcc in order
+#	to have the ResetHandler be linked to 0x00.
+STARTUP_SOURCES = $(FP_LIB_DIR)/start.S $(STARTUP_FILE) 

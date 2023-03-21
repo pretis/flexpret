@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 #define LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX }
-typedef struct _lock_t {
-    bool     locked;
+typedef struct {
+    bool locked;
     uint32_t owner;
 } lock_t;
 

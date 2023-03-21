@@ -1,9 +1,6 @@
 /* A threaded version of add.c */
-#include <stdlib.h>
-#include <stdint.h>
 #include <flexpret.h>
-#include <flexpret_lock.h>
-#include <flexpret_thread.h>
+#include <stdlib.h>
 
 void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
@@ -29,9 +26,9 @@ int main() {
 
     thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
-    if (errno != 0) _fp_print(666);
+    assert(errno == 0);
     errno = thread_create(HRTT, &tid[1], t2_do_work, num);
-    if (errno != 0) _fp_print(666);
+    assert(errno == 0);
 
     void * exit_code_t1;
     void * exit_code_t2;

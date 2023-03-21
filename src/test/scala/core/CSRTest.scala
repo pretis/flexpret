@@ -6,10 +6,11 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
 import scala.language.implicitConversions
 
 import chisel3._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import chiseltest._
 
@@ -46,7 +47,7 @@ class CSRTestHelper(val c: CSR) {
   }
 }
 
-class CSRTest extends FlatSpec with ChiselScalatestTester {
+class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "CSR"
 
   val threads = 1
@@ -87,10 +88,10 @@ class CSRTest extends FlatSpec with ChiselScalatestTester {
         c.io.gpio.in(3).poke(1.U)
         c.clock.step()
         // Read them.
-        assert(c.readCSR(CSRs.gpiBase).litValue() == 1)
-        assert(c.readCSR(CSRs.gpiBase + 1).litValue() == 1)
-        assert(c.readCSR(CSRs.gpiBase + 2).litValue() == 0)
-        assert(c.readCSR(CSRs.gpiBase + 3).litValue() == 1)
+        assert(c.readCSR(CSRs.gpiBase).litValue == 1)
+        assert(c.readCSR(CSRs.gpiBase + 1).litValue == 1)
+        assert(c.readCSR(CSRs.gpiBase + 2).litValue == 0)
+        assert(c.readCSR(CSRs.gpiBase + 3).litValue == 1)
       }
     }
   }

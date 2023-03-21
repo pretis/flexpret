@@ -38,42 +38,14 @@ def add_vcd(contents: str) -> str:
     - finish the simulation
     - print the next value
     """
-    m = re.search(r'module Core\([\s\S]+?\);', contents, re.MULTILINE)
+    m = re.search(r'module Top\([\s\S]+?\);', contents, re.MULTILINE)
     assert m is not None
 
     orig_str = m.group()
     vcd_blob = """
 initial begin
-$dumpfile({mem_file_name, ".vcd"});
+$dumpfile("trace.vcd");
 $dumpvars;
-end
-
-// Previous value of tohost (NOT the previous CYCLE's value)
-reg [31:0] prev_tohost = 32'h0;
-
-// Previous CYCLE's value; used for change detection.
-// P.S. Verilog sucks. Easier to do RegNext() in Chisel.
-reg [31:0] lastCycle_tohost = 32'h0;
-
-always @(posedge clock) begin
-  lastCycle_tohost <= io_host_to_host;
-
-  // If the value changed this cycle, update prev_tohost
-  if (io_host_to_host != lastCycle_tohost) begin
-    prev_tohost <= io_host_to_host;
-    // Since the value changed, check the previous value and print
-    // if need be.
-    if (prev_tohost == 32'hbaaabaaa) begin
-      $display("tohost = %0d", io_host_to_host);
-      //$display("tohost_p = 0x%H", prev_tohost);
-    end
-  end else begin
-    prev_tohost <= prev_tohost;
-  end
-
-  if (io_host_to_host == 32'hdeaddead) begin
-    $finish;
-  end
 end
 """
 
@@ -81,14 +53,12 @@ end
 
 def main(args: List[str]) -> int:
     if len(args) < 2:
-        print(f"Usage: {args[0]} Core.v", file=sys.stderr)
+        print(f"Usage: {args[0]} Top.v", file=sys.stderr)
         return 1
 
     with open(args[1], 'r') as f:
         contents = str(f.read())
 
-    contents = "string mem_file_name;\n" + contents
-    contents = add_ispm(contents)
     contents = add_vcd(contents)
 
     print(contents)

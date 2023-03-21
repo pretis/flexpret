@@ -10,7 +10,7 @@ package flexpret.core
 import chisel3._
 import chisel3.util.log2Ceil
 import chisel3.util.MixedVec
-import chisel3.experimental.chiselName
+import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents of ISPM from file
 
 // Remove this eventually
 import Core._
@@ -25,6 +25,13 @@ class InstMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val write = Input(Bool())
   val data_in = Input(UInt(32.W))
   val ready = Output(Bool()) // doesn't have priority
+
+  def driveDefaultsFlipped() = {
+    addr := 0.U
+    enable := false.B
+    write := false.B
+    data_in := 0.U
+  }
 }
 
 class DataMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
@@ -34,6 +41,13 @@ class DataMemBusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val data_out = Output(UInt(32.W))
   val byte_write = Input(Vec(4, Bool()))
   val data_in = Input(UInt(32.W))
+
+  def driveDefaultsFlipped() = {
+    addr := 0.U
+    enable := false.B
+    data_in := 0.U
+    byte_write.map(_ := false.B)
+  }
 }
 
 class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
@@ -42,6 +56,10 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   val data_out = Output(UInt(32.W))
   val write = Input(Bool())
   val data_in = Input(UInt(32.W))
+
+  def driveDefaults(): Unit = {
+    data_out := 0.U
+  }
 }
 
 class HostIO() extends Bundle {
@@ -64,13 +82,9 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   //val int_exts = Input(Vec(conf.threads, Bool()))
 }
 
-@chiselName
-class Core(val confIn: FlexpretConfiguration) extends Module {
+class Core(confIn: FlexpretConfiguration) extends Module {
   implicit val conf = confIn
 
-  // Write flexpret_config.h and flexpret_config.ld to file
-  conf.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
-  conf.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
 
   val io = IO(new CoreIO)
 
@@ -101,5 +115,4 @@ class Core(val confIn: FlexpretConfiguration) extends Module {
     datapath.io.int_exts(tid) := io.int_exts(tid)
   }
   //io.int_exts <> datapath.io.int_exts
-
 }

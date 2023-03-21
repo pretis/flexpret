@@ -551,7 +551,5 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   io.exe_cycle     := exe_cycle
   io.exe_instret   := exe_instret
   io.mem_rd_write  := mem_rd_write
-
-
 }
 

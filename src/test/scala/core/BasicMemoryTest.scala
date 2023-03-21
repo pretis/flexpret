@@ -6,17 +6,15 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
-import org.scalatest._
-
-import chisel3._
-
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import Core.FlexpretConstants._
 
 import flexpret.core._
 
-class BasicMemoryTest extends FlatSpec with ChiselScalatestTester {
+class BasicMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Basic memory instructions"
 
   val threads = 1
@@ -99,11 +97,11 @@ class BasicMemoryTest extends FlatSpec with ChiselScalatestTester {
         for (i <- 0 to cycles) {
           c.clock.step()
           if (!seen1) {
-            if (c.io.host.to_host.peek.litValue == 0x1234face) seen1 = true
+            if (c.io.host.to_host.peek().litValue == 0x1234face) seen1 = true
           } else if (!seen2) {
-            if (c.io.host.to_host.peek.litValue == 0x12340000) seen2 = true
+            if (c.io.host.to_host.peek().litValue == 0x12340000) seen2 = true
           } else {
-            if (c.io.host.to_host.peek.litValue == BigInt("ffffffff", 16)) seen3 = true
+            if (c.io.host.to_host.peek().litValue == BigInt("ffffffff", 16)) seen3 = true
           }
         }
       } .join
