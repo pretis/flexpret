@@ -20,6 +20,7 @@ int main() {
 
     const uint32_t x = fib(16);
     _fp_print(x);
+    assert(x == 987);
 
     return 0;
 }

@@ -10,5 +10,8 @@ int main() {
     _fp_print(x);
     _fp_print(y);
 
+    assert(x == 1);
+    assert(y == 2);
+
     return 0;
 }
