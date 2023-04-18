@@ -15,6 +15,8 @@ SECTIONS
         *(.isr_vector)
         *(.text*)
         *(.eh_frame*)
+        *(.rodata .rodata*)
+        *(.srodata .srodata*)
 
         /* All text end */
         . = ALIGN(4);
@@ -25,7 +27,6 @@ SECTIONS
     {
         __data_start__ = .;
         *(.data .data.*)
-        *(.rodata*)
         *(.gnu.linkonce.d.*)
     } > RAM AT> ROM
 
@@ -36,7 +37,6 @@ SECTIONS
         PROVIDE( __global_pointer$ = . + 0x800 );
 
         *(.sdata .sdata.* .sdata2.*)
-        *(.srodata.*)
         *(.gnu.linkonce.s.*)
 
         /* All data end */
