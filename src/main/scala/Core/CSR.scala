@@ -344,6 +344,29 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
   }
 
+  val sleeper = Module(new Sleeper()).io
+  sleeper.tid := 0.U
+  sleeper.wake := false.B
+  sleeper.sleep := false.B
+  when (write && compare_addr(CSRs.wake)) {
+    sleeper.tid := io.rw.data_in
+    sleeper.wake := true.B
+    data_out := sleeper.state
+    when (sleeper.state =/= 0.U) {
+      wake(io.rw.data_in) := true.B
+    }
+  }
+  when (write && compare_addr(CSRs.sleep)) {
+    sleeper.tid := io.rw.thread
+    sleeper.sleep := true.B
+    data_out := sleeper.state
+    when (sleeper.state === 0.U) {
+      sleep := true.B
+    }
+  }
+
+
+
   // exception handling
   if (conf.exceptions) {
     when(io.exception) {
