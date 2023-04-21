@@ -348,6 +348,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   // Implement counting lock
   val countinglock = Module(new CountingLock()).io
   countinglock.driveInputDefaults()
+  countinglock.tid := io.rw.thread
 
   // increment operation, with 0 being interpreted as a reset
   when (write && compare_addr(CSRs.countinglock_inc)) {
@@ -358,10 +359,12 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   }
 
   // wait operation
+  // low bits specify lock_id
+  // high bits specify what value to wait for
   when (write && compare_addr(CSRs.countinglock_wait)) {
     countinglock.lock_wait := true.B
-    countinglock.tid := io.rw.thread
-    countinglock.lock_until := io.rw.data_in
+    countinglock.lock_id := io.rw.data_in(conf.threadBits - 1, 0)
+    countinglock.lock_until := io.rw.data_in >> conf.threadBits
   }
 
   // TODO: does this play nicely with other sleep/wake operations?
