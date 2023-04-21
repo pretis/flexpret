@@ -6,10 +6,10 @@ import chisel3.util._
 
 
 class SleeperIO(implicit val conf: FlexpretConfiguration) extends Bundle {
-    val valid = Input(Bool())
     val wake = Input(Bool())
+    val sleep = Input(Bool())
     val tid = Input(UInt(conf.threadBits.W))
-    val state = Output(UInt(2.W))
+    val state = Output(UInt(2.W)) // resulting state of tid
 }
 
 
@@ -17,34 +17,26 @@ class Sleeper(implicit val conf: FlexpretConfiguration) extends Module {
     val io = IO(new SleeperIO())
     io.state := 3.U // invalid state
 
-    val regAwake = RegInit(0.U(conf.threads.W))
-    val regCaffeinated = RegInit(0.U(conf.threads.W))
+    val regStates = RegInit(VecInit(Seq.fill(conf.threads) { 1.U(2.W) }))
+    val awake = regStates(io.tid)(0);
+    val caffeinated = regStates(io.tid)(1);
 
-    val mask = 1.U(conf.threads.W) << io.tid
-    val awake = (regAwake & mask) =/= 0.U(conf.threads.W)
-    val caffeinated = (regCaffeinated & mask) =/= 0.U(conf.threads.W)
-
-    when(io.valid) {
-        when(io.wake) {
-            when (awake || caffeinated) { // set state to caffeinated
-                regAwake := regAwake & (~mask)
-                regCaffeinated := regCaffeinated | mask
-                io.state := 2.U
-            } .otherwise { // set state to awake
-                regAwake := regAwake | mask
-                regCaffeinated := regCaffeinated & (~mask)
-                io.state := 1.U
-            }
-        }.otherwise {
-            when (caffeinated) { // set state to awake
-                regAwake := regAwake | mask
-                regCaffeinated := regCaffeinated & (~mask)
-                io.state := 1.U
-            } .otherwise { // set state to asleep
-                regAwake := regAwake & (~mask)
-                regCaffeinated := regCaffeinated & (~mask)
-                io.state := 0.U
-            }
+    when(io.wake) {
+        when (awake || caffeinated) { // set state to caffeinated
+            regStates(io.tid) := 2.U
+            io.state := 2.U
+        } .otherwise { // set state to awake
+            regStates(io.tid) := 1.U
+            io.state := 1.U
+        }
+    }
+    when(io.sleep) {
+        when (caffeinated) { // set state to awake
+            regStates(io.tid) := 1.U
+            io.state := 1.U
+        } .otherwise { // set state to asleep
+            regStates(io.tid) := 0.U
+            io.state := 0.U
         }
     }
 }
