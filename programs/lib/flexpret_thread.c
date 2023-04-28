@@ -4,6 +4,7 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 #include <flexpret_config.h>
+#include <flexpret_sleep.h>
 
 /*************************************************
  * FlexPRET's hardware thread scheduling functions
@@ -235,8 +236,7 @@ int thread_create(
             num_threads_busy += 1;
             // Signal the worker thread to do work.
             in_use[i] = true;
-            // FIXME: If the thread is asleep,
-            // wake up the thread.
+            fp_wake(i);
             hwlock_release();
             return 0;
         }
@@ -264,8 +264,7 @@ int thread_map(
         num_threads_busy += 1;
         // Signal the worker thread to do work.
         in_use[*hartid] = true;
-        // FIXME: If the thread is asleep,
-        // wake up the thread.
+        fp_wake(*hartid);
         hwlock_release();
         return 0;
     }
@@ -371,6 +370,7 @@ void worker_main() {
             num_threads_busy -= 1;
             in_use[hartid] = false;
             hwlock_release();
+            fp_sleep();
         }
     }
 

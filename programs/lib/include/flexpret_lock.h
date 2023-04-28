@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX }
+#define LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX, .first_waiter = 0, .has_first_waiter = false }
 typedef struct _lock_t {
     bool     locked;
     uint32_t owner;
+    bool has_first_waiter;
+    uint32_t first_waiter;
 } lock_t;
 
 /**

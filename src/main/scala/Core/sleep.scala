@@ -17,25 +17,28 @@ class Sleeper(implicit val conf: FlexpretConfiguration) extends Module {
     val io = IO(new SleeperIO())
     io.state := 3.U // invalid state
 
-    val regStates = RegInit(VecInit(Seq.fill(conf.threads) { 1.U(2.W) }))
-    val awake = regStates(io.tid)(0);
+    // in regStates, 0 = awake, 1 = asleep, 2 = caffeinated 
+    // (because initializing to non-zero is not possible?)
+    // in io.state, 0 = asleep, 1 = awake, 2 = caffeinated
+    val regStates = RegInit(VecInit(Seq.fill(conf.threads) { 0.U(2.W) }))
+    val asleep = regStates(io.tid)(0);
     val caffeinated = regStates(io.tid)(1);
 
     when(io.wake) {
-        when (awake || caffeinated) { // set state to caffeinated
+        when (!asleep) { // set state to caffeinated
             regStates(io.tid) := 2.U
             io.state := 2.U
         } .otherwise { // set state to awake
-            regStates(io.tid) := 1.U
+            regStates(io.tid) := 0.U
             io.state := 1.U
         }
     }
     when(io.sleep) {
         when (caffeinated) { // set state to awake
-            regStates(io.tid) := 1.U
+            regStates(io.tid) := 0.U
             io.state := 1.U
         } .otherwise { // set state to asleep
-            regStates(io.tid) := 0.U
+            regStates(io.tid) := 1.U
             io.state := 0.U
         }
     }
