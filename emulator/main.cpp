@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   // FIXME: Set this via command-line arguments.
   while (!Verilated::gotFinish()) {
     // Hold reset high the very first clock cycle.
-    if (timestamp == 0) {
+    if (timestamp <= 1) {
       top->reset = 1;
     } else {
       top->reset = 0;
