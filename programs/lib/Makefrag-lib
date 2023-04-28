@@ -9,6 +9,7 @@ LIB_SOURCES += \
 	$(FP_LIB_DIR)/syscalls.c \
 	$(FP_LIB_DIR)/flexpret_thread.c \
 	$(FP_LIB_DIR)/flexpret_lock.c \
+	$(FP_LIB_DIR)/flexpret_cond.c \
 	$(FP_LIB_DIR)/tinyalloc/tinyalloc.c \
 	$(FP_LIB_DIR)/flexpret_exceptions.c 
 endif

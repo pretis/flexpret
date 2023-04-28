@@ -1,0 +1,48 @@
+#ifndef FLEXPRET_COND_H
+#define FLEXPRET_COND_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <flexpret.h>
+
+typedef struct {
+    bool waiting[NUM_THREADS];
+    lock_t *lock;    
+} cond_t;
+#define COND_INITIALIZER(lock_ptr) { .waiting = {false}, .lock = lock_ptr}
+
+/**
+ * @brief Wait on the condition variable. The lock associated with `cond` must be held
+ * 
+ * @param cond 
+ * @return fp_ret_t 
+ */
+fp_ret_t cond_wait(cond_t * cond);
+
+/**
+ * @brief Wait on the condition variable with a timeout. Timeout is a 64 bit absolute timepoint given in nanosconds
+ * 
+ * @param cond 
+ * @return fp_ret_t FP_SUCCESS or FP_TIMEOUT
+ */
+fp_ret_t cond_timed_wait(cond_t * cond, uint64_t timeout);
+
+/**
+ * @brief Signal a condition variable and wake up a waiting thread.
+ * FIXME: There is no fairness implemented. The threads with lower hartid are prioritized
+ * 
+ * @param cond 
+ * @return fp_ret_t 
+ */
+fp_ret_t cond_signal(cond_t * cond);
+
+/**
+ * @brief Signal all waiting threads
+ * 
+ * @param cond 
+ * @return fp_ret_t 
+ */
+fp_ret_t cond_broadcast(cond_t * cond);
+
+#endif
