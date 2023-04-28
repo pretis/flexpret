@@ -3,15 +3,14 @@
  * C++ main entry point for Verilator simulation.
  *
  * Copyright 2021 Edward Wang <edwardw@eecs.berkeley.edu>
+ * Copyright 2023 Erling Rennemo Jellum <erling.r.jellum@ntnu.no>
  */
 #include "VVerilatorTop.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <iostream>
 
-
 uint64_t timestamp = 0;
-
 
 double sc_time_stamp() {
   return timestamp;
@@ -29,7 +28,6 @@ int main(int argc, char* argv[]) {
   Verilated::commandArgs(argc, argv);
   Verilated::traceEverOn(true);
 
-
   VVerilatorTop * top = new VVerilatorTop;
   VerilatedVcdC *trace;
   if (trace_enabled) {
@@ -37,11 +35,16 @@ int main(int argc, char* argv[]) {
     top->trace(trace, 99);
     trace->open("trace.vcd");
   }
-  
-
 
   // FIXME: Set this via command-line arguments.
   while (!Verilated::gotFinish()) {
+    // Hold reset high the very first clock cycle.
+    if (timestamp == 0) {
+      top->reset = 1;
+    } else {
+      top->reset = 0;
+    }
+
     top->clock = 1;
     top->eval();
     timestamp++;
