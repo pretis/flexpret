@@ -36,10 +36,9 @@ int main(int argc, char* argv[]) {
     trace->open("trace.vcd");
   }
 
-  // FIXME: Set this via command-line arguments.
   while (!Verilated::gotFinish()) {
-    // Hold reset high the very first clock cycle.
-    if (timestamp <= 1) {
+    // Hold reset high the two first clock cycles.
+    if (timestamp <= 2 {
       top->reset = 1;
     } else {
       top->reset = 0;
