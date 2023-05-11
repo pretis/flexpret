@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
-    if (timestamp <= 2 {
+    if (timestamp <= 2) {
       top->reset = 1;
     } else {
       top->reset = 0;
