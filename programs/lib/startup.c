@@ -127,12 +127,18 @@ void Reset_Handler() {
         // to wake up and execute up to here,
         // by allocating the slots to them.
         slot_t slots[8];
-        for (int i = 0; i < NUM_THREADS; i++)
+        for (int i = 0; i < NUM_THREADS; i++) {
             slots[i] = i;
+        }
         // Disable slots with ID >= NUM_THREADS,
         for (int j = NUM_THREADS; j < SLOTS_SIZE; j++)
             slots[j] = SLOT_D;
+        
+        // Acquire lock and allow all threads to start execute as HRTTs
         hwlock_acquire();
+        for (int i = 0; i < NUM_THREADS; i++) {
+            tmode_set(i, TMODE_HA);
+        }
         slot_set(slots, 8);
         hwlock_release();
 

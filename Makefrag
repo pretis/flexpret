@@ -57,7 +57,7 @@ mem: $(NAME).mem
 
 # runs the program (generated .mem file) using fp-emu 
 run: $(NAME).mem
-	@$(EMU) $^;
+	@$(EMU) +ispm=$^;
 
 # Clean and recompile
 recompile: clean compile
