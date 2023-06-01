@@ -38,27 +38,20 @@ static inline void delay_for(unsigned int duration_ns)
  */
 static inline uint64_t rdtime64()
 {
-  uint32_t lo_pre = rdtime();
-  uint32_t hi = read_csr(CSR_TIMEH);
-  uint32_t lo_post = rdtime();
+  // Read out lower and higher 32 bits of time
+  uint32_t hi_pre = read_csr(CSR_TIMEH);
+  uint32_t lo = rdtime();
+  uint32_t hi_post = read_csr(CSR_TIMEH);
+  
+  uint32_t diff = hi_post - hi_pre;
 
-  uint64_t res;
-  if (lo_post > lo_pre) {
-    // Normal situation
-    res = (uint64_t) hi << 32 | lo_pre;
+  if(diff == 0) {
+    return (uint64_t) ((uint64_t) hi_pre << 32) | ((uint64_t )lo);
   } else {
-    // There was a wrap. Read out higher bits again to make sure 
-    uint32_t hi_post = read_csr(CSR_TIMEH);
-    if (hi_post > hi) {
-      // This means that we read hi BEFORE the wrap
-      res = (uint64_t) hi << 32 | lo_pre;
-    } else {
-      // We read hi AFTER the wrap. So we subtract 1 and get the correct timestamp
-      hi--;
-      res = (uint64_t) hi << 32 | lo_pre;
-    }
+    // Either lo was read before wrap, or after wrap. Simple solution: Read again
+    // FIXME: Proper fix to this problem is in HW. Provide atomic reading of the TIMEH and TIMEL registers
+    return rdtime64();
   }
-  return res;
 }
 
 #endif
