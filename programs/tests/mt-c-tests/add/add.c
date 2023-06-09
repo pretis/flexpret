@@ -36,6 +36,7 @@ int main() {
     thread_join(tid[1], &exit_code_t2);
 
     _fp_print(*num);
+    assert(*num == 3);
 
     return 0;
 }

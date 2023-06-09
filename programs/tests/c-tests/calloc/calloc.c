@@ -11,6 +11,7 @@ int main() {
     }
     for (uint32_t j = 0; j < length; j++) {
         _fp_print(arr[j]);
+        assert(arr[j] == j);
     }
 
     // Free the memory.

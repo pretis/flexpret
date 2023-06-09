@@ -15,6 +15,7 @@ int main() {
     : "r"(x)
     );
     _fp_print(y); // y = 4322
+    assert(y == 4322);
 
     void *p = (void*)0x20004000;
 
@@ -27,6 +28,7 @@ int main() {
     : "r"(x), "r"(p)
     );
     _fp_print(z); // z = 4320
+    assert(z == 4320);
 
     // Check lbu implementation.
     asm volatile (
@@ -36,6 +38,7 @@ int main() {
     : "r"(p)
     );
     _fp_print(z); // z = 224, i.e. 0x00E0
+    assert(z == 224);
 
     return 0;
 }
