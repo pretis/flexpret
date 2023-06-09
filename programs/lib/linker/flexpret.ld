@@ -36,7 +36,7 @@ SECTIONS
         PROVIDE( __global_pointer$ = . + 0x800 );
 
         *(.sdata .sdata.* .sdata2.*)
-        *(.srodata*)
+        *(.srodata .srodata.*)
         *(.gnu.linkonce.s.*)
 
         /* All data end */
