@@ -3,12 +3,12 @@
  * C++ main entry point for Verilator simulation.
  *
  * Copyright 2021 Edward Wang <edwardw@eecs.berkeley.edu>
- * Copyright 2023 Erling Rennemo Jellum <erling.r.jellum@ntnu.no>
  */
 #include "VVerilatorTop.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <iostream>
+#include <fstream>
 
 #include "../../programs/lib/include/flexpret_hwconfig.h"
 
@@ -58,17 +58,25 @@ int main(int argc, char* argv[]) {
   int exitcode = EXIT_SUCCESS;
 
   bool trace_enabled = false;
+  bool measure_enabled = false;
+
   for (int i = 1; i< argc; i++) {
     if (!strcmp(argv[i], "--trace")) {
       std::cout << "Tracing enabled" << std::endl;
       trace_enabled = true;
+    }
+
+    if (!strcmp(argv[i], "--measure")) {
+      std::cout << "Measure enabled" << std::endl;
+      measure_enabled = true;
     }
   }
 
   Verilated::commandArgs(argc, argv);
   Verilated::traceEverOn(true);
 
-  VVerilatorTop * top = new VVerilatorTop;
+
+  VVerilatorTop *top = new VVerilatorTop;
   VerilatedVcdC *trace;
   if (trace_enabled) {
     trace = new VerilatedVcdC;
@@ -76,15 +84,20 @@ int main(int argc, char* argv[]) {
     trace->open("trace.vcd");
   }
 
+  std::ofstream measure;
+  if (measure_enabled) {
+    measure = std::ofstream ("measure.out", std::ofstream::app);
+  }
+
   printf_init();
 
   while (!Verilated::gotFinish()) {
-    // Hold reset high the two first clock cycles.
-    if (timestamp <= 2) {
-      top->reset = 1;
-    } else {
-      top->reset = 0;
-    }
+//    // Hold reset high the two first clock cycles.
+//    if (timestamp <= 2) {
+//      top->reset = 1;
+//    } else {
+//      top->reset = 0;
+//    }
 
     top->clock = 1;
     top->eval();
@@ -131,6 +144,10 @@ int main(int argc, char* argv[]) {
   if (trace_enabled) {
     trace->close();
     delete trace;
+  }
+  if (measure_enabled) {
+    measure << timestamp;
+    measure.close();
   }
 
   delete top;
