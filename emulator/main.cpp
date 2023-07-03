@@ -92,12 +92,12 @@ int main(int argc, char* argv[]) {
   printf_init();
 
   while (!Verilated::gotFinish()) {
-//    // Hold reset high the two first clock cycles.
-//    if (timestamp <= 2) {
-//      top->reset = 1;
-//    } else {
-//      top->reset = 0;
-//    }
+    // Hold reset high the two first clock cycles.
+    if (timestamp <= 2) {
+      top->reset = 1;
+    } else {
+      top->reset = 0;
+    }
 
     top->clock = 1;
     top->eval();
