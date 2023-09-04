@@ -344,6 +344,41 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
   }
 
+
+  // Implement counting lock
+  val countinglock = Module(new CountingLock()).io
+  countinglock.driveInputDefaults()
+  countinglock.tid := io.rw.thread
+
+  // increment operation, with 0 being interpreted as a reset
+  when (write && compare_addr(CSRs.countinglock_inc)) {
+    countinglock.increment := io.rw.data_in
+    when (io.rw.data_in === 0.U) {
+      countinglock.reset := true.B
+    }
+  }
+
+  // wait operation
+  // low bits specify lock_id
+  // high bits specify what value to wait for
+  when (write && compare_addr(CSRs.countinglock_wait)) {
+    countinglock.lock_wait := true.B
+    countinglock.lock_id := io.rw.data_in(conf.threadBits - 1, 0)
+    countinglock.lock_until := io.rw.data_in >> conf.threadBits
+  }
+
+  // TODO: does this play nicely with other sleep/wake operations?
+  // i.e. delay_until instruction, sleeper module
+  when (countinglock.sleep) {
+    sleep := true.B
+  }
+  for (tid <- 0 until conf.threads) {
+    when (countinglock.wake(tid)) {
+      wake(tid) := true.B
+    }
+  }
+
+
   // exception handling
   if (conf.exceptions) {
     when(io.exception) {
