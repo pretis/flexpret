@@ -25,7 +25,7 @@ SECTIONS
     {
         __data_start__ = .;
         *(.data .data.*)
-        *(.rodata*)
+        *(.rodata .rodata.*)
         *(.gnu.linkonce.d.*)
     } > RAM AT> ROM
 
@@ -36,7 +36,7 @@ SECTIONS
         PROVIDE( __global_pointer$ = . + 0x800 );
 
         *(.sdata .sdata.* .sdata2.*)
-        *(.srodata*)
+        *(.srodata .srodata.*)
         *(.gnu.linkonce.s.*)
 
         /* All data end */
