@@ -4,22 +4,29 @@
 #include <errno.h>
 
 #include <flexpret.h>
+#include <flexpret_assert.h>
 
 int main() {
-    int ret = close(28);
-    _fp_print(errno);
+    int ret;
+    
+    ret = close(28);
+    assert(ret == -1);
+    assert(errno == ENOSYS);
 
-    int pid = getpid();
-    _fp_print(errno);
+    ret = getpid();
+    assert(ret == -1);
+    assert(errno == ENOSYS);
 
     struct timeval tv;
     ret = gettimeofday(&tv, NULL);
-    _fp_print(errno);
+    assert(ret == 0);
+    assert(errno == 0);
+
     _fp_print(tv.tv_sec);
     _fp_print(tv.tv_usec);
 
     exit(1);
 
-    // Should not be printed
-    _fp_print(1);
+    // Should never reach this
+    assert(0);
 }
