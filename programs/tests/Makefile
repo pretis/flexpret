@@ -28,6 +28,7 @@ MT_C_TESTS_DIRS = \
 	add \
 	lockowner \
 	swlock \
+	syscall \
 	threadcancel 
 
 # Transform list into e.g. c-tests/add/add/out

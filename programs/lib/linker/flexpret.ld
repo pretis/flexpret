@@ -27,12 +27,13 @@ SECTIONS
         *(.data .data.*)
         *(.rodata .rodata.*)
         *(.gnu.linkonce.d.*)
+
+        . = ALIGN(4);
     } > RAM AT> ROM
 
     .sdata :
     {
         /* Configure global pointer: https://www.sifive.com/blog/all-aboard-part-3-linker-relaxation-in-riscv-toolchain */
-        . = ALIGN(4);
         PROVIDE( __global_pointer$ = . + 0x800 );
 
         *(.sdata .sdata.* .sdata2.*)
@@ -59,7 +60,7 @@ SECTIONS
         *(.sbss.*)
 
         /* All bss end */
-        . = ALIGN(4);
+        . = ALIGN(8);
         __bss_end__ = .;
     } > RAM
 
