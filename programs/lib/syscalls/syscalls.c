@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <errno.h>      // Defines ENOSYS.
 #include <sys/time.h>
+#include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
 
 #include <flexpret_io.h>
 #include <flexpret_csrs.h>
@@ -27,7 +30,7 @@ struct _reent *__getreent(void) {
 }
 
 int *__errno(void) {
-    return (int *)__getreent();
+    return (int *) _REENT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +43,17 @@ static inline const uint64_t ns_to_s(const uint64_t ns) {
 
 static inline const uint64_t ns_to_us(const uint64_t ns) {
     return ((uint64_t) (ns) / (uint64_t) (1e3));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Initialization
+////////////////////////////////////////////////////////////////////////////////
+
+void _write_init(void);
+
+void syscalls_init(void) {
+    _impure_ptr = &_reents[0];
+    _write_init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,12 +132,12 @@ int _rename (const char *, const char *) {
 
 // FIXME: This should not be actually called because of tinyalloc.
 void *_sbrk(int incr) {
-   extern char   end; /* Set by linker.  */
+   extern char   __end; /* Set by linker.  */
    static char * heap_end;
    char *        prev_heap_end;
 
    if (heap_end == 0)
-     heap_end = & end;
+     heap_end = &__end;
 
    prev_heap_end = heap_end;
    heap_end += incr;
@@ -151,16 +165,34 @@ int _wait (int *) {
     return -1;
 }
 
-_ssize_t _write (int, const void *, size_t) {
+int _write_emulation(int fd, const void *ptr, int len);
+int _write_fpga(int fd, const void *ptr, int len) { 
+    // TODO: Implement UART comm here
     errno = ENOSYS;
     return -1;
 }
 
-int _gettimeofday(struct timeval *__tp, void *__tzp) {
+_ssize_t _write (int fd, const void *ptr, size_t len) {
+    if (fd == STDOUT_FILENO || fd == STDERR_FILENO || true /* TODO: Remove true */) {
+        errno = 0;
+#ifdef __EMULATOR__
+        return _write_emulation(fd, ptr, len);
+#else
+        return _write_fpga(fd, ptr, len);
+#endif
+    } else {
+        // TODO: Write to what the fd maps to
+        errno = ENOSYS;
+        return -1;
+    }
+
+}
+
+int _gettimeofday(struct timeval *tv, void *tz) {
     errno = 0;
     uint64_t ns = rdtime64();
-    __tp->tv_sec  = ns_to_s(ns);
-    __tp->tv_usec = ns_to_us(ns % (int) (1e9));
+    tv->tv_sec  = ns_to_s(ns);
+    tv->tv_usec = ns_to_us(ns % (int) (1e9));
     return 0;
 }
 

@@ -408,7 +408,9 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   io.control.csr_tmodes := csr.io.tmodes
 
   // I/O
-  io.host.to_host := csr.io.host.to_host
+  for (tid <- 0 until conf.threads) {
+    io.host.to_host(tid) := csr.io.host.to_host(tid)
+  }
   io.gpio <> csr.io.gpio
 
 

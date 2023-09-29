@@ -62,8 +62,8 @@ class BusIO(implicit conf: FlexpretConfiguration) extends Bundle {
   }
 }
 
-class HostIO() extends Bundle {
-  val to_host = Output(UInt(32.W))
+class HostIO(implicit conf: FlexpretConfiguration) extends Bundle {
+  val to_host = Output(Vec(conf.threads, UInt(32.W)))
 }
 
 class GPIO(implicit conf: FlexpretConfiguration) extends Bundle {
@@ -79,12 +79,13 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val host = new HostIO()
   val gpio = new GPIO()
   val int_exts = Input(Vec(8, Bool()))
+
+  val thread_id = Output(UInt(conf.threadBits.W))
   //val int_exts = Input(Vec(conf.threads, Bool()))
 }
 
 class Core(confIn: FlexpretConfiguration) extends Module {
   implicit val conf = confIn
-
 
   val io = IO(new CoreIO)
 
@@ -114,5 +115,7 @@ class Core(confIn: FlexpretConfiguration) extends Module {
   for (tid <- 0 until conf.threads) {
     datapath.io.int_exts(tid) := io.int_exts(tid)
   }
+
+  io.thread_id := control.io.if_tid
   //io.int_exts <> datapath.io.int_exts
 }

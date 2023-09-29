@@ -6,10 +6,12 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
 
 void* t1_gettimeofday(void* arg) {
     int iterations = (*(int *) arg);
     struct timeval tv;
+    printf("run t1\n");
     for (int i = 0; i < iterations; i++) {
         gettimeofday(&tv, NULL);
         assert(errno == 0);
@@ -18,6 +20,7 @@ void* t1_gettimeofday(void* arg) {
 
 void* t2_close(void* arg) {
     int iterations = (*(int *) arg);
+    printf("run t2\n");
     for (int i = 0; i < iterations; i++) {
         close(22);
         assert(errno == ENOSYS);
@@ -25,8 +28,9 @@ void* t2_close(void* arg) {
 }
 
 int main() {
-    
-    int iterations = 1000;
+    printf("Run main\n");
+
+    int iterations = 100;
     thread_t tid[2];
     int ok = thread_create(HRTT, &tid[0], t1_gettimeofday, &iterations);
     assert(ok == 0);

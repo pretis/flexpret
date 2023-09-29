@@ -12,6 +12,7 @@ SECTIONS
 {
     .text :
     {
+        __stext = .;
         *(.isr_vector)
         *(.text*)
         *(.eh_frame*)
@@ -23,7 +24,7 @@ SECTIONS
 
     .data :
     {
-        __data_start__ = .;
+        __sdata = .;
         *(.data .data.*)
         *(.rodata .rodata.*)
         *(.gnu.linkonce.d.*)
@@ -42,13 +43,13 @@ SECTIONS
 
         /* All data end */
         . = ALIGN(4);
-        __data_end__ = .;
+        __edata = .;
         
     } > RAM AT> ROM
 
     .bss :
     {
-        __bss_start__ = .;
+        __sbss = .;
         *(.bss)
         *(.bss.*)
         *(.gnu.linkonce.b.*)
@@ -61,9 +62,9 @@ SECTIONS
 
         /* All bss end */
         . = ALIGN(8);
-        __bss_end__ = .;
+        __ebss = .;
     } > RAM
 
-    end = .;
+    __end = .;
 }
 

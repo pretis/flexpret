@@ -4,27 +4,50 @@
 #include <stdint.h>
 #include "flexpret_csrs.h"
 
-// Write a generic value to the tohost CSR
-static inline void write_tohost(uint32_t val) { write_csr(CSR_TOHOST, val); }
+#define CSR_TOHOST_PRINTF (0xffffffff)
+#define CSR_TOHOST_PRINT_INT (0xbaaabaaa)
 
+static inline void write_tohost_tid(uint32_t, uint32_t);
+
+static inline void write_tohost(uint32_t val) {
+  int tid = read_hartid();
+  write_tohost_tid(tid, val);
+}
+
+// Abort simulation. Simulation environment will terminate if any core makes this call
+// FIXME: Get line number which triggered abort also out
+static inline void _fp_abort(void) {
+  write_tohost(0xdeadbeef);
+}
+
+// Write a generic value to the tohost CSR
+static inline void write_tohost_tid(uint32_t tid, uint32_t val) {
+  switch(tid) {
+    case 0: write_csr(CSR_TOHOST(0), val); break;
+    case 1: write_csr(CSR_TOHOST(1), val); break;
+    case 2: write_csr(CSR_TOHOST(2), val); break;
+    case 3: write_csr(CSR_TOHOST(3), val); break;
+    case 4: write_csr(CSR_TOHOST(4), val); break;
+    case 5: write_csr(CSR_TOHOST(5), val); break;
+    case 6: write_csr(CSR_TOHOST(6), val); break;
+    case 7: write_csr(CSR_TOHOST(7), val); break;
+    default: _fp_abort();
+  }
+}
 
 // Print the given value in the simulation
 static inline void _fp_print(uint32_t val) {
+  int tid = read_hartid();
   // while(swap_csr(CSR_HWLOCK, 1) == 0);
-  write_csr(CSR_TOHOST, 0xbaaabaaa);
-  write_csr(CSR_TOHOST, val);
+  write_tohost_tid(tid, CSR_TOHOST_PRINT_INT);
+  write_tohost_tid(tid, val);
   // swap_csr(CSR_HWLOCK, 0);
 }
 
 // Finish/stop the simulation
-static inline void _fp_finish() { write_csr(CSR_TOHOST, 0xdeaddead); }
-
-// Abort simulation. Simulation environment will terminate if any core makes this call
-// FIXME: Get line number which triggered abort also out
-static inline void _fp_abort() {
-  write_csr(CSR_TOHOST, 0xdeadbeef);
+static inline void _fp_finish(void) { 
+  write_tohost(0xdeaddead);
 }
-
 
 // GPO ports, if port width < 32, then upper bits ignored
 // CSR_GPO_*

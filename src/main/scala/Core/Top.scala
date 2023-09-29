@@ -14,14 +14,15 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 
 } 
 
-class VerilatorTopIO extends Bundle {
+class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
     val stop = Output(Bool())
+    val to_host = Output(Vec(cfg.threads, UInt(32.W)))
 }
 
 class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
 
-    val io = IO(new VerilatorTopIO)
-    val regPrintNext = RegInit(false.B)
+    val io = IO(new VerilatorTopIO(cfg))
+    val regPrintNext = RegInit(VecInit(Seq.fill(cfg.threads) {false.B} ))
 
     io.stop := false.B
 
@@ -35,23 +36,27 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     core.io.int_exts.foreach(_ := false.B)
 
     // Catch termination from core
-    when(core.io.host.to_host === "hdeaddead".U) {
-        printf(cf"SUCCESS: FlexPRET terminated execution\n")
-        io.stop := true.B
-    }
+        for (tid <- 0 until cfg.threads) {
+        when(core.io.host.to_host(tid) === "hdeaddead".U) {
+            printf(cf"[${tid}]: SUCCESS: FlexPRET terminated execution\n")
+            io.stop := true.B
+        }
 
-    // Catch abort from core
-    when(core.io.host.to_host === "hdeadbeef".U) {
-        printf(cf"ERROR: FlexPRET aborted simulation\n")
-        assert(false.B, "Emulation stopped")
-    }
+        // Catch abort from core
+        when(core.io.host.to_host(tid) === "hdeadbeef".U) {
+            printf(cf"[${tid}]: ERROR: FlexPRET aborted simulation\n")
+            assert(false.B, "Emulation stopped")
+        }
 
-    // Handle printfss
-    when(core.io.host.to_host === "hbaaabaaa".U) {
-      regPrintNext := true.B
-    }.elsewhen(regPrintNext) {
-      printf(cf"${core.io.host.to_host}\n")
-      regPrintNext := false.B
+        io.to_host(tid) := core.io.host.to_host(tid)
+
+        // Handle printfss
+        when(core.io.host.to_host(tid) === "hbaaabaaa".U) {
+          regPrintNext(tid) := true.B
+        }.elsewhen(regPrintNext(tid)) {
+          printf(cf"[${tid}]: ${core.io.host.to_host(tid)}\n")
+          regPrintNext(tid) := false.B
+        }
     }
 }
 

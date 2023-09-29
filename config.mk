@@ -34,4 +34,16 @@ PROG_DIR ?= isa
 #PROG_DIR = examples
 PROG_CONFIG ?= $(TARGET)
 
+DEFINES :=
 
+ifeq ($(TARGET),emulator)
+DEFINES += -D __EMULATOR__
+else ifeq ($(TARGET),fpga)
+DEFINES += -D __FPGA__
+endif
+
+ifeq ($(DEBUG),true)
+DEFINES += -D  DEBUG
+else ifeq ($(DEBUG),false)
+DEFINES += -D NDEBUG
+endif
