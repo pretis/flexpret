@@ -27,6 +27,9 @@ int *__errno(void) {
     return &_REENT->_errno;
 }
 
+char *__env[] = { 0 };
+char **environ;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Helper functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +49,7 @@ static inline const uint64_t ns_to_us(const uint64_t ns) {
 void _write_init(void);
 
 void syscalls_init(void) {
+    environ = &__env[0];
     _impure_ptr = &_reents[0];
     _write_init();
 }
@@ -53,6 +57,12 @@ void syscalls_init(void) {
 ////////////////////////////////////////////////////////////////////////////////
 // Syscall implementations
 ////////////////////////////////////////////////////////////////////////////////
+
+void _exit (int) {
+    _fp_finish();
+    while(1) {}
+    __builtin_unreachable();
+}
 
 int _close (int fd) {
     errno = ENOSYS;
@@ -188,10 +198,4 @@ int _gettimeofday(struct timeval *tv, void *tz) {
     tv->tv_sec  = ns_to_s(ns);
     tv->tv_usec = ns_to_us(ns % (int) (1e9));
     return 0;
-}
-
-void _exit (int) {
-    _fp_finish();
-    while(1) {}
-    __builtin_unreachable();
 }
