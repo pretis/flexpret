@@ -26,7 +26,7 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-include $(FLEXPRET_ROOT_DIR)/config.mk
+include $(FLEXPRET_ROOT_DIR)/defines.mk
 
 CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs $(APP_DEFS) $(DEFINES)
 INCS = $(LIB_INCS) $(APP_INCS)

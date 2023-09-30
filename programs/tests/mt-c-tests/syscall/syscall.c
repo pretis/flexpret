@@ -11,7 +11,6 @@
 void* t1_gettimeofday(void* arg) {
     int iterations = (*(int *) arg);
     struct timeval tv;
-    printf("run t1\n");
     for (int i = 0; i < iterations; i++) {
         gettimeofday(&tv, NULL);
         assert(errno == 0);
@@ -20,7 +19,6 @@ void* t1_gettimeofday(void* arg) {
 
 void* t2_close(void* arg) {
     int iterations = (*(int *) arg);
-    printf("run t2\n");
     for (int i = 0; i < iterations; i++) {
         close(22);
         assert(errno == ENOSYS);
@@ -28,8 +26,6 @@ void* t2_close(void* arg) {
 }
 
 int main() {
-    printf("Run main\n");
-
     int iterations = 100;
     thread_t tid[2];
     int ok = thread_create(HRTT, &tid[0], t1_gettimeofday, &iterations);
@@ -43,6 +39,7 @@ int main() {
     thread_join(tid[1], &exit_code_t2);
 
     _fp_print(1);
+    puts("Success!\n");
 
     return 0;
 }

@@ -193,7 +193,31 @@ case class FlexpretConfiguration(
 #define GPO_SIZES       {${gpoPortSizes.mkString(",")}}
 
 #endif
-    """
+
+"""
+  }
+
+  def generateMakeConfig() : String = {
+    return s"""
+#
+# This flexpret core config file is auto-generated, and based on the
+# configuration used to build the flexpret emulator.
+#
+# Do not edit.
+#
+#
+
+HAVE_THREADS := ${threads}
+HAVE_FLEXPRET := ${flex}
+HAVE_ISPM_KBYTES := ${imemConfig.sizeKB}
+HAVE_DSPM_KBYTES := ${dMemKB}
+HAVE_MUL := ${mul}
+
+# FIXME: Both set statically for now.
+HAVE_TARGET := emulator
+HAVE_DEBUG := true
+
+"""
   }
 
 
@@ -215,24 +239,28 @@ DSPM_END      = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
 DSPM_SIZE_KB  = ${dMemKB} ;
 BUS_START     = 0x40000000 ;
 BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
-  """
+
+"""
+  }
+
+  def writeConfigCommon(path: String, genFunc: () => String): Unit = {
+    val file = new File(path)
+    file.getParentFile.mkdirs()
+    file.createNewFile()
+    val writer = new PrintWriter(file)
+    writer.write(genFunc())
+    writer.close()
   }
 
   def writeConfigHeaderToFile(path: String): Unit = {
-    val file = new File(path)
-    file.getParentFile.mkdirs()
-    file.createNewFile()
-    val writer = new PrintWriter(file)
-    writer.write(generateCoreConfigHeader())
-    writer.close()
+    writeConfigCommon(path, generateCoreConfigHeader)
   }
 
   def writeLinkerConfigToFile(path: String): Unit = {
-    val file = new File(path)
-    file.getParentFile.mkdirs()
-    file.createNewFile()
-    val writer = new PrintWriter(file)
-    writer.write(generateCoreConfigLinkerParams())
-    writer.close()
+    writeConfigCommon(path, generateCoreConfigLinkerParams)
+  }
+
+  def writeMakeConfigToFile(path: String): Unit = {
+    writeConfigCommon(path, generateMakeConfig)
   }
 }

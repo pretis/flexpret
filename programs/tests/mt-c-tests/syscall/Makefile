@@ -1,5 +1,4 @@
 FLEXPRET_ROOT_DIR = ../../../../
 NAME = syscall
 APP_SOURCES = *.c
-LINKER_SCRIPT = ../../../lib/linker/flexpret4.ld
 include $(FLEXPRET_ROOT_DIR)/Makefrag

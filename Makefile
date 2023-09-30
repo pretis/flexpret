@@ -40,7 +40,7 @@ TEST_DIR = programs/tests
 # Default configuration of core, programs, and target. 
 # Override by modifying config.mk or pass varaible assignment as argument.
 # See file for description of variables.
-include config.mk
+include defconfig.mk
 
 # Construct core configuration string (used for directory naming).
 # Note: '?=' not used so string is only constructed once.

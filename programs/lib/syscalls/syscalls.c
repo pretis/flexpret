@@ -15,22 +15,16 @@
 
 // See https://github.com/eblot/newlib/blob/master/newlib/libc/include/reent.h
 // for more information on re-entry to newlib.
-#define __DYNAMIC_REENT__
-#define _REENT_SMALL
 #include <reent.h>
 
-// FIXME: Need to provide file descriptors to _reents variable
-// __FILE __sf[3];
-
 struct _reent _reents[NUM_THREADS] = { 0 };
-
 struct _reent *__getreent(void) {
     uint32_t hartid = read_hartid();
     return &_reents[hartid];
 }
 
 int *__errno(void) {
-    return (int *) _REENT;
+    return &_REENT->_errno;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,6 @@ int main() {
 
     uint32_t z = add(x, y);
     _fp_print(z);
-
     return 0;
 }
 

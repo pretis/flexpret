@@ -9,6 +9,7 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
     // Write flexpret_config.h and flexpret_config.ld to file
     cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
     cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
+    cfg.writeMakeConfigToFile("./config.mk")
 
     val core = Module(new Core(cfg))
 
@@ -36,16 +37,14 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     core.io.int_exts.foreach(_ := false.B)
 
     // Catch termination from core
-        for (tid <- 0 until cfg.threads) {
+    for (tid <- 0 until cfg.threads) {
         when(core.io.host.to_host(tid) === "hdeaddead".U) {
-            printf(cf"[${tid}]: SUCCESS: FlexPRET terminated execution\n")
             io.stop := true.B
         }
 
         // Catch abort from core
         when(core.io.host.to_host(tid) === "hdeadbeef".U) {
-            printf(cf"[${tid}]: ERROR: FlexPRET aborted simulation\n")
-            assert(false.B, "Emulation stopped")
+            io.stop := true.B
         }
 
         io.to_host(tid) := core.io.host.to_host(tid)

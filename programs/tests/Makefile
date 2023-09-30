@@ -34,22 +34,26 @@ MT_C_TESTS_DIRS = \
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)
 
-# Default option.
+include $(FLEXPRET_ROOT_DIR)/config.mk
+
+ifeq ($(HAVE_THREADS),1)
+all: run-c-tests
+else
 all: run-c-tests run-mt-c-tests
+endif
 
 # .out file is created from compiled .mem file by running the emulator
 %.out: %.mem
-	$(EMU) +ispm=$< | tee $@
-	@$(RES_PARSER) $@
+	-@set -o pipefail; $(EMU) +ispm=$< | tee $@; $(RES_PARSER) $@ $$?
 	
 
 # .mem file is created by compiling using the Makefile in the test dir
 %.mem:
-	make -C $(dir $@) compile
+	@make -C $(dir $@) compile > /dev/null
 
 # If emulator not present, build the default. 
 $(EMU):
-	make -C $(FLEXPRET_ROOT_DIR) emulator	
+	make -C $(FLEXPRET_ROOT_DIR) emulator
 
 # Run single threaded c-tests
 run-c-tests: $(EMU) $(C_TESTS_RES)
