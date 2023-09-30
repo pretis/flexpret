@@ -39,7 +39,6 @@ int main() {
     thread_join(tid[1], &exit_code_t2);
 
     _fp_print(1);
-    puts("Success!\n");
 
     return 0;
 }
