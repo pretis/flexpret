@@ -17,7 +17,7 @@
 // for more information on re-entry to newlib.
 #include <reent.h>
 
-struct _reent _reents[NUM_THREADS] = { 0 };
+struct _reent _reents[NUM_THREADS];
 struct _reent *__getreent(void) {
     uint32_t hartid = read_hartid();
     return &_reents[hartid];
@@ -47,10 +47,11 @@ static inline const uint64_t ns_to_us(const uint64_t ns) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void _write_init(void);
+_off_t _lseek(int, _off_t, int);
 
 void syscalls_init(void) {
-    environ = &__env[0];
     _impure_ptr = &_reents[0];
+    environ = &__env[0];
     _write_init();
 }
 
