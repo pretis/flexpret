@@ -46,15 +46,13 @@ SECTIONS
         __etext = ABSOLUTE(.);
     } > ROM
 
-    .init_section : ALIGN(4) {
+    /*.init_section : ALIGN(4) {
         _sinit = ABSOLUTE(.);
         KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
         KEEP(*(.init_array .ctors))
         . = ALIGN(4);
         _einit = ABSOLUTE(.);
-    } > ROM
-
-    _eronly = ABSOLUTE(.);
+    } > ROM*/
 
     .data : ALIGN(4) {
         __sdata = ABSOLUTE(.);
