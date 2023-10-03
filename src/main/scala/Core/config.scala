@@ -12,14 +12,15 @@ object FlexpretConfiguration {
    * Parse a given configuration string into a FlexpretConfiguration.
    */
   def parseString(confString: String, coreId:Int=0): FlexpretConfiguration = {
-    val parsed = """(\d+)t(.*)-(\d+)i-(\d+)d.*-(.*)""".r.findFirstMatchIn(confString)
+    val parsed = """(\d+)t(.*)-(\d+)i-(\d+)d-(\d+)s.*-(.*)""".r.findFirstMatchIn(confString)
     new FlexpretConfiguration(
       parsed.get.group(1).toInt,
       !parsed.get.group(2).isEmpty,
       InstMemConfiguration(bypass=false, parsed.get.group(3).toInt),
       parsed.get.group(4).toInt,
+      parsed.get.group(5).toInt,
       confString contains "mul",
-      parsed.get.group(5),
+      parsed.get.group(6),
       coreId
     )
   }
@@ -28,6 +29,7 @@ object FlexpretConfiguration {
       1,true,
       InstMemConfiguration(bypass=false, 256),
       24,
+      1024,
       false,
       "all",
       0
@@ -49,6 +51,7 @@ case class FlexpretConfiguration(
   flex: Boolean,
   imemConfig: InstMemConfiguration,
   dMemKB: Int,
+  stackSize: Int,
   mul: Boolean,   // FIXME: Unused, to be removed.
   features: String,
   coreId: Int = 0
@@ -177,6 +180,9 @@ case class FlexpretConfiguration(
 #define ISPM_APP_START  (ISPM_START + 0x${dMemBtlSize.toHexString})
 #define DSPM_APP_START  (DSPM_START + 0x${iMemBtlSize.toHexString})
 
+/* Stack sizes */
+#define STACKSIZE       0x${stackSize.toHexString}
+#define LOG2STACKSIZE   ${log2Ceil(stackSize)}
 
 /* Scheduling */
 #define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
@@ -211,6 +217,7 @@ HAVE_THREADS := ${threads}
 HAVE_FLEXPRET := ${flex}
 HAVE_ISPM_KBYTES := ${imemConfig.sizeKB}
 HAVE_DSPM_KBYTES := ${dMemKB}
+HAVE_STACKSIZE := ${stackSize}
 HAVE_MUL := ${mul}
 
 # FIXME: Both set statically for now.
