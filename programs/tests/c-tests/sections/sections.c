@@ -5,6 +5,7 @@
 #define TEXTDATA_INIT_VAL (41)
 #define RODATA_INIT_VAL   (42)
 #define SRODATA_INIT_VAL  (43)
+#define ARRAY_INIT_VAL    { 0x11, 0x22, 0x33, 0x44 }
 
 // Adding '#' after the sections removes an assembler warning; see
 // https://stackoverflow.com/questions/58455300/assembler-warning-with-gcc-warning-when-placing-data-in-text
@@ -16,9 +17,19 @@ int32_t d_textdata __attribute__((section(".text.d#")))         = TEXTDATA_INIT_
 int32_t d_rodata __attribute__((section(".rodata.d#")))         = RODATA_INIT_VAL;
 int32_t d_srodata __attribute__((section(".srodata.d#")))       = SRODATA_INIT_VAL;
 
-int32_t textdata __attribute__((section(".text#")))             = TEXTDATA_INIT_VAL;
-int32_t rodata __attribute__((section(".rodata#")))             = RODATA_INIT_VAL;
-int32_t srodata __attribute__((section(".srodata#")))           = SRODATA_INIT_VAL;
+int32_t textdata __attribute__((section(".text.i#")))           = TEXTDATA_INIT_VAL;
+int32_t rodata __attribute__((section(".rodata.i#")))           = RODATA_INIT_VAL;
+int32_t srodata __attribute__((section(".srodata.i#")))         = SRODATA_INIT_VAL;
+
+// A byte array in .text is a bad idea, since the instruction memory (IMEM) is not
+// byte adressable. We should expect that indexing this array yields the same
+// word for all four indicies.
+uint8_t arraytext[4] __attribute__((section(".text.a#")))       = ARRAY_INIT_VAL;
+
+// If the linker script is set up properly, .rodata and .srodata should be placed
+// in .data, i.e., the data memory (DMEM) and therefore be byte addressable.
+uint8_t arrayrodata[4] __attribute__((section(".rodata.a#")))   = ARRAY_INIT_VAL;
+uint8_t arraysrodata[4] __attribute__((section(".srodata.a#"))) = ARRAY_INIT_VAL;
 
 
 // Pass-by-value will copy it, losing the address
@@ -52,6 +63,29 @@ int main() {
     assert(textdata == TEXTDATA_INIT_VAL);
     assert(rodata   == RODATA_INIT_VAL);
     assert(srodata  == SRODATA_INIT_VAL);
+
+    const uint8_t array[4] = ARRAY_INIT_VAL;
+
+    for (int i = 0; i < sizeof(arraytext); i++) {
+        // Expect the array to have the same value for all indicies; see earlier
+        // for explanation
+        assert(
+            arraytext[i] == (
+                (array[0] <<  0) | 
+                (array[1] <<  8) |
+                (array[2] << 16) |
+                (array[3] << 24)
+            )
+        );
+    }
+
+    for (int i = 0; i < sizeof(arrayrodata); i++) {
+        assert(arrayrodata[i] == array[i]);
+    }
+
+    for (int i = 0; i < sizeof(arraysrodata); i++) {
+        assert(arraysrodata[i] == array[i]);
+    }
     
     return 0;
 }

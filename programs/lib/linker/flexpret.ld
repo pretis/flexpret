@@ -41,23 +41,15 @@ SECTIONS
         *(.isr_vector)
         *(.text .text.*)
         *(.eh_frame)
-        *(.rodata .rodata.* .srodata .srodata.*)
         . = ALIGN(4);
         __etext = ABSOLUTE(.);
     } > ROM
-
-    /*.init_section : ALIGN(4) {
-        _sinit = ABSOLUTE(.);
-        KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
-        KEEP(*(.init_array .ctors))
-        . = ALIGN(4);
-        _einit = ABSOLUTE(.);
-    } > ROM*/
 
     .data : ALIGN(4) {
         __sdata = ABSOLUTE(.);
         *(.data .data.*)
         *(.sdata .sdata.* .sdata2.*)
+        *(.rodata .rodata.* .srodata .srodata.*)
         *(.gnu.linkonce.d.*)
         *(.gnu.linkonce.s.*)
         CONSTRUCTORS
