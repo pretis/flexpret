@@ -196,25 +196,26 @@ case class FlexpretConfiguration(
 """
   }
 
+  // FIXME: The TARGET and DEBUG variables are set statically
   def generateMakeConfig() : String = {
     return s"""
 #
-# This flexpret core config file is auto-generated, and based on the
-# configuration used to build the flexpret emulator.
+# This flexpret core config file is auto-generated, and based on the configuration
+# used to build the FlexPRET CPU. As opposed to defconfig.mk, this file contains
+# the parameters that were used to build the FlexPRET.
 #
 # Do not edit.
 #
 #
 
-HAVE_THREADS := ${threads}
-HAVE_FLEXPRET := ${flex}
-HAVE_ISPM_KBYTES := ${imemConfig.sizeKB}
-HAVE_DSPM_KBYTES := ${dMemKB}
-HAVE_MUL := ${mul}
+THREADS := ${threads}
+FLEXPRET := ${flex}
+ISPM_KBYTES := ${imemConfig.sizeKB}
+DSPM_KBYTES := ${dMemKB}
+MUL := ${mul}
 
-# FIXME: Both set statically for now.
-HAVE_TARGET := emulator
-HAVE_DEBUG := true
+TARGET := emulator
+DEBUG := true
 
 """
   }

@@ -36,7 +36,7 @@ MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)
 
 include $(FLEXPRET_ROOT_DIR)/config.mk
 
-ifeq ($(HAVE_THREADS),1)
+ifeq ($(THREADS),1)
 all: run-c-tests
 else
 all: run-c-tests run-mt-c-tests

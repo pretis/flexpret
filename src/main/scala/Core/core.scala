@@ -79,8 +79,6 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val host = new HostIO()
   val gpio = new GPIO()
   val int_exts = Input(Vec(8, Bool()))
-
-  val thread_id = Output(UInt(conf.threadBits.W))
   //val int_exts = Input(Vec(conf.threads, Bool()))
 }
 
@@ -116,6 +114,5 @@ class Core(confIn: FlexpretConfiguration) extends Module {
     datapath.io.int_exts(tid) := io.int_exts(tid)
   }
 
-  io.thread_id := control.io.if_tid
   //io.int_exts <> datapath.io.int_exts
 }
