@@ -98,7 +98,12 @@ void printf_fsm(const int tid, const uint32_t reg) {
                 buffer[nbytes_received[tid]+1] = '\0';
                 nbytes_received[tid] = 0;
                 next_state[tid] = EXPECT_FD;
+#if NUM_THREADS > 1
                 dprintf(fd[tid], "[%i]: %s", tid, buffer);
+#else
+                // Thread id just becomes noise at this point
+                dprintf(fd[tid], "%s", buffer);
+#endif // NUM_THREADS > 1
             } else {
                 memcpy(&buffer[nbytes_received[tid]], &reg, sizeof(uint32_t));
                 nbytes_received[tid] += 4;

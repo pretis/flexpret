@@ -22,8 +22,8 @@ int main() {
     assert(ret == 0);
     assert(errno == 0);
 
-    _fp_print(tv.tv_sec);
-    _fp_print(tv.tv_usec);
+    printf("tv.tv_sec is %i\n", tv.tv_sec);
+    printf("tv.tv_usec is %i\n", tv.tv_usec);
 
     exit(1);
 

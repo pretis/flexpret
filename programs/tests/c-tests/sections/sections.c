@@ -35,8 +35,7 @@ uint8_t arraysrodata[4] __attribute__((section(".srodata.a#"))) = ARRAY_INIT_VAL
 // Pass-by-value will copy it, losing the address
 static inline void _print_addr_val(const int32_t *val)
 {
-    _fp_print((int) val);
-    _fp_print(*val);
+    printf("word has address %p and value %i\n", val, *val);
 }
 
 int main() {

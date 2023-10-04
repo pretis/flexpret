@@ -28,6 +28,7 @@ MT_C_TESTS_DIRS = \
 	add \
 	lockowner \
 	swlock \
+	printf \
 	syscall \
 	threadcancel 
 

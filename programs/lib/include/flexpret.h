@@ -13,6 +13,7 @@
 #include "flexpret_time.h"
 #include "flexpret_exceptions.h"
 
+#include <printf/printf.h>
 
 #include <stdbool.h>
 #include <stdint.h>
