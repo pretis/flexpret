@@ -12,6 +12,7 @@
 #include <flexpret_csrs.h>
 #include <flexpret_config.h>
 #include <flexpret_time.h>
+#include <flexpret_lock.h>
 
 // See https://github.com/eblot/newlib/blob/master/newlib/libc/include/reent.h
 // for more information on re-entry to newlib.
@@ -47,7 +48,6 @@ static inline const uint64_t ns_to_us(const uint64_t ns) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void _write_init(void);
-_off_t _lseek(int, _off_t, int);
 
 void syscalls_init(void) {
     _impure_ptr = &_reents[0];
@@ -177,20 +177,35 @@ int _write_fpga(int fd, const void *ptr, int len) {
     return -1;
 }
 
-_ssize_t _write (int fd, const void *ptr, size_t len) {
-    if (fd == STDOUT_FILENO || fd == STDERR_FILENO || true /* TODO: Remove true */) {
-        errno = 0;
-#ifdef __EMULATOR__
-        return _write_emulation(fd, ptr, len);
-#else
-        return _write_fpga(fd, ptr, len);
-#endif
-    } else {
-        // TODO: Write to what the fd maps to
-        errno = ENOSYS;
-        return -1;
-    }
+void putchar_(char character) {
+    static lock_t putlock;
+    static unsigned char buffer[64];
+    static int i = 0;
 
+    int tid = read_hartid();
+
+    if (character != '\0') {
+        if (putlock.locked && putlock.owner == tid) {
+            buffer[i++] = character;
+        } else {
+            lock_acquire(&putlock);
+            buffer[i++] = character;
+        }
+    } else {
+#ifdef __EMULATOR__
+        _write_emulation(1, buffer, i);
+#else
+        _write_fpga(1, buffer, i);
+#endif // __EMULATOR__
+        memset(buffer, 0, i);
+        i = 0;
+        lock_release(&putlock);
+    }
+}
+
+_ssize_t _write (int fd, const void *ptr, size_t len) {
+    errno = ENOSYS;
+    return -1;
 }
 
 int _gettimeofday(struct timeval *tv, void *tz) {
