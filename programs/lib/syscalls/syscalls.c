@@ -8,11 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include <flexpret_io.h>
-#include <flexpret_csrs.h>
-#include <flexpret_config.h>
-#include <flexpret_time.h>
-#include <flexpret_lock.h>
+#include <flexpret.h>
 
 // See https://github.com/eblot/newlib/blob/master/newlib/libc/include/reent.h
 // for more information on re-entry to newlib.

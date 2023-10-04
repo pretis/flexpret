@@ -3,8 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "flexpret_config.h"
-#include "flexpret_io.h"
+#include "flexpret.h"
 
 static bool emulation_ignore[NUM_THREADS];
 

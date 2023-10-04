@@ -18,7 +18,6 @@ THREADS ?= 4
 FLEXPRET ?= false
 ISPM_KBYTES ?= 256
 DSPM_KBYTES ?= 256
-STACK_SIZE ?= 2048
 MUL ?= false
 SUFFIX ?= all
 

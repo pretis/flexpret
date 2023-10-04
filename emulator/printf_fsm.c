@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
-#include "../../programs/lib/include/flexpret_config.h"
+#include "../../programs/lib/include/flexpret_hwconfig.h"
 
 /**
  * The finite state machine (fsm) is designed with four states: EXPECT_DELIM, 

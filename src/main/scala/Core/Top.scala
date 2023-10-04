@@ -7,7 +7,7 @@ import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents o
 abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 
     // Write flexpret_config.h and flexpret_config.ld to file
-    cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
+    cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_hwconfig.h")
     cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
     cfg.writeMakeConfigToFile("./config.mk")
 

@@ -10,7 +10,7 @@
 #include "verilated_vcd_c.h"
 #include <iostream>
 
-#include "../../programs/lib/include/flexpret_config.h"
+#include "../../programs/lib/include/flexpret_hwconfig.h"
 
 void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);

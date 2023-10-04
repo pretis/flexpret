@@ -7,7 +7,8 @@
  */
 
 
-#include "flexpret_config.h"
+#include "flexpret_hwconfig.h"
+#include "flexpret_swconfig.h"
 
 .section .text
 .globl _start
@@ -20,13 +21,13 @@
 
 .macro setStackPointer
     // Initialize stack pointer to the MAX DSPM address
-    // This address is code-generated to flexpret_config.h
+    // This address is code-generated to flexpret_hwconfig.h
     li sp, DSPM_END
     
     // Calculate how much to subtract
     // from the max address based on
-    // thread id and LOG2STACKSIZE from flexpret_config.h.
-    sll t1, t0, LOG2STACKSIZE // (thread_id) * 2^LOG2STACKSIZE
+    // thread id and STACKSIZE_BITS from flexpret_swconfig.h.
+    sll t1, t0, STACKSIZE_BITS // (thread_id) * 2^STACKSIZE_BITS
 
     // Set the stack pointer.
     sub sp, sp, t1
