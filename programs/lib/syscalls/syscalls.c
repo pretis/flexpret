@@ -178,7 +178,7 @@ int _write_fpga(int fd, const void *ptr, int len) {
 }
 
 void putchar_(char character) {
-    static lock_t putlock;
+    static lock_t putlock = LOCK_INITIALIZER;
     static unsigned char buffer[64];
     static int i = 0;
 
