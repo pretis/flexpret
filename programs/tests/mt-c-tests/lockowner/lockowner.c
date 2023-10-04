@@ -40,7 +40,7 @@ int main() {
     void * exit_code_t2;
     thread_join(tid[1], &exit_code_t2);
 
-    _fp_print(42);
+    printf("Test sucess\n");
 
     return 0;
 }

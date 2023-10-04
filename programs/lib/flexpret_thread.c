@@ -338,9 +338,9 @@ void worker_main() {
         in_use[hartid] = false;
         hwlock_release();
 
-        // Print a magic number that indicates
-        // the handling of a cancellation request.
-        _fp_print(6662);
+        // FIXME: Remove the print? It was kept here because it used to say
+        //        _fp_print(6662);
+        printf("worker_main: Handled cancellation request\n");
     }
     else if (val != 0) {
         // UNREACHABLE

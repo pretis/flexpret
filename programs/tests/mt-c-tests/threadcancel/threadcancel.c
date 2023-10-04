@@ -20,14 +20,15 @@ void* t1_do_work() {
     while(1) {
         thread_testcancel();
     }
-    _fp_print(111); // Not reachable.
+    printf("Got to non reachable code\n"); // Not reachable.
+    assert(0);
 }
 
 // t2 to cancel t1
 void* t2_do_work() {
     while(!ready);
     thread_cancel(tid[0]);
-    _fp_print(222);
+    printf("Sucessfully cancelled thread %i\n", tid[0]);
 }
 
 int main() {
@@ -41,6 +42,8 @@ int main() {
     void * exit_code_t2;
     thread_join(tid[0], &exit_code_t1);
     thread_join(tid[1], &exit_code_t2);
+
+    printf("Test sucess\n");
 
     return 0;
 }

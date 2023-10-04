@@ -48,14 +48,6 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
         }
 
         io.to_host(tid) := core.io.host.to_host(tid)
-
-        // Handle printfss
-        when(core.io.host.to_host(tid) === "hbaaabaaa".U) {
-          regPrintNext(tid) := true.B
-        }.elsewhen(regPrintNext(tid)) {
-          printf(cf"[${tid}]: ${core.io.host.to_host(tid)}\n")
-          regPrintNext(tid) := false.B
-        }
     }
 }
 

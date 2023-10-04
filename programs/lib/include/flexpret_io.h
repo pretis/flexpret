@@ -35,15 +35,6 @@ static inline void write_tohost_tid(uint32_t tid, uint32_t val) {
   }
 }
 
-// Print the given value in the simulation
-static inline void _fp_print(uint32_t val) {
-  int tid = read_hartid();
-  // while(swap_csr(CSR_HWLOCK, 1) == 0);
-  write_tohost_tid(tid, CSR_TOHOST_PRINT_INT);
-  write_tohost_tid(tid, val);
-  // swap_csr(CSR_HWLOCK, 0);
-}
-
 // Finish/stop the simulation
 static inline void _fp_finish(void) { 
   write_tohost(0xdeaddead);

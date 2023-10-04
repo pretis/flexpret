@@ -29,15 +29,15 @@ int test_signal() {
     errno = thread_create(HRTT, &tid[1], t2, NULL);
     assert(errno == 0);
     delay_for(100000);
-    _fp_print(count);
+    printf("count is %i\n", count);
     assert(count == 0);
     cond_signal(&cond);
     delay_for(100000);
-    _fp_print(count);
+    printf("count is %i\n", count);
     assert(count == 1);
     cond_signal(&cond);
     delay_for(100000);
-    _fp_print(count);
+    printf("count is %i\n", count);
     assert(count == 2);
 
 
@@ -55,11 +55,11 @@ int test_broadcast() {
     errno = thread_create(HRTT, &tid[1], t2, NULL);
     assert(errno == 0);
     delay_for(100000);
-    _fp_print(count);
+    printf("count is %i\n", count);
     assert(count == 0);
     cond_broadcast(&cond);
     delay_for(100000);
-    _fp_print(count);
+    printf("count is %i\n", count);
     assert(count == 2);
 
     void * exit_code_t1;
@@ -72,13 +72,13 @@ void test_timed_wait() {
 
     lock_acquire(&lock);
     uint64_t t1 = rdtime64();
-    _fp_print(t1);
+    printf("t1 is %i\n", t1);
     uint64_t wakeup = t1 + 100000;
-    _fp_print(wakeup);
+    printf("wakeup is %i\n", wakeup);
 
     cond_timed_wait(&cond, wakeup);
     uint64_t t2 = rdtime64();
-    _fp_print(t2);
+    printf("t2 is %i\n", t2);
 
     assert(t2 > wakeup);   
     lock_release(&lock);
