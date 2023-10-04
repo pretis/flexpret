@@ -100,15 +100,15 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
     test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
       timescope {
         val csrVal = "habcd_ef88".U
-        c.writeCSR(CSRs.tohost, csrVal)
+        c.writeCSR(CSRs.tohost0, csrVal)
         c.clock.step()
-        c.io.host.to_host.expect(csrVal)
+        c.io.host.to_host(0).expect(csrVal)
       }
       timescope {
         val csrVal = "h1234_5678".U
-        c.writeCSR(CSRs.tohost, csrVal)
+        c.writeCSR(CSRs.tohost0, csrVal)
         c.clock.step()
-        c.io.host.to_host.expect(csrVal)
+        c.io.host.to_host(0).expect(csrVal)
       }
     }
   }
