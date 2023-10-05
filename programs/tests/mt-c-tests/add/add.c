@@ -1,6 +1,6 @@
 /* A threaded version of add.c */
-#include <flexpret.h>
 #include <stdlib.h>
+#include <flexpret.h>
 
 void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
@@ -24,9 +24,9 @@ int main() {
 
     thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
-    assert(errno == 0);
+    assert(errno == 0, "Could not create thread");
     errno = thread_create(HRTT, &tid[1], t2_do_work, num);
-    assert(errno == 0);
+    assert(errno == 0, "Could not create thread");
 
     void * exit_code_t1;
     void * exit_code_t2;

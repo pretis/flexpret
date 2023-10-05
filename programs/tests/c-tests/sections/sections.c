@@ -13,9 +13,9 @@ const int32_t c_textdata __attribute__((section(".text.c#")))   = TEXTDATA_INIT_
 const int32_t c_rodata __attribute__((section(".rodata.c#")))   = RODATA_INIT_VAL;
 const int32_t c_srodata __attribute__((section(".srodata.c#"))) = SRODATA_INIT_VAL;
 
-int32_t d_textdata __attribute__((section(".text.d#")))         = TEXTDATA_INIT_VAL;
-int32_t d_rodata __attribute__((section(".rodata.d#")))         = RODATA_INIT_VAL;
-int32_t d_srodata __attribute__((section(".srodata.d#")))       = SRODATA_INIT_VAL;
+static int32_t d_textdata __attribute__((section(".text.d#")))         = TEXTDATA_INIT_VAL;
+static int32_t d_rodata __attribute__((section(".rodata.d#")))         = RODATA_INIT_VAL;
+static int32_t d_srodata __attribute__((section(".srodata.d#")))       = SRODATA_INIT_VAL;
 
 int32_t textdata __attribute__((section(".text.i#")))           = TEXTDATA_INIT_VAL;
 int32_t rodata __attribute__((section(".rodata.i#")))           = RODATA_INIT_VAL;
@@ -51,17 +51,17 @@ int main() {
     _print_addr_val(&rodata);
     _print_addr_val(&srodata);
 
-    assert(c_textdata == TEXTDATA_INIT_VAL);
-    assert(c_rodata   == RODATA_INIT_VAL);
-    assert(c_srodata  == SRODATA_INIT_VAL);
+    assert(c_textdata == TEXTDATA_INIT_VAL, "Const value not properly set");
+    assert(c_rodata   == RODATA_INIT_VAL, "Const value not properly set");
+    assert(c_srodata  == SRODATA_INIT_VAL, "Const value not properly set");
 
-    assert(d_textdata == TEXTDATA_INIT_VAL);
-    assert(d_rodata   == RODATA_INIT_VAL);
-    assert(d_srodata  == SRODATA_INIT_VAL);
+    assert(d_textdata == TEXTDATA_INIT_VAL, "Static value not properly set");
+    assert(d_rodata   == RODATA_INIT_VAL, "Static value not properly set");
+    assert(d_srodata  == SRODATA_INIT_VAL, "Static value not properly set");
 
-    assert(textdata == TEXTDATA_INIT_VAL);
-    assert(rodata   == RODATA_INIT_VAL);
-    assert(srodata  == SRODATA_INIT_VAL);
+    assert(textdata == TEXTDATA_INIT_VAL, "Value not properly set");
+    assert(rodata   == RODATA_INIT_VAL, "Value not properly set");
+    assert(srodata  == SRODATA_INIT_VAL, "Value not properly set");
 
     const uint8_t array[4] = ARRAY_INIT_VAL;
 
@@ -74,16 +74,16 @@ int main() {
                 (array[1] <<  8) |
                 (array[2] << 16) |
                 (array[3] << 24)
-            )
+            ), "Array in .text not word indexed as expected"
         );
     }
 
     for (int i = 0; i < sizeof(arrayrodata); i++) {
-        assert(arrayrodata[i] == array[i]);
+        assert(arrayrodata[i] == array[i], "Array in .rodata incorrect");
     }
 
     for (int i = 0; i < sizeof(arraysrodata); i++) {
-        assert(arraysrodata[i] == array[i]);
+        assert(arraysrodata[i] == array[i], "Array in .srodata incorrect");
     }
     
     return 0;

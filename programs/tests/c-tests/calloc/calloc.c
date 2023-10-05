@@ -7,11 +7,11 @@ int main() {
     int length = 10;
     uint32_t *arr = calloc(length, sizeof(uint32_t));
     
-    assert(arr);
+    assert(arr, "Array allocation unsucessful");
     
     // Check that array was initialized to zero
     for (uint32_t i = 0; i < length; i++) {
-        assert(arr[i] == 0);
+        assert(arr[i] == 0, "Array not initialized to zeros");
     }
 
     for (uint32_t i = 0; i < length; i++) {
@@ -19,7 +19,7 @@ int main() {
     }
 
     for (uint32_t i = 0; i < length; i++) {
-        assert(arr[i] == i);
+        assert(arr[i] == i, "Array element not set");
         printf("arr[%i] = %i\n", i, arr[i]);
     }
 

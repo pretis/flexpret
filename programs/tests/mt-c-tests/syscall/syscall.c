@@ -13,7 +13,7 @@ void* t1_gettimeofday(void* arg) {
     struct timeval tv;
     for (int i = 0; i < iterations; i++) {
         gettimeofday(&tv, NULL);
-        assert(errno == 0);
+        assert(errno == 0, "Errno not as expected");
     }
 }
 
@@ -21,7 +21,7 @@ void* t2_close(void* arg) {
     int iterations = (*(int *) arg);
     for (int i = 0; i < iterations; i++) {
         close(22);
-        assert(errno == ENOSYS);
+        assert(errno == ENOSYS, "Errno not as expected");
     }
 }
 
@@ -29,9 +29,9 @@ int main() {
     int iterations = 100;
     thread_t tid[2];
     int ok = thread_create(HRTT, &tid[0], t1_gettimeofday, &iterations);
-    assert(ok == 0);
+    assert(ok == 0, "Could not create thread");
     ok = thread_create(HRTT, &tid[1], t2_close, &iterations);
-    assert(ok == 0);
+    assert(ok == 0, "Could not create thread");
 
     void * exit_code_t1;
     void * exit_code_t2;

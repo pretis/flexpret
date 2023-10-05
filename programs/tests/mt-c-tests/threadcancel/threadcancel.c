@@ -21,7 +21,7 @@ void* t1_do_work() {
         thread_testcancel();
     }
     printf("Got to non reachable code\n"); // Not reachable.
-    assert(0);
+    assert(0, "Unreachable code reached");
 }
 
 // t2 to cancel t1
@@ -34,9 +34,9 @@ void* t2_do_work() {
 int main() {
 
     int errno = thread_map(HRTT, &tid[0], t1_do_work, NULL);
-    assert(errno==0);
+    assert(errno == 0, "Could not create thread");
     errno = thread_map(HRTT, &tid[1], t2_do_work, NULL);
-    assert(errno==0);
+    assert(errno == 0, "Could not create thread");
 
     void * exit_code_t1;
     void * exit_code_t2;

@@ -6,9 +6,9 @@
 
 #undef assert
 
-#define assert(cond) do {   \
+#define assert(cond, reason) do {   \
     if(((cond) == false)) {     \
-        _fp_abort();        \
+        _fp_abort(reason);        \
         gpo_write(0,0xFF);  \
         while(true) {}         \
     }                       \

@@ -20,7 +20,7 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        assert(false);
+        assert(false, "No more than 8 slots supported");
         return 1;
     }
     uint32_t val = 0;
@@ -44,12 +44,12 @@ int slot_set(slot_t slots[], uint32_t length) {
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
-        assert(false);
+        assert(false, "Invalid slot set");
         return 1;
     }
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
-        assert(false);
+        assert(false, "Hardware thread id out of bounds");
         return 2;
     }
     uint32_t mask = 0xf << (slot * 4);
@@ -343,8 +343,7 @@ void worker_main() {
         printf("worker_main: Handled cancellation request\n");
     }
     else if (val != 0) {
-        // UNREACHABLE
-        assert(false);
+        assert(false, "Reached unreachable code");
     }
 
     while(!exit_requested[hartid]) {

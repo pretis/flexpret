@@ -16,7 +16,7 @@ int main() {
 	*(ptr_new + 2) = 3;
 	for(i = 0; i < 3; i++) {
 		printf("realloced[%i] is %i\n", i, *(ptr_new + i));
-		assert(*(ptr_new + i) == (i + 1));
+		assert(*(ptr_new + i) == (i + 1), "Incorrect value");
 	}
 
 	return 0;

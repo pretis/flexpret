@@ -21,13 +21,13 @@ int main() {
     printf("fib(16) is %i\n", x);
     
     // Correct value
-    assert(x == 987);
+    assert(x == 987, "Incorrect value for fib(16)");
 
     x = fib(20);
     printf("fib(20) is %i\n", x);
 
     // Correct value
-    assert(x == 6765);
+    assert(x == 6765, "Incorrect value for fib(20)");
 
     return 0;
 }

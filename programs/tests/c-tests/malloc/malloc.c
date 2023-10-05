@@ -13,17 +13,17 @@ int main() {
     uint32_t* c = malloc(sizeof(uint32_t));
     uint32_t* d = malloc(sizeof(uint32_t));
 
-    assert(a && b && c && d);
+    assert(a && b && c && d, "Variable malloc failed");
 
     *a = A_INIT;
     *b = B_INIT;
     *c = C_INIT;
     *d = *a + *b + *c;
 
-    assert(*a == A_INIT);
-    assert(*b == B_INIT);
-    assert(*c == C_INIT);
-    assert(*d == (A_INIT + B_INIT + C_INIT));
+    assert(*a == A_INIT, "Incorrect value for a");
+    assert(*b == B_INIT, "Incorrect value for b");
+    assert(*c == C_INIT, "Incorrect value for c");
+    assert(*d == (A_INIT + B_INIT + C_INIT), "Incorrect value for d");
 
     printf("a has address %p with value %i\n", a, *a);
     printf("b has address %p with value %i\n", b, *b);
