@@ -12,7 +12,6 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
     cfg.writeMakeConfigToFile("./config.mk")
 
     val core = Module(new Core(cfg))
-
 } 
 
 class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
