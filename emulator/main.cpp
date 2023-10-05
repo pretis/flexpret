@@ -97,28 +97,29 @@ int main(int argc, char* argv[]) {
     top->clock = 0;
     top->eval();
 
-
-    if (top->io_stop == 1) {
-      // Check for abort signals from FlexPRET and propagate the exit code
-      // by returning it from the emulator
-      bool unknown_reason = true;
-      for (int i = 0; i < NUM_THREADS; i++) {
-        const uint32_t to_host = get_to_host(i, top);
-        
-        if (to_host == 0xdeaddead) {
-          exitcode = EXIT_SUCCESS;
-          unknown_reason = false;
-        } else if (to_host == 0xdeadbeef) {
-          exitcode = EXIT_FAILURE;
-          unknown_reason = false;
-        }
+    // Check for abort signals from FlexPRET and propagate the exit code
+    // by returning it from the emulator
+    bool should_exit = false;
+    bool unknown_reason = true;
+    for (int i = 0; i < NUM_THREADS; i++) {
+      const uint32_t to_host = get_to_host(i, top);
+      
+      if (to_host == 0xdeaddead) {
+        exitcode = EXIT_SUCCESS;
+        unknown_reason = false;
+        should_exit = true;
+      } else if (to_host == 0xdeadbeef) {
+        exitcode = EXIT_FAILURE;
+        unknown_reason = false;
+        should_exit = true;
       }
+    }
 
+    if (should_exit) {
       if (unknown_reason) {
         printf("%s: Exit due to unknown reason\n", argv[0]);
         exitcode = EXIT_FAILURE;
       }
-
       break;
     }
 

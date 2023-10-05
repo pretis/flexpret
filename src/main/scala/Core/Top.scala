@@ -15,16 +15,12 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 } 
 
 class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
-    val stop = Output(Bool())
     val to_host = Output(Vec(cfg.threads, UInt(32.W)))
 }
 
 class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
-
     val io = IO(new VerilatorTopIO(cfg))
     val regPrintNext = RegInit(VecInit(Seq.fill(cfg.threads) {false.B} ))
-
-    io.stop := false.B
 
     // Drive gpio input of each core to 0 by default
     core.io.gpio.in.map(_ := 0.U)
@@ -37,15 +33,6 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
 
     // Catch termination from core
     for (tid <- 0 until cfg.threads) {
-        when(core.io.host.to_host(tid) === "hdeaddead".U) {
-            io.stop := true.B
-        }
-
-        // Catch abort from core
-        when(core.io.host.to_host(tid) === "hdeadbeef".U) {
-            io.stop := true.B
-        }
-
         io.to_host(tid) := core.io.host.to_host(tid)
     }
 }
