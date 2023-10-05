@@ -29,31 +29,39 @@
  * 
  */
 
+#include <string.h>
+
 enum state {
     EXPECT_DELIM,
     EXPECT_FD,
-    EXPECT_LEN,
     EXPECT_DATA,
 };
 
 static enum state state[NUM_THREADS];
 static enum state next_state[NUM_THREADS];
 
-static uint8_t counter[NUM_THREADS];
 static int fd[NUM_THREADS];
-static int len[NUM_THREADS];
 static int nbytes_received[NUM_THREADS];
-static char buffer[1024];
+static char buffer[NUM_THREADS][128];
 
 void printf_init(void) {
     for (int i = 0; i < NUM_THREADS; i++) {
         state[i] = EXPECT_DELIM;
         next_state[i] = EXPECT_FD;
-        counter[i] = 0;
         fd[i] = 0;
-        len[i] = 0;
         nbytes_received[i] = 0;
+        memset(buffer[i], 0, sizeof(buffer[i]));
     }
+}
+
+static inline int _contains_terminator(const uint32_t word) {
+    for (int i = 0; i < sizeof(word); i++) {
+        if ((word & (0xFF << (i*8))) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 void printf_fsm(const int tid, const uint32_t reg) {
@@ -69,48 +77,29 @@ void printf_fsm(const int tid, const uint32_t reg) {
         if (reg != 0xFFFFFFFF) {
             fd[tid] = reg;
             state[tid] = EXPECT_DELIM;
-            next_state[tid] = EXPECT_LEN;
-            counter[tid] = 0;
-        } else {
-            counter[tid]++;
-        }
-        break;
-
-    case EXPECT_LEN:
-        if (reg != 0xFFFFFFFF) {
-            len[tid] = reg;
-            state[tid] = EXPECT_DELIM;
             next_state[tid] = EXPECT_DATA;
-            counter[tid] = 0;
-        } else {
-            counter[tid]++;
         }
         break;
 
     case EXPECT_DATA:
         if (reg != 0xFFFFFFFF) {
             state[tid] = EXPECT_DELIM;
-            int diff = len[tid] - nbytes_received[tid];
 
-            if (diff < 4) {
-                memcpy(&buffer[nbytes_received[tid]], &reg, sizeof(uint32_t));
-                nbytes_received[tid] += diff;
-                buffer[nbytes_received[tid]+1] = '\0';
+            int terminator_idx = _contains_terminator(reg);
+            if (terminator_idx != -1) {
+                memcpy(&buffer[tid][nbytes_received[tid]], &reg, sizeof(uint32_t));
                 nbytes_received[tid] = 0;
                 next_state[tid] = EXPECT_FD;
 #if NUM_THREADS > 1
-                dprintf(fd[tid], "[%i]: %s", tid, buffer);
+                printf("[%i]: %s", tid, buffer[tid]);
 #else
                 // Thread id just becomes noise at this point
-                dprintf(fd[tid], "%s", buffer);
+                printf("%s", buffer);
 #endif // NUM_THREADS > 1
             } else {
-                memcpy(&buffer[nbytes_received[tid]], &reg, sizeof(uint32_t));
+                memcpy(&buffer[tid][nbytes_received[tid]], &reg, sizeof(uint32_t));
                 nbytes_received[tid] += 4;
             }
-            counter[tid] = 0;
-        } else {
-            counter[tid]++;
         }
         break;
 

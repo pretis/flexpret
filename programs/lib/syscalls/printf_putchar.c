@@ -18,57 +18,64 @@
 
 #include "flexpret.h"
 
-int _write_emulation(int fd, const void *ptr, int len) {
+void _write_emulation(int fd, char character) {
+    static bool first_character[NUM_THREADS] = ARRAY_INITIALIZER(true);
+    
+    // Use these variables to buffer up four characters at a time and send them
+    // together. Keep one for each thread to make it thread-safe.
+    static uint32_t word[NUM_THREADS] = ARRAY_INITIALIZER(0);
+    static int word_idx[NUM_THREADS] = ARRAY_INITIALIZER(0);
+
     int tid = read_hartid();
 
-    // To understand the protocol, see the emulator's printf_fsm.c comments
-    write_tohost_tid(tid, CSR_TOHOST_PRINTF);
-    write_tohost_tid(tid, fd);
-
-    write_tohost_tid(tid, CSR_TOHOST_PRINTF);
-    write_tohost_tid(tid, len);
-
-    const int nwords = len / 4;
-    uint32_t word;
-
-    for (int i = 0; i < nwords+1; i++) {
-        memcpy(&word, ptr, sizeof(uint32_t));
+    if (first_character[tid]) {
+        // Write the additional information first, which is part of the defined
+        // protocol between the CPU and emulator
         write_tohost_tid(tid, CSR_TOHOST_PRINTF);
-        write_tohost_tid(tid, word);
-        ptr += sizeof(uint32_t);
+        write_tohost_tid(tid, fd); // TODO: Use real file descriptors?
+        first_character[tid] = false;
     }
 
-  	return len;
+    // Buffer up the character in the word
+    word[tid] |= (character << (8 * word_idx[tid]));
+    
+    if (word_idx[tid] == 3) {
+        // Write the word
+        write_tohost_tid(tid, CSR_TOHOST_PRINTF);
+        write_tohost_tid(tid, word[tid]);
+        word_idx[tid] = 0;
+        word[tid] = 0;
+    } else {
+        word_idx[tid]++;
+    }
+
+    // Last character
+    if (character == '\0') {
+        // If the word index is zero, then the word has already been written
+        // and we do not need to do anything
+        if (word_idx[tid] != 0) {
+            // Otherwise we need to send the word
+            write_tohost_tid(tid, CSR_TOHOST_PRINTF);
+            write_tohost_tid(tid, word[tid]);
+        }
+
+        // Reset for next printf
+        first_character[tid] = true;
+        word_idx[tid] = 0;
+        word[tid] = 0;
+    }
 }
 
-int _write_fpga(int fd, const void *ptr, int len) {
+int _write_fpga(int fd, char character) {
     // TODO: Implement UART comm here
     errno = ENOSYS;
     return -1;
 }
 
 void putchar_(char character) {
-    static lock_t putlock = LOCK_INITIALIZER;
-    static unsigned char buffer[64];
-    static int i = 0;
-
-    int tid = read_hartid();
-
-    if (character != '\0') {
-        if (putlock.locked && putlock.owner == tid) {
-            buffer[i++] = character;
-        } else {
-            lock_acquire(&putlock);
-            buffer[i++] = character;
-        }
-    } else {
 #ifdef __EMULATOR__
-        _write_emulation(1, buffer, i);
+    _write_emulation(1, character);
 #else
-        _write_fpga(1, buffer, i);
-#endif // __EMULATOR__
-        memset(buffer, 0, i);
-        i = 0;
-        lock_release(&putlock);
-    }
+    _write_fpga(1, character);
+#endif
 }

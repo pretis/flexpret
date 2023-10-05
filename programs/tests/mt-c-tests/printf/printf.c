@@ -6,11 +6,6 @@
 // Using floats increases the final .mem by approximately 30 kB
 #define HAVE_FLOATS (PRINTF_SUPPORT_DECIMAL_SPECIFIERS == 1)
 
-// FIXME: For some reason, the test fails for more than 4 threads. It seems
-//        to be some issue with more than 4 threads trying to use the locks, 
-//        though not sure about this...
-//static_assert(NUM_THREADS <= 4);
-
 int i = 22;
 const char *some_string = "This is some string!";
 
