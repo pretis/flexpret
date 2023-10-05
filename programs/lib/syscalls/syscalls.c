@@ -52,7 +52,7 @@ void syscalls_init(void) {
 // Syscall implementations
 ////////////////////////////////////////////////////////////////////////////////
 
-void _exit (int) {
+void _exit (int code) {
     _fp_finish();
     while(1) {}
     __builtin_unreachable();
@@ -63,12 +63,12 @@ int _close (int fd) {
     return -1;
 }
 
-int _execve (const char *, char *const *, char *const *) {
+int _execve (const char *pathname, char *const *argv, char *const *envp) {
     errno = ENOSYS;
     return -1;
 }
 
-int _fcntl (int, int, int) {
+int _fcntl (int fd, int cmd, int arg) {
     errno = ENOSYS;
     return -1;
 }
@@ -78,7 +78,7 @@ int _fork (void) {
     return -1;
 }
 
-int _fstat (int, struct stat *) {
+int _fstat (int fd, struct stat *st) {
     errno = ENOSYS;
     return -1;
 }
@@ -88,42 +88,42 @@ int _getpid (void) {
     return -1;
 }
 
-int _isatty (int) {
+int _isatty (int fd) {
     errno = ENOSYS;
     return -1;
 }
 
-int _kill (int, int) {
+int _kill (int pid, int sig) {
     errno = ENOSYS;
     return -1;
 }
 
-int _link (const char *, const char *) {
+int _link (const char *oldpath, const char *newpath) {
     errno = ENOSYS;
     return -1;
 }
 
-_off_t _lseek (int, _off_t, int) {
+_off_t _lseek (int fd, _off_t offset, int whence) {
     errno = ENOSYS;
     return -1;
 }
 
-int _mkdir (const char *, int) {
+int _mkdir (const char *pathname, int mode) {
     errno = ENOSYS;
     return -1;
 }
 
-int _open (const char *, int, int) {
+int _open (const char *path, int flags, int mode) {
     errno = ENOSYS;
     return -1;
 }
 
-_ssize_t _read (int, void *, size_t) {
+_ssize_t _read (int fd, void *data, size_t nbytes) {
     errno = ENOSYS;
     return -1;
 }
 
-int _rename (const char *, const char *) {
+int _rename (const char *oldpath, const char *newpath) {
     errno = ENOSYS;
     return -1;
 }
@@ -143,27 +143,27 @@ void *_sbrk(int incr) {
    return (void *) prev_heap_end;
 }
 
-int _stat (const char *, struct stat *) {
+int _stat (const char *path, struct stat *st) {
     errno = ENOSYS;
     return -1;
 }
 
-_CLOCK_T_ _times (struct tms *) {
+_CLOCK_T_ _times (struct tms *tms) {
     errno = ENOSYS;
     return -1;
 }
 
-int _unlink (const char *) {
+int _unlink (const char *path) {
     errno = ENOSYS;
     return -1;
 }
 
-int _wait (int *) {
+int _wait (int *wstatus) {
     errno = ENOSYS;
     return -1;
 }
 
-_ssize_t _write (int fd, const void *ptr, size_t len) {
+_ssize_t _write (int fd, const void *data, size_t nbytes) {
     errno = ENOSYS;
     return -1;
 }
