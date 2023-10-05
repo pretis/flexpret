@@ -43,12 +43,9 @@ static inline const uint64_t ns_to_us(const uint64_t ns) {
 // Initialization
 ////////////////////////////////////////////////////////////////////////////////
 
-void _write_init(void);
-
 void syscalls_init(void) {
     _impure_ptr = &_reents[0];
     environ = &__env[0];
-    _write_init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,39 +161,6 @@ int _unlink (const char *) {
 int _wait (int *) {
     errno = ENOSYS;
     return -1;
-}
-
-int _write_emulation(int fd, const void *ptr, int len);
-int _write_fpga(int fd, const void *ptr, int len) { 
-    // TODO: Implement UART comm here
-    errno = ENOSYS;
-    return -1;
-}
-
-void putchar_(char character) {
-    static lock_t putlock = LOCK_INITIALIZER;
-    static unsigned char buffer[64];
-    static int i = 0;
-
-    int tid = read_hartid();
-
-    if (character != '\0') {
-        if (putlock.locked && putlock.owner == tid) {
-            buffer[i++] = character;
-        } else {
-            lock_acquire(&putlock);
-            buffer[i++] = character;
-        }
-    } else {
-#ifdef __EMULATOR__
-        _write_emulation(1, buffer, i);
-#else
-        _write_fpga(1, buffer, i);
-#endif // __EMULATOR__
-        memset(buffer, 0, i);
-        i = 0;
-        lock_release(&putlock);
-    }
 }
 
 _ssize_t _write (int fd, const void *ptr, size_t len) {

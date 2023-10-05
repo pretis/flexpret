@@ -19,7 +19,7 @@ int main() {
 
     struct timeval tv;
     ret = gettimeofday(&tv, NULL);
-    assert(ret == 0, Return value not as expected);
+    assert(ret == 0, "Return value not as expected");
     assert(errno == 0, "Errno not as expected");
 
     printf("tv.tv_sec is %i\n", tv.tv_sec);
