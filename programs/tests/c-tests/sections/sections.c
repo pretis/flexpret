@@ -1,3 +1,15 @@
+/**
+ * @file sections.c
+ * @author Magnus Mæhlum (magnusmaehlum@outlook.com)
+ * 
+ * This test checks that data put in the different sections work as expected.
+ * It both prints the addresses and values of the data put in the sections.
+ * 
+ * Notably, data put in the .text section stays in the instruction memory,
+ * which is not byte addressible.
+ * 
+ */
+
 #include "flexpret.h"
 #include <stdlib.h>
 #include <stdint.h>

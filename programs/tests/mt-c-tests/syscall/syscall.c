@@ -1,4 +1,12 @@
-/* A threaded version of syscall.c */
+/**
+ * @file syscall.c
+ * @author Magnus Mæhlum (magnusmaehlum@outlook.com)
+ * 
+ * This is the threaded version of ../../c-tests/syscall/syscall.c
+ * Notably, it checks that errno is thread-safe.
+ * 
+ */
+
 #include <flexpret.h>
 #include <flexpret_assert.h>
 

@@ -1,3 +1,12 @@
+/**
+ * @file syscall.c
+ * @author Magnus Mæhlum (magnusmaehlum@outlook.com)
+ * 
+ * This test checks both that the system calls in ../../lib/syscalls/syscalls.c
+ * work as expected. It also checks that the errno variable works as expected.
+ * 
+ */
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
