@@ -13,7 +13,6 @@
 
 #define CSR_HARTID      0x50b
 
-//#define CSR_TOHOST      0x51e
 #define CSR_FROMHOST    0x51f
 #define CSR_TOHOST_BASE 0x530
 #define CSR_TOHOST(tid) (CSR_TOHOST_BASE + tid)
