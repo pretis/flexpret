@@ -3,9 +3,15 @@
 
 #include <stdint.h>
 #include "flexpret_csrs.h"
+#include <printf/printf.h>
 
 #define CSR_TOHOST_PRINTF (0xffffffff)
-#define CSR_TOHOST_PRINT_INT (0xbaaabaaa)
+#define CSR_TOHOST_FINISH (0xdeaddead)
+#define CSR_TOHOST_ABORT  (0xdeadbeef)
+
+#define PRINTF_COLOR_RED   "\x1B[31m"
+#define PRINTF_COLOR_GREEN "\x1B[32m"
+#define PRINTF_COLOR_NONE  "\x1B[0m"
 
 static inline void write_tohost_tid(uint32_t, uint32_t);
 
@@ -14,11 +20,15 @@ static inline void write_tohost(uint32_t val) {
   write_tohost_tid(tid, val);
 }
 
-// Abort simulation. Simulation environment will terminate if any core makes this call
-// FIXME: Get line number which triggered abort also out
-static inline void _fp_abort(void) {
-  write_tohost(0xdeadbeef);
-}
+#define _fp_abort() do { \
+  printf("%s: %i: " PRINTF_COLOR_RED "Abort\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
+  write_tohost(CSR_TOHOST_ABORT); \
+} while(0)
+
+#define _fp_finish() do { \
+  printf("%s: %i: " PRINTF_COLOR_GREEN "Finish\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
+  write_tohost(CSR_TOHOST_FINISH); \
+} while(0)
 
 // Write a generic value to the tohost CSR
 static inline void write_tohost_tid(uint32_t tid, uint32_t val) {
@@ -33,11 +43,6 @@ static inline void write_tohost_tid(uint32_t tid, uint32_t val) {
     case 7: write_csr(CSR_TOHOST(7), val); break;
     default: _fp_abort();
   }
-}
-
-// Finish/stop the simulation
-static inline void _fp_finish(void) { 
-  write_tohost(0xdeaddead);
 }
 
 // GPO ports, if port width < 32, then upper bits ignored
