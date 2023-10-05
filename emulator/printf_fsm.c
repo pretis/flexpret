@@ -6,26 +6,27 @@
 
 /**
  * The finite state machine (fsm) is designed with four states: EXPECT_DELIM, 
- * EXPECT_FD, EXPECT_LEN, and EXPECT_DATA. The "protocol" between the CPU and the
+ * EXPECT_FD, and EXPECT_DATA. The "protocol" between the CPU and the
  * emulator is as follows:
  * 
  * 1. The CPU transmits a delimiter (in this case, 0xFFFFFFFF)
  * 2. The CPU transmits the file descriptor it is printing to
  * 3. The CPU transmits a delimiter
- * 4. The CPU transmits the length of the following data
- * 5. The CPU transmits a delimiter
  *      while bytes received < length of data:
  *          6a. The CPU transmits one word of data
  *          6b. The CPU transmits a delimiter
  * 
  * The state transitions associated with one message are:
  * 
- * EXCEPT_DELIM -> EXPECT_FD   -> EXPECT_DELIM -> EXPECT_LEN  -> 
+ * EXCEPT_DELIM -> EXPECT_FD   -> EXPECT_DELIM -> EXPECT_DATA ->
  * EXPECT_DELIM -> EXPECT_DATA -> EXPECT_DELIM -> EXPECT_DATA -> ...
  * EXPECT_DELIM
  * 
  * Where the transitions between EXPECT_DATA -> EXPECT_DELIM -> EXPECT_DATA
  * can occur as many times as there are word inbound.
+ * 
+ * If for some reason more data needs to be sent before the payload data comes,
+ * it should be quite easy to add another state.
  * 
  */
 
@@ -93,7 +94,7 @@ void printf_fsm(const int tid, const uint32_t reg) {
 #if NUM_THREADS > 1
                 printf("[%i]: %s", tid, buffer[tid]);
 #else
-                // Thread id just becomes noise at this point
+                // Thread id just becomes noise in this case
                 printf("%s", buffer);
 #endif // NUM_THREADS > 1
             } else {

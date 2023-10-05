@@ -12,7 +12,7 @@ void hwlock_acquire() {
  */
 void hwlock_release() {
     if (swap_csr(CSR_HWLOCK, 0) != 1) {
-        assert(false, ""); // FIXME: Magnus: Unsure what reason to write here
+        assert(false, "Attempt to unlock hwlock but it was not locked");
     };
 }
 

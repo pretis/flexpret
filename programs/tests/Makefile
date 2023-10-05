@@ -8,12 +8,12 @@ RES_PARSER := $(FLEXPRET_ROOT_DIR)/scripts/test_result_parse.sh
 #--------------------------------------------------------------------
 C_TESTS_DIRS = \
 	add \
-	fib \
-	malloc \
 	calloc \
+	fib \
+	global \
+	malloc \
 	realloc \
 	lbu \
-	global \
 	syscall \
     gpio \
 	hwlock

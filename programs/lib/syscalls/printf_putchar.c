@@ -19,12 +19,12 @@
 #include "flexpret.h"
 
 void _write_emulation(int fd, char character) {
-    static bool first_character[NUM_THREADS] = ARRAY_INITIALIZER(true);
+    static bool first_character[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(true);
     
     // Use these variables to buffer up four characters at a time and send them
     // together. Keep one for each thread to make it thread-safe.
-    static uint32_t word[NUM_THREADS] = ARRAY_INITIALIZER(0);
-    static int word_idx[NUM_THREADS] = ARRAY_INITIALIZER(0);
+    static uint32_t word[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+    static int word_idx[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 
     int tid = read_hartid();
 
@@ -32,7 +32,7 @@ void _write_emulation(int fd, char character) {
         // Write the additional information first, which is part of the defined
         // protocol between the CPU and emulator
         write_tohost_tid(tid, CSR_TOHOST_PRINTF);
-        write_tohost_tid(tid, fd); // TODO: Use real file descriptors?
+        write_tohost_tid(tid, fd);
         first_character[tid] = false;
     }
 
@@ -74,7 +74,7 @@ int _write_fpga(int fd, char character) {
 
 void putchar_(char character) {
 #ifdef __EMULATOR__
-    _write_emulation(1, character);
+    _write_emulation(1, character); // TODO: Use real file descriptors?
 #else
     _write_fpga(1, character);
 #endif

@@ -22,27 +22,27 @@ typedef enum {
  * Use this for initializing arrays with varying size depending on the NUM_THREADS
  * macro. Example use case:
  * 
- * static bool need_init[NUM_THREADS] = ARRAY_INITIALIZER(true);
+ * static bool need_init[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(true);
  * 
- * static uint8_t nbytes_left[NUM_THREADS] = ARRAY_INITIALIZER(5);
+ * static uint8_t nbytes_left[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(5);
  * 
  */
 #if NUM_THREADS == 1
-    #define ARRAY_INITIALIZER(val) { val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val }
 #elif NUM_THREADS == 2
-    #define ARRAY_INITIALIZER(val) { val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val }
 #elif NUM_THREADS == 3
-    #define ARRAY_INITIALIZER(val) { val, val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val, val }
 #elif NUM_THREADS == 4
-    #define ARRAY_INITIALIZER(val) { val, val, val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val, val, val }
 #elif NUM_THREADS == 5
-    #define ARRAY_INITIALIZER(val) { val, val, val, val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val, val, val, val }
 #elif NUM_THREADS == 6
-    #define ARRAY_INITIALIZER(val) { val, val, val, val, val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val, val, val, val, val }
 #elif NUM_THREADS == 7
-    #define ARRAY_INITIALIZER(val) { val, val, val, val, val, val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val, val, val, val, val, val }
 #elif NUM_THREADS == 8
-    #define ARRAY_INITIALIZER(val) { val, val, val, val, val, val, val, val }
+    #define THREAD_ARRAY_INITIALIZER(val) { val, val, val, val, val, val, val, val }
 #endif
 
 #endif
