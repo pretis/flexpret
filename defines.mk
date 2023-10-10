@@ -1,3 +1,10 @@
+# This file derives #defines that are ultimately passed to the compiler
+# using the -D flag. Many of the #defines are based on the current CPU
+# configuration found in config.mk. 
+
+
+
+
 include ${FLEXPRET_ROOT_DIR}/config.mk
 
 PRINTF_DEFINES := -D PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT \
@@ -18,7 +25,7 @@ endif
 ifeq ($(DEBUG), true)
 DEFINES += -D  DEBUG
 else ifeq ($(DEBUG), false)
-DEFINES += -D NDEBUG
+DEFINES += -D NDEBUG # Will turn assert() into nothing
 endif
 
 # For configuration of newlib's reentracy feature; see comments in
@@ -28,4 +35,3 @@ DEFINES += -D __SINGLE_THREADED__
 else
 DEFINES += -D __DYNAMIC_REENT__
 endif
-
