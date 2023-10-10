@@ -136,3 +136,4 @@ To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and
 * Erling Jellum (erling.r.jellum@ntnu.no)
 * Martin Schoeberl (masca@dtu.dk)
 * Samuel Berkun (sberkun@berkeley.edu)
+* Magnus Mæhlum (magnmaeh@stud.ntnu.no)
