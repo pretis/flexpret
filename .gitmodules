@@ -3,4 +3,4 @@
 	url = https://github.com/pretis/tinyalloc.git
 [submodule "programs/lib/printf"]
 	path = programs/lib/printf
-	url = https://github.com/eyalroz/printf.git
+	url = https://github.com/pretis/printf.git
