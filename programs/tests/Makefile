@@ -1,6 +1,6 @@
 FLEXPRET_ROOT_DIR = ../..
 EMU=$(FLEXPRET_ROOT_DIR)/emulator/fp-emu
-
+SHELL := /bin/bash
 RES_PARSER := $(FLEXPRET_ROOT_DIR)/scripts/test_result_parse.sh
 
 #--------------------------------------------------------------------

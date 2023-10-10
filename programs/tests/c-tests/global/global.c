@@ -12,8 +12,5 @@ int main() {
     assert(x == 1, "x not properly set");
     assert(y == 2, "y not properly set");
 
-    assert(x == 1);
-    assert(y == 2);
-
     return 0;
 }
