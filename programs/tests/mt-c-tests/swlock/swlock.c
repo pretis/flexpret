@@ -11,7 +11,7 @@ void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
     lock_acquire(&lock);
     *_num += 1;
-    printf("num is %i\n", *_num);
+    _fp_print(*_num);
     lock_release(&lock);
 }
 
@@ -19,7 +19,7 @@ void* t2_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
     lock_acquire(&lock);
     *_num += 2;
-    printf("num is %i\n", *_num);
+    _fp_print(*_num);
     lock_release(&lock);
 }
 
@@ -27,20 +27,20 @@ int main() {
     
     uint32_t* num = malloc(sizeof(uint32_t));
     *num = 0;
-    printf("num is %i\n", *num);
+    _fp_print(*num);
 
     thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
-    assert(errno == 0, "Could not create thread");
+    if (errno != 0) _fp_print(666);
     errno = thread_create(HRTT, &tid[1], t2_do_work, num);
-    assert(errno == 0, "Could not create thread");
+    if (errno != 0) _fp_print(666);
 
     void * exit_code_t1;
     void * exit_code_t2;
     thread_join(tid[0], &exit_code_t1);
     thread_join(tid[1], &exit_code_t2);
 
-    printf("num is %i\n", *num);
+    _fp_print(*num);
 
     return 0;
 }

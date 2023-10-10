@@ -50,7 +50,7 @@ class CSRTestHelper(val c: CSR) {
 class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "CSR"
 
-  val threads = 4
+  val threads = 1
   val conf = FlexpretConfiguration(threads=threads, flex=false,
     InstMemConfiguration(bypass=false, sizeKB=512),
     dMemKB=512, mul=false, features="all")
@@ -100,37 +100,15 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
     test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
       timescope {
         val csrVal = "habcd_ef88".U
-        c.writeCSR(CSRs.tohost0, csrVal)
+        c.writeCSR(CSRs.tohost, csrVal)
         c.clock.step()
-        c.io.host.to_host(0).expect(csrVal)
+        c.io.host.to_host.expect(csrVal)
       }
       timescope {
         val csrVal = "h1234_5678".U
-        c.writeCSR(CSRs.tohost0, csrVal)
+        c.writeCSR(CSRs.tohost, csrVal)
         c.clock.step()
-        c.io.host.to_host(0).expect(csrVal)
-      }
-    }
-  }
-
-  it should "check that tohost registers do not intervene with each other" in {
-    test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
-      timescope {
-        val csrVals = Vector("h12345678".U, "hdeaddead".U, "hbeefbeef".U, "hdeadbeef".U)
-        
-        c.writeCSR(CSRs.tohost0, csrVals(0))
-        c.clock.step()
-        c.writeCSR(CSRs.tohost1, csrVals(1))
-        c.clock.step()
-        c.writeCSR(CSRs.tohost2, csrVals(2))
-        c.clock.step()
-        c.writeCSR(CSRs.tohost3, csrVals(3))
-        c.clock.step()
-
-        c.io.host.to_host(0).expect(csrVals(0))
-        c.io.host.to_host(1).expect(csrVals(1))
-        c.io.host.to_host(2).expect(csrVals(2))
-        c.io.host.to_host(3).expect(csrVals(3))
+        c.io.host.to_host.expect(csrVal)
       }
     }
   }

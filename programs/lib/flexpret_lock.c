@@ -12,7 +12,7 @@ void hwlock_acquire() {
  */
 void hwlock_release() {
     if (swap_csr(CSR_HWLOCK, 0) != 1) {
-        assert(false, "Attempt to unlock hwlock but it was not locked");
+        assert(false);
     };
 }
 
@@ -35,7 +35,7 @@ void lock_acquire(lock_t* lock) {
 
 void lock_release(lock_t* lock) {
     hwlock_acquire();
-    assert(read_hartid() == lock->owner, "Attempt to release lock not owned by thread");
+    assert(read_hartid() == lock->owner);
     lock->locked = false;
     lock->owner  = UINT32_MAX;
     hwlock_release();

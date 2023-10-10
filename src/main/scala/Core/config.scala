@@ -160,8 +160,8 @@ case class FlexpretConfiguration(
   * Do not edit.
   *
   */
-#ifndef FLEXPRET_HWCONFIG_H
-#define FLEXPRET_HWCONFIG_H
+#ifndef FLEXPRET_CONFIG_H
+#define FLEXPRET_CONFIG_H
 
 /* Memory ranges */
 #define ISPM_START      0x00000000
@@ -177,6 +177,7 @@ case class FlexpretConfiguration(
 #define ISPM_APP_START  (ISPM_START + 0x${dMemBtlSize.toHexString})
 #define DSPM_APP_START  (DSPM_START + 0x${iMemBtlSize.toHexString})
 
+
 /* Scheduling */
 #define ${if (flex) "SCHED_FLEX" else "SCHED_ROUND_ROBIN"}
 #define NUM_THREADS     ${threads}
@@ -191,33 +192,8 @@ case class FlexpretConfiguration(
 #define NUM_GPOS        ${gpoPortSizes.size}
 #define GPO_SIZES       {${gpoPortSizes.mkString(",")}}
 
-#endif // FLEXPRET_HWCONFIG_H
-
-"""
-  }
-
-  // FIXME: The TARGET and DEBUG variables are set statically
-  def generateMakeConfig() : String = {
-    return s"""
-#
-# This flexpret core config file is auto-generated, and based on the configuration
-# used to build the FlexPRET CPU. As opposed to defconfig.mk, this file contains
-# the parameters that were used to build the FlexPRET.
-#
-# Do not edit.
-#
-#
-
-THREADS := ${threads}
-FLEXPRET := ${flex}
-ISPM_KBYTES := ${imemConfig.sizeKB}
-DSPM_KBYTES := ${dMemKB}
-MUL := ${mul}
-
-TARGET := emulator
-DEBUG := true
-
-"""
+#endif
+    """
   }
 
 
@@ -239,28 +215,24 @@ DSPM_END      = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
 DSPM_SIZE_KB  = ${dMemKB} ;
 BUS_START     = 0x40000000 ;
 BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
-
-"""
+  """
   }
 
-  def writeConfigCommon(path: String, genFunc: () => String): Unit = {
+  def writeConfigHeaderToFile(path: String): Unit = {
     val file = new File(path)
     file.getParentFile.mkdirs()
     file.createNewFile()
     val writer = new PrintWriter(file)
-    writer.write(genFunc())
+    writer.write(generateCoreConfigHeader())
     writer.close()
   }
 
-  def writeConfigHeaderToFile(path: String): Unit = {
-    writeConfigCommon(path, generateCoreConfigHeader)
-  }
-
   def writeLinkerConfigToFile(path: String): Unit = {
-    writeConfigCommon(path, generateCoreConfigLinkerParams)
-  }
-
-  def writeMakeConfigToFile(path: String): Unit = {
-    writeConfigCommon(path, generateMakeConfig)
+    val file = new File(path)
+    file.getParentFile.mkdirs()
+    file.createNewFile()
+    val writer = new PrintWriter(file)
+    writer.write(generateCoreConfigLinkerParams())
+    writer.close()
   }
 }

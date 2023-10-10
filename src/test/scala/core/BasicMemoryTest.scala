@@ -31,7 +31,7 @@ class BasicMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
   // set stack pointer
   li sp, 0x20001000
 
-  csrwi 0x530, 8
+  csrwi 0x51e, 8
 
   li t0, 0x1234face
   sw t0, -16(sp)
@@ -52,14 +52,14 @@ class BasicMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
   lw t0, -20(sp)
   lw t1, 24(sp)
   lw t2, 0(sp)
-  csrw 0x530, t0
-  csrw 0x530, t1
-  csrw 0x530, t2
+  csrw 0x51e, t0
+  csrw 0x51e, t1
+  csrw 0x51e, t2
   loopp: j loopp
          */
         prog=scala.collection.immutable.Vector(
   /* 0 */ "h20001137", // lui sp,0x20001
-  /* 4 */ "h53045073", // csrwi 0x530,8
+  /* 4 */ "h51e45073", // csrwi 0x51e,8
   /* 8 */ "h123502b7", // lui t0,0x12350
   /* c */ "hace28293", // addi t0,t0,-1330 # 1234face <__global_pointer$+0x1234e1ba>
   /* 10 */ "hfe512823", // sw t0,-16(sp) # 20000ff0 <__global_pointer$+0x1ffff6dc>
@@ -76,9 +76,9 @@ class BasicMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
   /* 3c */ "hfec12283", // lw t0,-20(sp)
   /* 40 */ "h01812303", // lw t1,24(sp)
   /* 44 */ "h00012383", // lw t2,0(sp)
-  /* 48 */ "h53029073", // csrw 0x530,t0
-  /* 4c */ "h53031073", // csrw 0x530,t1
-  /* 50 */ "h53039073", // csrw 0x530,t2
+  /* 48 */ "h51e29073", // csrw 0x51e,t0
+  /* 4c */ "h51e31073", // csrw 0x51e,t1
+  /* 50 */ "h51e39073", // csrw 0x51e,t2
   /* 54 */ "h0000006f", // j 54 <loopp>
         ),
         defaultInstr="h00000067", // jr x0

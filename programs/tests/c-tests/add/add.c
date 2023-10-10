@@ -8,13 +8,12 @@ uint32_t add(uint32_t a, uint32_t b) {
 int main() {
     
     uint32_t x = 1;
-    printf("x is %i\n", x);
+    _fp_print(x);
     uint32_t y = 2;
-    printf("y is %i\n", y);
+    _fp_print(y);
 
     uint32_t z = add(x, y);
-    printf("z is %i\n", z);
-    assert(z == 3, "1 + 2 =/= 3");
+    _fp_print(z);
 
     return 0;
 }

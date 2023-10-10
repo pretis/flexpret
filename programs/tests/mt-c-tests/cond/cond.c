@@ -25,23 +25,20 @@ int test_signal() {
     count=0;
     thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1, NULL);
-    assert(errno == 0, "Could not create thread");
+    assert(errno == 0);
     errno = thread_create(HRTT, &tid[1], t2, NULL);
-    assert(errno == 0, "Could not create thread");
-    
+    assert(errno == 0);
     delay_for(100000);
-    printf("count is %i\n", count);
-    assert(count == 0, "Incorrect value for count");
+    _fp_print(count);
+    assert(count == 0);
     cond_signal(&cond);
-
     delay_for(100000);
-    printf("count is %i\n", count);
-    assert(count == 1, "Incorrect value for count");
+    _fp_print(count);
+    assert(count == 1);
     cond_signal(&cond);
-    
     delay_for(100000);
-    printf("count is %i\n", count);
-    assert(count == 2, "Incorrect value for count");
+    _fp_print(count);
+    assert(count == 2);
 
 
     void * exit_code_t1;
@@ -54,16 +51,16 @@ int test_broadcast() {
     count=0;
     thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1, NULL);
-    assert(errno == 0, "Could not create thread");
+    assert(errno == 0);
     errno = thread_create(HRTT, &tid[1], t2, NULL);
-    assert(errno == 0, "Could not create thread");
+    assert(errno == 0);
     delay_for(100000);
-    printf("count is %i\n", count);
-    assert(count == 0, "Incorrect value for count");
+    _fp_print(count);
+    assert(count == 0);
     cond_broadcast(&cond);
     delay_for(100000);
-    printf("count is %i\n", count);
-    assert(count == 2, "Incorrect value for count");
+    _fp_print(count);
+    assert(count == 2);
 
     void * exit_code_t1;
     void * exit_code_t2;
@@ -75,15 +72,15 @@ void test_timed_wait() {
 
     lock_acquire(&lock);
     uint64_t t1 = rdtime64();
-    printf("t1 is %i\n", t1);
+    _fp_print(t1);
     uint64_t wakeup = t1 + 100000;
-    printf("wakeup is %i\n", wakeup);
+    _fp_print(wakeup);
 
     cond_timed_wait(&cond, wakeup);
     uint64_t t2 = rdtime64();
-    printf("t2 is %i\n", t2);
+    _fp_print(t2);
 
-    assert(t2 > wakeup, "rdtime64() got value less than waketime");   
+    assert(t2 > wakeup);   
     lock_release(&lock);
 }
 

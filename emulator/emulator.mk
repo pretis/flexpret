@@ -6,13 +6,13 @@
 EMULATOR_BIN = $(EMULATOR_DIR)/fp-emu
 VERILATOR_MODULE=VerilatorTop
 
-$(EMULATOR_BIN): $(VERILOG_VERILATOR) $(EMULATOR_DIR)/main.cpp $(EMULATOR_DIR)/printf_fsm.c
+$(EMULATOR_BIN): $(VERILOG_VERILATOR) $(EMULATOR_DIR)/main.cpp
 	# Copy required resources
 	@cp $(VERILOG_VERILATOR) $(EMULATOR_DIR)/$(VERILATOR_MODULE).v
 	@cp $(RESOURCE_DIR)/DualPortBram.v $(EMULATOR_DIR)/
 
 	# Build verilator emulator
-	@(cd $(EMULATOR_DIR) && verilator --cc $(VERILATOR_MODULE).v --exe --trace --trace-structs --trace-underscore --build main.cpp printf_fsm.c)
+	@(cd $(EMULATOR_DIR) && verilator --cc $(VERILATOR_MODULE).v --exe --trace --trace-structs --trace-underscore --build main.cpp)
 	
 	# Copy the emulator binary
 	@cp $(EMULATOR_DIR)/obj_dir/V$(VERILATOR_MODULE) $(EMULATOR_BIN)

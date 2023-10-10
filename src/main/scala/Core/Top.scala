@@ -7,20 +7,23 @@ import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents o
 abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 
     // Write flexpret_config.h and flexpret_config.ld to file
-    cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_hwconfig.h")
+    cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_config.h")
     cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
-    cfg.writeMakeConfigToFile("./config.mk")
 
     val core = Module(new Core(cfg))
+
 } 
 
-class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
-    val to_host = Output(Vec(cfg.threads, UInt(32.W)))
+class VerilatorTopIO extends Bundle {
+    val stop = Output(Bool())
 }
 
 class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
-    val io = IO(new VerilatorTopIO(cfg))
-    val regPrintNext = RegInit(VecInit(Seq.fill(cfg.threads) {false.B} ))
+
+    val io = IO(new VerilatorTopIO)
+    val regPrintNext = RegInit(false.B)
+
+    io.stop := false.B
 
     // Drive gpio input of each core to 0 by default
     core.io.gpio.in.map(_ := 0.U)
@@ -32,8 +35,23 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     core.io.int_exts.foreach(_ := false.B)
 
     // Catch termination from core
-    for (tid <- 0 until cfg.threads) {
-        io.to_host(tid) := core.io.host.to_host(tid)
+    when(core.io.host.to_host === "hdeaddead".U) {
+        printf(cf"SUCCESS: FlexPRET terminated execution\n")
+        io.stop := true.B
+    }
+
+    // Catch abort from core
+    when(core.io.host.to_host === "hdeadbeef".U) {
+        printf(cf"ERROR: FlexPRET aborted simulation\n")
+        assert(false.B, "Emulation stopped")
+    }
+
+    // Handle printfss
+    when(core.io.host.to_host === "hbaaabaaa".U) {
+      regPrintNext := true.B
+    }.elsewhen(regPrintNext) {
+      printf(cf"${core.io.host.to_host}\n")
+      regPrintNext := false.B
     }
 }
 

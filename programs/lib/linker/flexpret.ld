@@ -1,26 +1,5 @@
-/****************************************************************************
- * boards/risc-v/c906/smartl-c906/scripts/ld.script
- *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.  The
- * ASF licenses this file to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- ****************************************************************************/
+OUTPUT_ARCH("riscv")
 
-/* 
- * Taken from https://github.com/apache/nuttx/blob/master/boards/risc-v/c906/smartl-c906/scripts/ld.script
- */
 INCLUDE flexpret_config.ld
 
 MEMORY
@@ -29,46 +8,61 @@ MEMORY
     RAM (rwx) : ORIGIN = DSPM_START, LENGTH = DSPM_END - DSPM_START
 }
 
-OUTPUT_ARCH("riscv")
-
-ENTRY(__stext)
-EXTERN(_vectors)
 SECTIONS
 {
-    .text : {
-        __stext = ABSOLUTE(.);
-        *(.vectors)
+    .text :
+    {
         *(.isr_vector)
-        *(.text .text.*)
-        *(.eh_frame)
+        *(.text*)
+        *(.eh_frame*)
+
+        /* All text end */
         . = ALIGN(4);
-        __etext = ABSOLUTE(.);
+        __etext = .;
     } > ROM
 
-    .data : ALIGN(4) {
-        __sdata = ABSOLUTE(.);
+    .data :
+    {
+        __data_start__ = .;
         *(.data .data.*)
-        *(.sdata .sdata.* .sdata2.*)
-        *(.rodata .rodata.* .srodata .srodata.*)
+        *(.rodata*)
         *(.gnu.linkonce.d.*)
-        *(.gnu.linkonce.s.*)
-        CONSTRUCTORS
+    } > RAM AT> ROM
+
+    .sdata :
+    {
+        /* Configure global pointer: https://www.sifive.com/blog/all-aboard-part-3-linker-relaxation-in-riscv-toolchain */
         . = ALIGN(4);
-        __edata = ABSOLUTE(.);
-    } > RAM AT > ROM
+        PROVIDE( __global_pointer$ = . + 0x800 );
 
-    PROVIDE(__global_pointer$ = __sdata + ((__edata - __sdata) / 2));
+        *(.sdata .sdata.* .sdata2.*)
+        *(.srodata.*)
+        *(.gnu.linkonce.s.*)
 
-    .bss : ALIGN(4) {
-        __sbss = ABSOLUTE(.);
-        *(.bss .bss.*)
-        *(.sbss .sbss.*)
+        /* All data end */
+        . = ALIGN(4);
+        __data_end__ = .;
+        
+    } > RAM AT> ROM
+
+    .bss :
+    {
+        __bss_start__ = .;
+        *(.bss)
+        *(.bss.*)
         *(.gnu.linkonce.b.*)
-        *(.gnu.linkonce.sb.*)
-        *(COMMON)
-        . = ALIGN(32);
-        __ebss = ABSOLUTE(.);
     } > RAM
 
-    __end = ABSOLUTE(.);
+    .sbss :
+    {
+        *(.sbss)
+        *(.sbss.*)
+
+        /* All bss end */
+        . = ALIGN(4);
+        __bss_end__ = .;
+    } > RAM
+
+    end = .;
 }
+

@@ -68,7 +68,7 @@ class SimpleCoreTest extends AnyFlatSpec with ChiselScalatestTester {
         prog=scala.collection.immutable.Vector(
           /* 0 */ "h054c43b7", // lui t2,0x54c4
           /* 4 */ "h4dc38393", // addi t2,t2,1244 # li t2, 88884444
-          /* 8 */ "h53039073", // csrw 0x530,t2
+          /* 8 */ "h51e39073", // csrw 0x51e,t2
           /* c */ "h0000006f", // j c <loop>
         ),
         defaultInstr="h00000067", // jr x0
@@ -97,11 +97,11 @@ class SimpleCoreTest extends AnyFlatSpec with ChiselScalatestTester {
   // set stack pointer
   li sp, 0x20001000
 
-  csrwi 0x530, 18
+  csrwi 0x51e, 18
 
   li a0, 10 // 2^10
   call poww
-  csrw 0x530, a0 // tohost
+  csrw 0x51e, a0 // tohost
 loop:
   j loop
 
@@ -115,10 +115,10 @@ loop:
          */
         prog=scala.collection.immutable.Vector(
   /* 0 */ "h20001137", // lui sp,0x20001
-  /* 4 */ "h53095073", // csrwi 0x530,18
+  /* 4 */ "h51e95073", // csrwi 0x51e,18
   /* 8 */ "h00a00513", // li a0,10
   /* c */ "h00c000ef", // jal ra,18 <poww>
-  /* 10 */ "h53051073", // csrw 0x530,a0
+  /* 10 */ "h51e51073", // csrw 0x51e,a0
   /* 14 */ "h0000006f", // j 14 <loop>
   /* 18 */ "hfe010113", // addi sp,sp,-32 # 20000fe0 <__global_pointer$+0x1ffff738>
   /* 1c */ "h00112e23", // sw ra,28(sp)

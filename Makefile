@@ -1,4 +1,5 @@
 # Makefile for FlexPRET processor
+# Set configuration in config.mk or pass variable assignments as arguments.
 #
 # Usage:
 # make verilog_raw: generate raw verilog from Chisel code.
@@ -37,43 +38,9 @@ TEST_DIR = programs/tests
 # -----------------------------------------------------------------------------
 
 # Default configuration of core, programs, and target. 
-# Override by modifying or pass variable assignment as argument.
-
-# THREADS=[1-8]: Specify number of hardware threads
-THREADS ?= 4
-
-# FLEXPRET=[true/false]: Use flexible thread scheduling
-FLEXPRET ?= false
-
-# ISPM_KBYTES=[]: Size of instruction scratchpad memory (32 bit words)
-ISPM_KBYTES ?= 256
-
-# DSPM_KBYTES=[]: Size of data scratchpad memory (32 bit words)
-DSPM_KBYTES ?= 256
-
-# MUL=[true/false]: multiplier
-MUL ?= false
-
-# SUFFIX=[min,ex,ti,all]:
-# 	min: base RV32I
-# 	ex: min+exceptions (necessary)
-# 	ti: ex+timing instructions
-# 	all: ti+ all exception causes and stats
-SUFFIX ?= all
-
-# Target
-# TARGET=[emulator/fpga]: Select target
-TARGET ?= emulator
-
-# DEBUG=[true/false]: Generate waveform dump.
-DEBUG ?= true
-
-# Default program compilation
-# PROG_DIR=[path]: Directory of programs in tests/ to compile and/or run
-PROG_DIR ?= isa
-
-# PROG_CONFIG=[]: Program configuration, start with target name
-PROG_CONFIG ?= $(TARGET)
+# Override by modifying config.mk or pass varaible assignment as argument.
+# See file for description of variables.
+include config.mk
 
 # Construct core configuration string (used for directory naming).
 # Note: '?=' not used so string is only constructed once.

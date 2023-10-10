@@ -14,10 +14,8 @@ int main() {
 		
 	ptr_new = (int *)realloc(ptr, sizeof(int)*3);
 	*(ptr_new + 2) = 3;
-	for(i = 0; i < 3; i++) {
-		printf("realloced[%i] is %i\n", i, *(ptr_new + i));
-		assert(*(ptr_new + i) == (i + 1), "Incorrect value");
-	}
+	for(i = 0; i < 3; i++)
+		_fp_print(*(ptr_new + i));
 
 	return 0;
 }

@@ -20,7 +20,7 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        assert(false, "No more than 8 slots supported");
+        assert(false);
         return 1;
     }
     uint32_t val = 0;
@@ -44,12 +44,12 @@ int slot_set(slot_t slots[], uint32_t length) {
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
-        assert(false, "Invalid slot set");
+        assert(false);
         return 1;
     }
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
-        assert(false, "Hardware thread id out of bounds");
+        assert(false);
         return 2;
     }
     uint32_t mask = 0xf << (slot * 4);
@@ -338,12 +338,13 @@ void worker_main() {
         in_use[hartid] = false;
         hwlock_release();
 
-        // FIXME: Remove the print? It was kept here because it used to say
-        //        _fp_print(6662);
-        printf("worker_main: Handled cancellation request\n");
+        // Print a magic number that indicates
+        // the handling of a cancellation request.
+        _fp_print(6662);
     }
     else if (val != 0) {
-        assert(false, "Reached unreachable code");
+        // UNREACHABLE
+        assert(false);
     }
 
     while(!exit_requested[hartid]) {
