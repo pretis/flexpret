@@ -17,9 +17,17 @@ uint32_t fib(uint32_t n) {
 }
 
 int main() {
+    uint32_t x = fib(16);
+    printf("fib(16) is %i\n", x);
+    
+    // Correct value
+    assert(x == 987, "Incorrect value for fib(16)");
 
-    const uint32_t x = fib(16);
-    _fp_print(x);
+    x = fib(20);
+    printf("fib(20) is %i\n", x);
+
+    // Correct value
+    assert(x == 6765, "Incorrect value for fib(20)");
 
     return 0;
 }

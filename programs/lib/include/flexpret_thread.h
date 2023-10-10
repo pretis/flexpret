@@ -8,6 +8,11 @@
 #define NUM_THREADS 1
 #endif
 
+#ifndef THREAD_STACKSIZE
+#define THREAD_STACKSIZE_BITS 11
+#define THREAD_STACKSIZE (1 << THREAD_STACKSIZE_BITS)
+#endif
+
 /**
  * Constants for FlexPRET scheduling (i.e. slots and tmodes)
  * These values must match those in constants.scala.

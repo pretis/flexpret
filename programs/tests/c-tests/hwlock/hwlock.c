@@ -5,7 +5,7 @@
 int main() {
     
     // Print the hardware thread id.
-    _fp_print(read_hartid());
+    printf("HW thread id: %i\n", read_hartid());
 
     // Acquire the lock.
     hwlock_acquire();
@@ -13,7 +13,7 @@ int main() {
     // Release the lock.
     hwlock_release();
 
-    _fp_print(1);
+    printf("HW lock sucessfully acquired and released\n");
     return 0;
 }
 

@@ -1,3 +1,6 @@
 [submodule "programs/lib/tinyalloc"]
 	path = programs/lib/tinyalloc
 	url = https://github.com/SundayRX/tinyalloc.git
+[submodule "programs/lib/printf"]
+	path = programs/lib/printf
+	url = https://github.com/eyalroz/printf.git
