@@ -16,6 +16,7 @@ int main() {
     printf("z is %i\n", z);
     assert(z == 3, "1 + 2 =/= 3");
 
+    assert(z == 3);
     return 0;
 }
 
