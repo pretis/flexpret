@@ -197,7 +197,7 @@ case class FlexpretConfiguration(
   }
 
   // FIXME: The TARGET and DEBUG variables are set statically
-  def generateMakeConfig() : String = {
+  def generateCoreMakeConfig() : String = {
     return s"""
 #
 # This flexpret core config file is auto-generated, and based on the configuration
@@ -252,7 +252,7 @@ BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
     writer.close()
   }
 
-  def writeConfigHeaderToFile(path: String): Unit = {
+  def writeHeaderConfigToFile(path: String): Unit = {
     writeConfigCommon(path, generateCoreConfigHeader)
   }
 
@@ -261,6 +261,6 @@ BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
   }
 
   def writeMakeConfigToFile(path: String): Unit = {
-    writeConfigCommon(path, generateMakeConfig)
+    writeConfigCommon(path, generateCoreMakeConfig)
   }
 }

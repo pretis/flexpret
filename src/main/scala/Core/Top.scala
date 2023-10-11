@@ -6,9 +6,22 @@ import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents o
 
 abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 
-    // Write flexpret_config.h and flexpret_config.ld to file
-    cfg.writeConfigHeaderToFile("programs/lib/include/flexpret_hwconfig.h")
-    cfg.writeLinkerConfigToFile("programs/lib/linker/flexpret_config.ld")
+    /** 
+     * Write the configuration to various files so software has access to it.
+     * 
+     * flexpret_hwconfig.h contains hardware configuration of the built CPU in
+     *                     the form of C macros
+     * flexpret_config.ld  contains much of the same information, just in the
+     *                     linker script language
+     * config.mk           again contains the same information, but in the Makefile
+     *                     language
+     * 
+     * The reason for generating the same information in all these languages is
+     * so the software developer has readily access to it where ever it may be
+     * useful.
+     */
+    cfg.writeHeaderConfigToFile("./programs/lib/include/flexpret_hwconfig.h")
+    cfg.writeLinkerConfigToFile("./programs/lib/linker/flexpret_config.ld")
     cfg.writeMakeConfigToFile("./config.mk")
 
     val core = Module(new Core(cfg))
