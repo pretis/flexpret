@@ -77,6 +77,7 @@ void Reset_Handler() {
     // Only thread 0 performs the setup,
     // the other threads busy wait until ready.
     if (hartid == 0) {
+        
         // Copy .data section into the RAM
         uint32_t size   = &__edata - &__sdata;
         uint32_t *pDst  = (uint32_t*)&__sdata;              // RAM

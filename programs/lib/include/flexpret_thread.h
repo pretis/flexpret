@@ -57,6 +57,9 @@ int tmode_sleep(uint32_t hartid);
 
 
 /* Pthreads-like threading library APIs */
+typedef struct thread_ctx_t {
+    uint32_t regs[32];
+} thread_ctx_t;
 
 typedef uint32_t thread_t;
 

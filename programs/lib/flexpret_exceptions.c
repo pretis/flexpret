@@ -11,6 +11,7 @@ static isr_t ext_int_handler;
 static isr_t ie_int_handler;
 static isr_t ee_int_handler;
 
+struct thread_ctx_t contexts[NUM_THREADS];
 
 static void register_exception_handler(void (*isr)(void)) {
   write_csr(CSR_EVEC, (uint32_t) isr);
@@ -46,7 +47,7 @@ static const char *exception_to_str(const uint32_t cause) {
     }
 }
 
-static void fp_exception_handler(void) {
+void fp_exception_handler(void) {
     int cause = read_csr(CSR_CAUSE);
     
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  
@@ -59,6 +60,10 @@ static void fp_exception_handler(void) {
         printf("Exception occured: %i, %s\n", cause, exception_to_str(cause));
         assert(false, "Exception not handled");
     }
+
+    // Call the function to load the thread's context
+    void thread_ctx_switch_load(void);
+    thread_ctx_switch_load();
 }
 
 void setup_exceptions() {
@@ -66,9 +71,11 @@ void setup_exceptions() {
     ie_int_handler = (isr_t) 0;
     ee_int_handler = (isr_t) 0;
     ext_int_handler = (isr_t) 0;
-    
-    // Register the exception handler
-    write_csr(CSR_EVEC, (uint32_t) fp_exception_handler);
+
+    // Register the function to call on exceptions; this function stores the
+    // thread's context and calls the fp_exception_handler function afterwards
+    void thread_ctx_switch_store(void);
+    write_csr(CSR_EVEC, (uint32_t) thread_ctx_switch_store);
 }
 
 void register_isr(int cause, void (*isr)(void)) {
