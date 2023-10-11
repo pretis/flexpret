@@ -5,8 +5,6 @@
 
 #include "flexpret_csrs.h"
 
-
-
 .section .text
 .globl thread_ctx_switch_store
 .type thread_ctx_switch_store,@function
@@ -18,16 +16,26 @@ thread_ctx_switch_store:
     la a0, contexts
     .option pop
 
-    // Need to add offset per thread
-
     // Get status register
-    csrr t0, CSR_STATUS
+    csrr a1, CSR_STATUS
 
     // Store it in memory
-    sw t0, (/* N registers */ (31) * 4)(a0)
+    sw a1,  (31 * 4)(a0)
     
+    // TODO: Interrupt may occur before this. Should be cleared immediately
+    //       upon entering the function...
+
     // Clear the interrupt bit
     csrci CSR_STATUS, 0x10
+
+    // Get thread ID
+    csrr a1, CSR_HARTID
+
+    // Multiply it by offset, which is 32 * 4 = 2^5 * 2^2 = 2^7
+    slli a1, a1, 7
+
+    // Add the offset to a0
+    add a0, a0, a1
     
     // Store all registers
     // x0 is hard-wired to zero so no reason to store it
@@ -86,7 +94,7 @@ thread_ctx_switch_load:
     lw x8,  ( 7 * 4)(a0)
     lw x9,  ( 8 * 4)(a0)
     // Skip x10 = a0 since it is in use
-    lw x11, (10 * 4)(a0)
+    // Skip x11 = a1 since we wil use it soon
     lw x12, (11 * 4)(a0)
     lw x13, (12 * 4)(a0)
     lw x14, (13 * 4)(a0)
@@ -106,20 +114,19 @@ thread_ctx_switch_load:
     lw x28, (27 * 4)(a0)
     lw x29, (28 * 4)(a0)
     lw x30, (29 * 4)(a0)
-
-    // Load the previously used status register
-    lw x31, /* N registers */ (31 * 4)(a0)
-
-    // Write the register; no need to set the interrupt bit since the loaded
-    // value does not have it set
-    csrw CSR_STATUS, x31
-    
-    // Load the x31 register
     lw x31, (30 * 4)(a0)
 
+    // Load the previously used status register
+    lw a1,  (31 * 4)(a0)
+
+    // Write the register and set the interrupt bit again
+    csrw CSR_STATUS, a1
+    csrwi CSR_STATUS, 0x10
+    
     // Load the x10 = a0 register
     lw x10, (9 * 4)(a0)
 
-    addi sp, sp, 32 // TODO: Find a way to fix the stack pointer without hardcode
+    // Load the x11 = a0 register
+    lw x11, (10 * 4)(a0)
 
     ret

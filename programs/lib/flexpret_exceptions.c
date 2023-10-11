@@ -62,7 +62,11 @@ void fp_exception_handler(void) {
     }
 
     // Call the function to load the thread's context
-    void thread_ctx_switch_load(void);
+    // We mark it with attribute noretun because the function will not return
+    // to fp_exception_handler, but instead to where the exception occurred.
+    void thread_ctx_switch_load(void) __attribute__((noreturn));
+    
+    // In ctx_switch.S
     thread_ctx_switch_load();
 }
 
@@ -94,12 +98,16 @@ void register_isr(int cause, void (*isr)(void)) {
 
 void exception_on_expire(unsigned timeout_ns) {
   write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x705B;");
+  __asm__ volatile(".word 0x01c12403;"); // lw s0, 28(sp)
+  __asm__ volatile(".word 0x02010113;"); // addi, sp, sp, 32
+  __asm__ volatile(".word 0x0000705B;");
 }
 
 void interrupt_on_expire(unsigned timeout_ns) {
   write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x200705B;");
+  __asm__ volatile(".word 0x01c12403;"); // lw s0, 28(sp)
+  __asm__ volatile(".word 0x02010113;"); // addi, sp, sp, 32
+  __asm__ volatile(".word 0x0200705B;");
 }
 
 void enable_interrupts() 
