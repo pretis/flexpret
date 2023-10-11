@@ -30,6 +30,7 @@ MT_C_TESTS_DIRS = \
 	swlock \
 	printf \
 	syscall \
+	cond \
 	threadcancel 
 
 # Transform list into e.g. c-tests/add/add/out
