@@ -14,18 +14,12 @@ PRINTF_DEFINES := -D PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT \
 				  -D PRINTF_SUPPORT_WRITEBACK_SPECIFIER=0 \
 				  -D PRINTF_SUPPORT_LONG_LONG=0
 
-DEFINES = -D _REENT_SMALL $(PRINTF_DEFINES)
+DEFINES += -D _REENT_SMALL $(PRINTF_DEFINES)
 
 ifeq ($(TARGET), emulator)
 DEFINES += -D __EMULATOR__
 else ifeq ($(TARGET), fpga)
 DEFINES += -D __FPGA__
-endif
-
-ifeq ($(DEBUG), true)
-DEFINES += -D  DEBUG
-else ifeq ($(DEBUG), false)
-DEFINES += -D NDEBUG # Will turn assert() into nothing
 endif
 
 # For configuration of newlib's reentracy feature; see comments in

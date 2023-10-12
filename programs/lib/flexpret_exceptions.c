@@ -4,6 +4,7 @@
 #include "flexpret_assert.h"
 
 #include <flexpret.h>
+#include <errno.h>
 
 typedef void (*isr_t)(void);
 
@@ -96,26 +97,37 @@ void register_isr(int cause, void (*isr)(void)) {
     }
 }
 
-void exception_on_expire(unsigned timeout_ns) {
-  write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x01c12403;"); // lw s0, 28(sp)
-  __asm__ volatile(".word 0x02010113;"); // addi, sp, sp, 32
-  __asm__ volatile(".word 0x0000705B;");
+int exception_on_expire(unsigned timeout_ns) {
+    assert((timeout_ns - rdtime()) > 1000, "User fault: timeout too small");
+    write_csr(CSR_COMPARE, timeout_ns);
+    __asm__ volatile(".word 0x0000705B;");
 }
 
-void interrupt_on_expire(unsigned timeout_ns) {
-  write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x01c12403;"); // lw s0, 28(sp)
-  __asm__ volatile(".word 0x02010113;"); // addi, sp, sp, 32
-  __asm__ volatile(".word 0x0200705B;");
+int interrupt_on_expire(unsigned timeout_ns) {
+#if DEBUG
+    int diff = timeout_ns - rdtime();
+    if (diff < 0) {
+        printf("interrupt_on_expire: Negative timeout provided\n");
+        errno = EINVAL;
+        return -1;
+    } else if (diff < 1000) {
+        printf("interrupt_on_expire: Timeout provided too small\n");
+        errno = EINVAL;
+        return -1;
+    }
+#endif // DEBUG
+
+    write_csr(CSR_COMPARE, timeout_ns);
+    __asm__ volatile(".word 0x0200705B;");
+    return 0;
 }
 
 void enable_interrupts() 
 {
-  set_csr(CSR_STATUS,16);
+    set_csr(CSR_STATUS,16);
 }
 
 void disable_interrupts() 
 {
-  clear_csr(CSR_STATUS,16);
+    clear_csr(CSR_STATUS,16);
 }

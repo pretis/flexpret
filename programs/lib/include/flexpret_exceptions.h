@@ -53,7 +53,7 @@ void disable_interrupts();
  * FIXME: Make into macro
  * @param timeout_ns 
  */
-void interrupt_on_expire(unsigned timeout_ns);
+int interrupt_on_expire(unsigned timeout_ns);
 
 
 /**
@@ -61,7 +61,7 @@ void interrupt_on_expire(unsigned timeout_ns);
  * 
  * @param timeout_ns 
  */
-void exception_on_expire(unsigned timeout_ns);
+int exception_on_expire(unsigned timeout_ns);
 
 /**
  * @brief Register an ISR handler for one of the IRQ sources
