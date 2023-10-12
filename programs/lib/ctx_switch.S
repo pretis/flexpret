@@ -9,24 +9,12 @@
 .globl thread_ctx_switch_store
 .type thread_ctx_switch_store,@function
 
-thread_ctx_switch_store:
+.macro getContexts
     // Get a0 as the address of the contexts variable
     .option push
     .option norelax
     la a0, contexts
     .option pop
-
-    // Get status register
-    csrr a1, CSR_STATUS
-
-    // Store it in memory
-    sw a1,  (31 * 4)(a0)
-    
-    // TODO: Interrupt may occur before this. Should be cleared immediately
-    //       upon entering the function...
-
-    // Clear the interrupt bit
-    csrci CSR_STATUS, 0x10
 
     // Get thread ID
     csrr a1, CSR_HARTID
@@ -34,9 +22,16 @@ thread_ctx_switch_store:
     // Multiply it by offset, which is 32 * 4 = 2^5 * 2^2 = 2^7
     slli a1, a1, 7
 
-    // Add the offset to a0
+    // Add the offset to the pointer a0
     add a0, a0, a1
-    
+.endm
+
+thread_ctx_switch_store:
+    // Clear the interrupt bit
+    csrci CSR_STATUS, 0x10
+
+    getContexts
+
     // Store all registers
     // x0 is hard-wired to zero so no reason to store it
     sw x1,  ( 0 * 4)(a0)
@@ -77,11 +72,8 @@ thread_ctx_switch_store:
 .type thread_ctx_switch_load,@function
 
 thread_ctx_switch_load:
-    .option push
-    .option norelax
-    la a0, contexts
-    .option pop
-    
+    getContexts
+
     // Load all registers except the a0 itself
     // x0 is hard-wired to zero so no reason to store it
     lw x1,  ( 0 * 4)(a0)
@@ -94,7 +86,7 @@ thread_ctx_switch_load:
     lw x8,  ( 7 * 4)(a0)
     lw x9,  ( 8 * 4)(a0)
     // Skip x10 = a0 since it is in use
-    // Skip x11 = a1 since we wil use it soon
+    lw x11, (10 * 4)(a0)
     lw x12, (11 * 4)(a0)
     lw x13, (12 * 4)(a0)
     lw x14, (13 * 4)(a0)
@@ -115,18 +107,11 @@ thread_ctx_switch_load:
     lw x29, (28 * 4)(a0)
     lw x30, (29 * 4)(a0)
     lw x31, (30 * 4)(a0)
-
-    // Load the previously used status register
-    lw a1,  (31 * 4)(a0)
-
-    // Write the register and set the interrupt bit again
-    csrw CSR_STATUS, a1
-    csrwi CSR_STATUS, 0x10
     
-    // Load the x10 = a0 register
+    // Finally load the x10 = a0 register
     lw x10, (9 * 4)(a0)
 
-    // Load the x11 = a0 register
-    lw x11, (10 * 4)(a0)
+    // Write the register and set the interrupt bit again
+    csrwi CSR_STATUS, 0x10
 
     ret

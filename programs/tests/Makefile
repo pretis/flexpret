@@ -11,12 +11,15 @@ C_TESTS_DIRS = \
 	calloc \
 	fib \
 	global \
+	gpio \
+	hwlock \
+	interrupt \
+	lbu \
 	malloc \
 	realloc \
-	lbu \
+	sections \
 	syscall \
-    gpio \
-	hwlock
+	time
 
 # Transform list into e.g. c-tests/add/add/out
 C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
@@ -26,11 +29,12 @@ C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
 #--------------------------------------------------------------------
 MT_C_TESTS_DIRS = \
 	add \
-	lockowner \
-	swlock \
-	printf \
-	syscall \
 	cond \
+	interrupt \
+	lockowner \
+	printf \
+	swlock \
+	syscall \
 	threadcancel 
 
 # Transform list into e.g. c-tests/add/add/out

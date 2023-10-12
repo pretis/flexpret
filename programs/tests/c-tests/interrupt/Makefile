@@ -1,5 +1,5 @@
 FLEXPRET_ROOT_DIR = ../../../../
 NAME = interrupt
 APP_SOURCES = *.c
-DEFINES := -D DEBUG=1
+SW_DEBUG = true
 include $(FLEXPRET_ROOT_DIR)/Makefrag

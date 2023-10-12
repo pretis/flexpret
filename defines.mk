@@ -2,9 +2,6 @@
 # using the -D flag. Many of the #defines are based on the current CPU
 # configuration found in config.mk. 
 
-
-
-
 include ${FLEXPRET_ROOT_DIR}/config.mk
 
 PRINTF_DEFINES := -D PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT \
@@ -20,6 +17,13 @@ ifeq ($(TARGET), emulator)
 DEFINES += -D __EMULATOR__
 else ifeq ($(TARGET), fpga)
 DEFINES += -D __FPGA__
+endif
+
+SW_DEBUG ?= true
+ifeq ($(SW_DEBUG), true)
+DEFINES += -D DEBUG=1
+else ifeq ($(SW_DEBUG), false)
+DEFINES += -D DEBUG=0 -D NDEBUG
 endif
 
 # For configuration of newlib's reentracy feature; see comments in
