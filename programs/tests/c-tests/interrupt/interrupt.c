@@ -95,22 +95,8 @@ void test_user_fault(void) {
      * is broken and a crash is likely to occur.
      * 
      */
-    int ret = interrupt_on_expire(expire);
-#if DEBUG
-    if (timeout_ns < 1700) {
-        // Expect the function to react
-        assert(ret == -1, "Did not get expected value");
-        assert(errno == EINVAL, "Errno not set accordingly");
-    }
-#else
-    if (timeout_ns < 1000) {
-        // Will crash
-    }
-#endif // DEBUG
-    else {
-        // Run as noraml
-        while (flag0 == 0);
-    }
+    interrupt_on_expire(expire);
+    while (flag0 == 0);
 }
 
 int main(void) {

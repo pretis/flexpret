@@ -96,38 +96,3 @@ void register_isr(int cause, void (*isr)(void)) {
         assert(false, "Attempt to register isr for non-supported cause");
     }
 }
-
-int exception_on_expire(unsigned timeout_ns) {
-    assert((timeout_ns - rdtime()) > 1000, "User fault: timeout too small");
-    write_csr(CSR_COMPARE, timeout_ns);
-    __asm__ volatile(".word 0x0000705B;");
-}
-
-int interrupt_on_expire(unsigned timeout_ns) {
-#if DEBUG
-    int diff = timeout_ns - rdtime();
-    if (diff < 0) {
-        printf("interrupt_on_expire: Negative timeout provided\n");
-        errno = EINVAL;
-        return -1;
-    } else if (diff < 1000) {
-        printf("interrupt_on_expire: Timeout provided too small\n");
-        errno = EINVAL;
-        return -1;
-    }
-#endif // DEBUG
-
-    write_csr(CSR_COMPARE, timeout_ns);
-    __asm__ volatile(".word 0x0200705B;");
-    return 0;
-}
-
-void enable_interrupts() 
-{
-    set_csr(CSR_STATUS,16);
-}
-
-void disable_interrupts() 
-{
-    clear_csr(CSR_STATUS,16);
-}

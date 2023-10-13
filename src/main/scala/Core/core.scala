@@ -78,8 +78,7 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val bus = Flipped(new BusIO())
   val host = new HostIO()
   val gpio = new GPIO()
-  val int_exts = Input(Vec(8, Bool()))
-  //val int_exts = Input(Vec(conf.threads, Bool()))
+  val int_exts = Input(Vec(conf.threads, Bool()))
 }
 
 class Core(confIn: FlexpretConfiguration) extends Module {

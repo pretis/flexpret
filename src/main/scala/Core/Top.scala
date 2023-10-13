@@ -29,6 +29,7 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
 
 class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
     val to_host = Output(Vec(cfg.threads, UInt(32.W)))
+    val int_exts = Input(Vec(cfg.threads, Bool()))
 }
 
 class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
@@ -42,7 +43,7 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     core.io.bus.driveDefaults()
     core.io.dmem.driveDefaultsFlipped()
     core.io.imem_bus.driveDefaultsFlipped()
-    core.io.int_exts.foreach(_ := false.B)
+    core.io.int_exts <> io.int_exts
 
     // Catch termination from core
     for (tid <- 0 until cfg.threads) {

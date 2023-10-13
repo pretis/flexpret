@@ -32,6 +32,9 @@ thread_ctx_switch_store:
 
     getContexts
 
+    // Exception PC
+    csrr ra, CSP_EPC
+
     // Store all registers
     // x0 is hard-wired to zero so no reason to store it
     sw x1,  ( 0 * 4)(a0)

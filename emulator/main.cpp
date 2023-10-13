@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
 
   printf_init();
 
+  int ncycles = 0;
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
     if (timestamp <= 2) {
@@ -92,6 +93,13 @@ int main(int argc, char* argv[]) {
 
     if (trace_enabled) {
       trace->dump(10*timestamp);
+    }
+
+    if (ncycles++ == 300000) {
+      //top->io_int_exts_0 = 1;
+      ncycles = 0;
+    } else {
+      top->io_int_exts_0 = 0;
     }
 
     top->clock = 0;
