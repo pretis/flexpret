@@ -4,6 +4,7 @@ static_assert(NUM_THREADS >= 4);
 #define USED_THREADS 4
 
 static int flags[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static int ext_int_flag = 0;
 static lock_t interrupt_lock = LOCK_INITIALIZER;
 
 void ie_isr0(void) {
@@ -20,6 +21,10 @@ void ie_isr2(void) {
 
 void ie_isr3(void) {
     flags[3] = 1;
+}
+
+void ext_int_isr(void) {
+    ext_int_flag = 1;
 }
 
 void *single_thread(void *arg) {
@@ -119,6 +124,13 @@ int main() {
     }
 
     printf("3rd run: %i threads all ran one interrupt each\n", USED_THREADS-1);
+
+    register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
+    enable_interrupts();
+    while (ext_int_flag == 0);
+    disable_interrupts();
+
+    printf("4th run: external interrupt triggered successfully\n");
 
     return 0;
 }

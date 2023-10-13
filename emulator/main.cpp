@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (ncycles++ == 300000) {
-      //top->io_int_exts_0 = 1;
+      top->io_int_exts_0 = 1;
       ncycles = 0;
     } else {
       top->io_int_exts_0 = 0;
