@@ -12,6 +12,8 @@
 
 #include "../../programs/lib/include/flexpret_hwconfig.h"
 
+#include "pin_event.h"
+
 void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);
 
@@ -58,10 +60,17 @@ int main(int argc, char* argv[]) {
   int exitcode = EXIT_SUCCESS;
 
   bool trace_enabled = false;
+  bool pin_client_enabled = false;
+
   for (int i = 1; i< argc; i++) {
     if (!strcmp(argv[i], "--trace")) {
       std::cout << "Tracing enabled" << std::endl;
       trace_enabled = true;
+    }
+
+    if (!strcmp(argv[i], "--client")) {
+      std::cout << "Pin client enabled" << std::endl;
+      pin_client_enabled = true;
     }
   }
 
@@ -77,6 +86,10 @@ int main(int argc, char* argv[]) {
   }
 
   printf_init();
+  std::list<struct PinEvent> in_exts_0_events = {};
+  if (pin_client_enabled) {
+    eventlist_accept_clients();
+  }
 
   int ncycles = 0;
   while (!Verilated::gotFinish()) {
@@ -95,11 +108,9 @@ int main(int argc, char* argv[]) {
       trace->dump(10*timestamp);
     }
 
-    if (ncycles++ == 30000) {
-      top->io_int_exts_0 = 1;
-      ncycles = 0;
-    } else {
-      top->io_int_exts_0 = 0;
+    if (pin_client_enabled) {
+      eventlist_listen(in_exts_0_events);
+      eventlist_set_pin(in_exts_0_events, &top->io_int_exts_0);
     }
 
     top->clock = 0;

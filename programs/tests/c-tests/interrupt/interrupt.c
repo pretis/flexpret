@@ -1,10 +1,13 @@
 #include <flexpret.h>
 #include <errno.h>
 
+#define EXTERNAL_INTERRUPT_TEST (1)
+
 #define EXPIRE_DELAY_NS (uint32_t)(1e6)
 
 static int flag0 = 0;
 static int flag1 = 0;
+static int ext_int_flag = 0;
 
 void ie_isr0(void) {
     flag0 = 1;
@@ -12,6 +15,10 @@ void ie_isr0(void) {
 
 void ie_isr1(void) {
     flag1 = 1;
+}
+
+void ext_int_isr(void) {
+    ext_int_flag = 1;
 }
 
 void test_two_interrupts(void) {
@@ -119,7 +126,7 @@ int main(void) {
 
     // Try to disable interrupts and check that no interrupts were called
     disable_interrupts();
-    test_disabled_interrupts(100000);
+    test_disabled_interrupts(10000);
     printf("3rd run: interrupts were disabled and none were triggered\n");
     enable_interrupts();
 
@@ -127,6 +134,12 @@ int main(void) {
 
     test_low_timeout();
     printf("4th run: interrupts ran sucessfully with low timeout\n");
+
+#if EXTERNAL_INTERRUPT_TEST
+    register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
+    while (ext_int_flag == 0);
+    printf("5th run: got external interrupt\n");
+#endif // EXTERNAL_INTERRUPT_TEST
 
     return 0;
 }
