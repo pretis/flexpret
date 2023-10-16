@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
       trace->dump(10*timestamp);
     }
 
-    if (ncycles++ == 300000) {
+    if (ncycles++ == 30000) {
       top->io_int_exts_0 = 1;
       ncycles = 0;
     } else {

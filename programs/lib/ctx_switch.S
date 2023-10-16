@@ -9,6 +9,15 @@
 .globl thread_ctx_switch_store
 .type thread_ctx_switch_store,@function
 
+/**
+ * The contexts variable is declared as
+ *
+ * struct thread_ctx_t contexts[NUM_THREADS];
+ *
+ * where the thread_ctx_t is aligned to 32 words for the sake of simplicity.
+ * Getting the context for a specific thread is then calculating the offset;
+ * see the macro itself for details.
+ */
 .macro getContexts
     // Get a0 as the address of the contexts variable
     .option push
@@ -32,12 +41,10 @@ thread_ctx_switch_store:
 
     getContexts
 
-    // Exception PC
-    csrr ra, CSP_EPC
-
     // Store all registers
     // x0 is hard-wired to zero so no reason to store it
-    sw x1,  ( 0 * 4)(a0)
+    // The return address must be fetched from CSR_EPC in the load function,
+    // so no reason to store the x1 = ra
     sw x2,  ( 1 * 4)(a0)
     sw x3,  ( 2 * 4)(a0)
     sw x4,  ( 3 * 4)(a0)
@@ -79,7 +86,8 @@ thread_ctx_switch_load:
 
     // Load all registers except the a0 itself
     // x0 is hard-wired to zero so no reason to store it
-    lw x1,  ( 0 * 4)(a0)
+    // ra = x1 is in the Exception PC CSR
+    csrr ra, CSR_EPC
     lw x2,  ( 1 * 4)(a0)
     lw x3,  ( 2 * 4)(a0)
     lw x4,  ( 3 * 4)(a0)

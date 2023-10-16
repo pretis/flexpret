@@ -22,9 +22,7 @@ void test_two_interrupts(void) {
     expire = now + EXPIRE_DELAY_NS;
     interrupt_on_expire(expire);
 
-    enable_interrupts();
     while (flag0 == 0);
-    disable_interrupts();
 
     now = rdtime();
     assert(now > expire, "Time is not as expected");
@@ -35,9 +33,7 @@ void test_two_interrupts(void) {
     expire = now + EXPIRE_DELAY_NS;
     interrupt_on_expire(expire);
 
-    enable_interrupts();
     while (flag1 == 0);
-    disable_interrupts();
 
     now = rdtime();
     assert(now > expire, "Time is not as expected");
@@ -99,13 +95,13 @@ void test_low_timeout(void) {
      * is broken and a crash is likely to occur.
      * 
      */
-    enable_interrupts();
     interrupt_on_expire(expire);
-    disable_interrupts();
     while (flag0 == 0);
 }
 
 int main(void) {    
+    enable_interrupts();
+
     // Test that interrupts work
     test_two_interrupts();
     printf("1st run: interrupts ran sucessfully with two different ISRs\n");
@@ -122,8 +118,10 @@ int main(void) {
     flag1 = 0;
 
     // Try to disable interrupts and check that no interrupts were called
+    disable_interrupts();
     test_disabled_interrupts(100000);
     printf("3rd run: interrupts were disabled and none were triggered\n");
+    enable_interrupts();
 
     // No need to reset flags if the interrupts were not run
 

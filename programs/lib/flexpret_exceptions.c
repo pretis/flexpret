@@ -15,7 +15,7 @@ static isr_t ee_int_handler;
 struct thread_ctx_t contexts[NUM_THREADS];
 
 static void register_exception_handler(void (*isr)(void)) {
-  write_csr(CSR_EVEC, (uint32_t) isr);
+    write_csr(CSR_EVEC, (uint32_t) isr);
 }
 
 static const char *exception_to_str(const uint32_t cause) {
