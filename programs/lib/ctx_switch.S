@@ -39,6 +39,8 @@ thread_ctx_switch_store:
     // Clear the interrupt bit
     csrci CSR_STATUS, 0x10
 
+    // TODO: a0 and a1 might already contain some data that is overwritten here;
+    //       might be better to use ra and another register?
     getContexts
 
     // Store all registers
