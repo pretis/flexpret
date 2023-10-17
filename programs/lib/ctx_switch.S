@@ -39,8 +39,9 @@ thread_ctx_switch_store:
     // Clear the interrupt bit
     csrci CSR_STATUS, 0x10
 
-    // TODO: a0 and a1 might already contain some data that is overwritten here;
-    //       might be better to use ra and another register?
+    // TODO: (a0, a1) might already contain some data that is overwritten here;
+    //       using (ra, gp) or (t1, t2) does not seem to work. Perhaps best option
+    //       is to store these values in a CSR?
     getContexts
 
     // Store all registers
@@ -88,8 +89,6 @@ thread_ctx_switch_load:
 
     // Load all registers except the a0 itself
     // x0 is hard-wired to zero so no reason to store it
-    // ra = x1 is in the Exception PC CSR
-    csrr ra, CSR_EPC
     lw x2,  ( 1 * 4)(a0)
     lw x3,  ( 2 * 4)(a0)
     lw x4,  ( 3 * 4)(a0)
@@ -123,6 +122,9 @@ thread_ctx_switch_load:
     
     // Finally load the x10 = a0 register
     lw x10, (9 * 4)(a0)
+
+    // Get the return address from the exception PC register
+    csrr ra, CSR_EPC
 
     // Write the register and set the interrupt bit again
     csrwi CSR_STATUS, 0x10
