@@ -3,14 +3,7 @@
 
 #include <list>
 #include <stdint.h>
-
-struct PinEvent {
-    uint32_t in_n_cycles;
-    bool high_low;
-};
-
-#define HIGH (1)
-#define LOW  (0)
+#include "clients/common.h"
 
 void eventlist_accept_clients(void);
 void eventlist_listen(std::list<struct PinEvent> &appendto);

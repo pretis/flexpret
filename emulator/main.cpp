@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
       trace_enabled = true;
     }
 
+    // Enable this to allow clients to connect; see the ./clients folder
     if (!strcmp(argv[i], "--client")) {
       std::cout << "Pin client enabled" << std::endl;
       pin_client_enabled = true;

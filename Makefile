@@ -91,7 +91,10 @@ $(VERILOG_VERILATOR):
 # Provide rules for the emulator
 include $(EMULATOR_DIR)/emulator.mk
 
-emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN)
+# Provide rules for the emulator's clients
+include $(EMULATOR_DIR)/clients/clients.mk
+
+emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN) $(CLIENTS)
 
 # -----------------------------------------------------------------------------
 #  FPGA
@@ -128,6 +131,7 @@ clean:
 	rm -f emulator/*.v
 	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
 	rm -rf out
+	rm -rf $(CLIENT_BUILD_DIR)
 	make -C programs/tests clean
 	
 
@@ -143,6 +147,7 @@ cleanall:
 	rm -f firrtl.jar
 	rm -f mill
 	rm -rf out
+	rm -rf $(CLIENT_BUILD_DIR)
 	rm -rf test_run_dir
 	cd $(TEST_DIR) && $(MAKE) clean
 
