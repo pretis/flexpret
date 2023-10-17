@@ -4,31 +4,54 @@
 #include <stdint.h>
 #include "flexpret_csrs.h"
 
-
 /**
  * @brief Delay execution until an absolute time. Loads the timeout 
  * into the compare register of the thread. Then execute the
- * Delay Until instruction which is encoded as 0x700B.
+ * Delay Until (DU) instruction which is encoded as 0x700B.
  * 
- * @param timeout_ns 
+ * The program counter (PC) is not updated until the DU instuction is finished,
+ * meaning the program will go back to sleep after an interrupt has occured
+ * (given that the timer has not expired).
+ * 
  */
-static inline void delay_until(unsigned int timeout_ns)
-{
-  write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x700B;");
-}
+#define delay_until(ns) do { \
+    write_csr(CSR_COMPARE, ns); \
+    __asm__ volatile(".word 0x700B;"); \
+} while(0)
 
 /**
  * @brief Delay execution for a time duration. First read the current time
  * Then do a regular `delay_until`
  * 
- * @param duration_ns 
  */
-static inline void delay_for(unsigned int duration_ns)
-{
-  unsigned int now_ns = rdtime();
-  delay_until(now_ns + duration_ns);
-}
+#define delay_for(ns) do { \
+    uint32_t now_ns = rdtime(); \
+    delay_until(now_ns + ns); \
+} while(0)
+
+/**
+ * @brief Does the same as the @p delay_until pseudo-instruction, but in this case
+ * the program counter (PC) is incremented before the instruction completes.
+ * This means that after an interrupt has completed, the program will continue.
+ * 
+ * The use case of this pseudo-instruction is waiting for an interrupt to occur
+ * with a given timeout.
+ * 
+ */
+#define wait_until(ns) do { \
+    write_csr(CSR_COMPARE, ns); \
+    __asm__ volatile(".word 0x702B;"); \
+} while(0)
+
+/**
+ * @brief Same as delay_for, just doing wait instead of delay.
+ * 
+ */
+#define wait_for(ns) do { \
+    uint32_t now_ns = rdtime(); \
+    wait_until(now_ns + ns); \
+} while(0)
+
 /**
  * @brief Read out a 64 bit timestamp. Since it is done with two read operations
  * we must handle a potential wrapping event where we read the lower bits BEFORE the wrap
