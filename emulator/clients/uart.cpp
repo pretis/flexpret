@@ -15,6 +15,7 @@ static void set_pinevent_uart(char c, struct PinEvent *events)
 {
     // Pull low to initialize communication
     events[0] = {
+        .pin = PIN_IO_INT_EXTS_0,
         .in_n_cycles = CLOCKS_PER_BAUD,
         .high_low = LOW,
     };
@@ -22,6 +23,7 @@ static void set_pinevent_uart(char c, struct PinEvent *events)
     // Set all bits
     for (int i = 0; i < 8; i++) {
         events[i+1] = {
+            .pin = PIN_IO_INT_EXTS_0,
             .in_n_cycles = CLOCKS_PER_BAUD,
             .high_low = (bool)(c & 0x01),
         };
@@ -30,6 +32,7 @@ static void set_pinevent_uart(char c, struct PinEvent *events)
 
     // Set high to send stop bit
     events[9] = {
+        .pin = PIN_IO_INT_EXTS_0,
         .in_n_cycles = CLOCKS_PER_BAUD,
         .high_low = HIGH,
     };
@@ -41,6 +44,7 @@ int main(int argc, char const* argv[])
 
     // Start by setting the pin high
     struct PinEvent set_high = {
+        .pin = PIN_IO_INT_EXTS_0,
         .in_n_cycles = 0,
         .high_low = HIGH,
     };

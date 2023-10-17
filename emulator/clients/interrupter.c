@@ -5,12 +5,9 @@
 
 #include "common.h"
 
-#define HIGH (1)
-#define LOW  (0)
-
 static struct PinEvent interrupt[2] = {
-    { .in_n_cycles = 10000, .high_low = HIGH },
-    { .in_n_cycles = 0, .high_low = LOW },
+    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 10000, .high_low = HIGH },
+    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 0,     .high_low = LOW  },
 };
 
 int main(int argc, char const* argv[]) 

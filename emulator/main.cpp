@@ -26,6 +26,16 @@ double sc_time_stamp() {
 static inline uint32_t get_to_host(int tid, VVerilatorTop *top) {
   switch (tid)
   {
+/**
+ * NUM_THREADS determines how many of the to_host variables are available in the
+ * VVerilatorTop class. E.g., if NUM_THREADS = 2, then 
+ * 
+ *  top->io_to_host_0
+ *  top->io_to_host_1
+ * 
+ * are available. The other ones would yield compilation errors if not for the
+ * #if statements here.
+ */
 #if NUM_THREADS >= 1
     case 0: return top->io_to_host_0;
 #endif
@@ -111,7 +121,7 @@ int main(int argc, char* argv[]) {
 
     if (pin_client_enabled) {
       eventlist_listen(in_exts_0_events);
-      eventlist_set_pin(in_exts_0_events, &top->io_int_exts_0);
+      eventlist_set_pin(in_exts_0_events, top);
     }
 
     top->clock = 0;
