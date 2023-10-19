@@ -1,6 +1,6 @@
 CLIENT_DIR ?= $(EMULATOR_DIR)/clients
 CLIENT_BUILD_DIR  ?= $(CLIENT_DIR)/build
-CLIENT_C_SRCS   = interrupter.c uart.c
+CLIENT_C_SRCS   = interrupter.c uart.c gpio.c
 CLIENT_CPP_SRCS = 
 COMMON_SRCS = common.c
 

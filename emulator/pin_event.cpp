@@ -43,6 +43,10 @@ static inline void set_pin(uint32_t which_pin, VVerilatorTop *top, uint8_t val)
 #if NUM_THREADS >= 8
     case PIN_IO_INT_EXTS_7: top->io_int_exts_7 = val; break;
 #endif
+    case PIN_IO_GPI_0: top->io_gpi_0 = val; break;
+    case PIN_IO_GPI_1: top->io_gpi_1 = val; break;
+    case PIN_IO_GPI_2: top->io_gpi_2 = val; break;
+    case PIN_IO_GPI_3: top->io_gpi_3 = val; break;
     default:
         assert(0);
     }

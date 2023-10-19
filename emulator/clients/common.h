@@ -50,6 +50,13 @@ typedef struct {
 #define PIN_IO_INT_EXTS_5 5
 #define PIN_IO_INT_EXTS_6 6
 #define PIN_IO_INT_EXTS_7 7
+
+#define PIN_IO_GPI_0 8
+#define PIN_IO_GPI_1 9
+#define PIN_IO_GPI_2 10
+#define PIN_IO_GPI_3 11
+
+
 // Add more here...
 
 int setup_socket(void);
