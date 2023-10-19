@@ -31,10 +31,10 @@
 #define UART_BAUDRATE   (115200)             //  Hz
 #define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / UART_BAUDRATE)
 
-#define EVENT_INITIALIZER(highlow) (struct PinEvent) \
+#define EVENT_INITIALIZER(highlow) (pin_event_t) \
 { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }
 
-static void set_pinevent_uart(char c, struct PinEvent *events)
+static void set_pinevent_uart(char c, pin_event_t *events)
 {
     // Pull low to initialize communication
     events[0] = EVENT_INITIALIZER(LOW);
@@ -54,11 +54,11 @@ int main(int argc, char const* argv[])
     int client_fd = setup_socket();
 
     // Start by setting the pin high
-    struct PinEvent set_high = EVENT_INITIALIZER(HIGH);
+    pin_event_t set_high = EVENT_INITIALIZER(HIGH);
     send(client_fd, &set_high, sizeof(set_high), 0);
 
     // 10 = 1 start bit + 8 data bits + 1 stop bit
-    static struct PinEvent events[10];
+    static pin_event_t events[10];
     while (1) {
         char input = getchar();
         set_pinevent_uart(input, events);

@@ -93,14 +93,14 @@ void eventlist_accept_clients(void)
     ioctl(new_socket, FIONBIO, &dontblock);
 }
 
-void eventlist_listen(std::list<struct PinEvent> &appendto) {
-    static struct PinEvent events[128];
+void eventlist_listen(std::list<pin_event_t> &appendto) {
+    static pin_event_t events[128];
     int bytes_read = read(new_socket, events, sizeof(events));
     if (bytes_read < 0) {
         return;
     } else {
-        int nevents = bytes_read / sizeof(struct PinEvent);
-        std::list<struct PinEvent> list;
+        int nevents = bytes_read / sizeof(pin_event_t);
+        std::list<pin_event_t> list;
         for (int i = 0; i < nevents; i++) {
             list.push_back(events[i]);
         }
@@ -109,12 +109,12 @@ void eventlist_listen(std::list<struct PinEvent> &appendto) {
     }
 }
 
-void eventlist_set_pin(std::list<struct PinEvent> &events, VVerilatorTop *top) {
+void eventlist_set_pin(std::list<pin_event_t> &events, VVerilatorTop *top) {
     if (events.empty()) {
         // Nothing to do
         return;
     } else {
-        struct PinEvent event = events.front();
+        pin_event_t event = events.front();
         if (event.in_n_cycles == ncycles) {
             printf("event occur @ %li cycles: %s\n", ncycles, 
                 event.high_low == HIGH ? "high" : "low");
@@ -127,12 +127,12 @@ void eventlist_set_pin(std::list<struct PinEvent> &events, VVerilatorTop *top) {
     }
 }
 
-void eventlist_push(std::list<struct PinEvent> &eventlist, 
-    const std::list<struct PinEvent> &push) {
+void eventlist_push(std::list<pin_event_t> &eventlist, 
+    const std::list<pin_event_t> &push) {
     eventlist.insert(eventlist.end(), push.cbegin(), push.cend());
 }
 
-std::list<struct PinEvent> eventlist_get_interrupt(const uint32_t pin, 
+std::list<pin_event_t> eventlist_get_interrupt(const uint32_t pin, 
     const uint32_t ncycles) {
     return {
         { .pin = pin, .in_n_cycles = ncycles, .high_low = HIGH },

@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
   }
 
   printf_init();
-  std::list<struct PinEvent> in_exts_0_events = {};
+  std::list<pin_event_t> in_exts_0_events = {};
   if (pin_client_enabled) {
     eventlist_accept_clients();
   }

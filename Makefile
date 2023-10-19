@@ -132,8 +132,13 @@ clean:
 	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
 	rm -rf out
 	rm -rf $(CLIENT_BUILD_DIR)
+
+	# If the config.mk file does not exist, the clean target will fail because
+	# config.mk is included in the programs/tests makefile. Therefore, create an 
+	# empty file for it to delete.
+	echo "" >> ./config.mk
 	make -C programs/tests clean
-	
+
 
 # Clean for all configurations, targets, and test outputs.
 cleanall:

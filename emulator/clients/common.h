@@ -8,7 +8,7 @@
 #define HIGH (1)
 #define LOW  (0)
 
-struct PinEvent {
+typedef struct {
     /**
      * Which pin the event occurs on; this number is determined by the macros 
      * found below.
@@ -40,7 +40,7 @@ struct PinEvent {
      * 
      */
     bool high_low;
-};
+} pin_event_t;
 
 #define PIN_IO_INT_EXTS_0 0
 #define PIN_IO_INT_EXTS_1 1
