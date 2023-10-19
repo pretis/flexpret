@@ -2,6 +2,10 @@
 #include <stdint.h>
 #include <flexpret.h>
 
+#define A_INIT 100
+#define B_INIT 200
+#define C_INIT 300
+
 int main() {
 
     uint32_t* a = malloc(sizeof(uint32_t));
@@ -9,19 +13,22 @@ int main() {
     uint32_t* c = malloc(sizeof(uint32_t));
     uint32_t* d = malloc(sizeof(uint32_t));
 
-    *a = 100;
-    *b = 200;
-    *c = 300;
+    assert(a && b && c && d, "Variable malloc failed");
+
+    *a = A_INIT;
+    *b = B_INIT;
+    *c = C_INIT;
     *d = *a + *b + *c;
 
-    _fp_print(*a);
-    assert(*a == 100);
-    _fp_print(*b);
-    assert(*b == 200);
-    _fp_print(*c);
-    assert(*c == 300);
-    _fp_print(*d);
-    assert(*d == 600);
+    assert(*a == A_INIT, "Incorrect value for a");
+    assert(*b == B_INIT, "Incorrect value for b");
+    assert(*c == C_INIT, "Incorrect value for c");
+    assert(*d == (A_INIT + B_INIT + C_INIT), "Incorrect value for d");
+
+    printf("a has address %p with value %i\n", a, *a);
+    printf("b has address %p with value %i\n", b, *b);
+    printf("c has address %p with value %i\n", c, *c);
+    printf("d has address %p with value %i\n", d, *d);
 
     free(a);
     free(b);

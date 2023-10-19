@@ -76,7 +76,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   val reg_time = RegInit(0.U(64.W)) // RO, less bits if !conf.stats
   val reg_compare = Reg(Vec(conf.threads, UInt(conf.timeBits.W)))
   // I/O
-  val reg_to_host = RegInit(0.U(32.W))
+  val regs_to_host = RegInit(VecInit(Seq.fill(conf.threads) { 0.U(32.W) }))
   val reg_gpis: Seq[UInt] = conf.gpiPortSizes.map(i => Reg(UInt(i.W))).toSeq // RO
   val reg_gpos: Seq[UInt] = conf.gpoPortSizes.map(i => RegInit(0.U(i.W))).toSeq
   // protection
@@ -162,8 +162,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
         reg_timer(io.rw.thread) := TIMER_OFF
       }
     }
-    when(compare_addr(CSRs.tohost)) {
-      reg_to_host := data_in
+    for (tid <- 0 until conf.threads) {
+      when(compare_addr(CSRs.tohost0 + tid)) {
+        regs_to_host(tid) := data_in
+      }
     }
     for (i <- 0 until conf.gpoPortSizes.length) {
       when(compare_addr(CSRs.gpoBase + i)) {
@@ -244,8 +246,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       data_out := zero_extend(reg_time(conf.timeBits - 1, 0).asUInt, conf.timeBits)
     }
   }
-  when(compare_addr(CSRs.tohost)) {
-    data_out := reg_to_host
+  for (tid <- 0 until conf.threads) {
+    when(compare_addr(CSRs.tohost0 + tid)) {
+      data_out := regs_to_host(tid)
+    }
   }
   for (i <- 0 until conf.gpiPortSizes.length) {
     when(compare_addr(CSRs.gpiBase + i)) {
@@ -479,7 +483,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     io.evecs := reg_evecs
   }
   io.expire := expired(io.rw.thread)
-  io.host.to_host := reg_to_host
+
+  for (tid <- 0 until conf.threads) {
+    io.host.to_host(tid) := regs_to_host(tid)
+  }
 
   (io.gpio.out zip reg_gpos) map { case (l, r) => l := r }
   // Formerly in Chisel2: io.gpio.out := reg_gpos (chisel3#152)

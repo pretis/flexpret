@@ -28,19 +28,19 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
       val imemSim = new ImemSimulator(
         // Generate with ./scripts/parse_disasm.py
         /**
-  csrwi 0x51e, 16 // tohost
+  csrwi 0x530, 16 // tohost
   jal t0, 0xc // note, RISC-V asm syntax specifies this as byte offset
   nop
   nop
-  csrw 0x51e, t0
+  csrw 0x530, t0
   loop: j loop
          */
         prog=scala.collection.immutable.Vector(
-          /* 0 */ "h51e85073", // csrwi 0x51e,16
+          /* 0 */ "h53085073", // csrwi 0x530,16
           /* 4 */ "h008002ef", // jal t0,c <_start+0xc>
           /* 8 */ "h00000013", // nop
           /* c */ "h00000013", // nop
-          /* 10 */ "h51e29073", // csrw 0x51e,t0
+          /* 10 */ "h53029073", // csrw 0x530,t0
           /* 14 */ "h0000006f", // j 14 <loop>
         ),
         defaultInstr="h00000067", // jr x0
@@ -69,7 +69,7 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
       val imemSim = new ImemSimulator(
         // Generate with ./scripts/parse_disasm.py
         /**
-  csrwi 0x51e, 3 // tohost
+  csrwi 0x530, 3 // tohost
   la t1, loopp
   jalr t0, t1, -4
   nop
@@ -83,11 +83,11 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
   nop
   nop
   nop
-  csrw 0x51e, t0
+  csrw 0x530, t0
   loopp: j loopp
          */
         prog=scala.collection.immutable.Vector(
-  /* 0 */ "h51e1d073", // csrwi 0x51e,3
+  /* 0 */ "h5301d073", // csrwi 0x530,3
   /* 4 */ "h00000317", // auipc t1,0x0
   /* 8 */ "h03c30313", // addi t1,t1,60 # 40 <loopp>
   /* c */ "hffc302e7", // jalr t0,-4(t1)
@@ -102,7 +102,7 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
   /* 30 */ "h00000013", // nop
   /* 34 */ "h00000013", // nop
   /* 38 */ "h00000013", // nop
-  /* 3c */ "h51e29073", // csrw 0x51e,t0
+  /* 3c */ "h53029073", // csrw 0x530,t0
   /* 40 */ "h0000006f", // j 40 <loopp>
         ),
         defaultInstr="h00000067", // jr x0

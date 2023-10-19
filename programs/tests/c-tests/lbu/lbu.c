@@ -1,12 +1,15 @@
 #include <stdint.h>
 #include <flexpret.h>
 
+#define X_INIT 0x10E0
+#define Y_INIT 2
+
 int main() {
     
-    uint32_t x = 0x10E0; // x = 4320
-    uint32_t y = 2;
-    _fp_print(x);
-    _fp_print(y);
+    uint32_t x = X_INIT; // x = 4320
+    uint32_t y = Y_INIT;
+    printf("x is %i\n", x);
+    printf("y is %i\n", y);
 
     // Check if basic inline assembly works.
     asm volatile (
@@ -14,8 +17,10 @@ int main() {
     : "+r"(y)
     : "r"(x)
     );
-    _fp_print(y); // y = 4322
-    assert(y == 4322);
+
+    printf("Ran inline assembly that adds places x + y in y\n");
+    printf("y is %i\n", y);
+    assert(y == (X_INIT + Y_INIT), "Inline assembly add got incorrect value");
 
     void *p = (void*)0x20004000;
 
@@ -27,8 +32,10 @@ int main() {
     : "=r"(z)
     : "r"(x), "r"(p)
     );
-    _fp_print(z); // z = 4320
-    assert(z == 4320);
+
+    printf("Ran inline assembly that stores x and loads it into z\n");
+    printf("z is %i\n", z);
+    assert(z == x, "Inline assembly store and load got incorrect value");
 
     // Check lbu implementation.
     asm volatile (
@@ -37,8 +44,12 @@ int main() {
     : "=r"(z)
     : "r"(p)
     );
-    _fp_print(z); // z = 224, i.e. 0x00E0
-    assert(z == 224);
+
+    printf("Ran inline assembly that loads the first byte of x into z\n");
+    printf("x = 0x%x\n", x);
+    printf("z = 0x%x\n", z);
+
+    assert(z == (X_INIT & 0xFF), "Inline assembly load one byte got incorrect value");
 
     return 0;
 }

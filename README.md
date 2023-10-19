@@ -106,13 +106,11 @@ Not all combinations are valid.
 - `DEBUG=[true/false]` Generate waveform dump.
 
 ### RISC-V Compiler
-We use the Newlib installation of the [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+We use the Newlib installation of the [rv32i-4.0.0](https://github.com/stnolting/riscv-gcc-prebuilt).
+Download and extract it to a convenient location on the PATH.
 
-To install the 32-bit version of the GCC compiler (Newlib):
-1. Clone and `cd` into the `riscv-gnu-toolchain` repository;
-2. Install the necessary [prerequisites](https://github.com/riscv-collab/riscv-gnu-toolchain#prerequisites);
-3. Run `./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32` (assuming your preferred installation directory is `/opt/riscv`);
-4. Run `make`.
+### Verilator
+We use the `verilator` toolchain for running emulations of the core. Can be installed with: `sudo apt install verilator`
 
 ### Regression Test
 To run a C regression test for the current processor configurations
@@ -136,3 +134,4 @@ To learn more about Chisel, visit its [website](http://www.chisel-lang.org/) and
 * Erling Jellum (erling.r.jellum@ntnu.no)
 * Martin Schoeberl (masca@dtu.dk)
 * Samuel Berkun (sberkun@berkeley.edu)
+* Magnus Mæhlum (magnmaeh@stud.ntnu.no)

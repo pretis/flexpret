@@ -15,12 +15,13 @@
 #define TA_ALIGNMENT        4
 
 /* Linker */
+extern uint32_t __stext;
 extern uint32_t __etext;
-extern uint32_t __data_start__;
-extern uint32_t __data_end__;
-extern uint32_t __bss_start__;
-extern uint32_t __bss_end__;
-extern uint32_t end;
+extern uint32_t __sdata;
+extern uint32_t __edata;
+extern uint32_t __sbss;
+extern uint32_t __ebss;
+extern uint32_t __end;
 
 /* Threading */
 static bool     __ready__;
@@ -30,6 +31,8 @@ extern uint32_t num_threads_exited;
 
 //prototype of main
 int main(void);
+
+void syscalls_init(void);
 
 /**
  * Allocate a requested memory and return a pointer to it.
@@ -66,7 +69,6 @@ void free(void *ptr) {
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
-
 lock_t _lock = LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
@@ -76,29 +78,31 @@ void Reset_Handler() {
     // the other threads busy wait until ready.
     if (hartid == 0) {
         // Copy .data section into the RAM
-        uint32_t size   = &__data_end__ - &__data_start__;
-        uint32_t *pDst  = (uint32_t*)&__data_start__;       // RAM
+        uint32_t size   = &__edata - &__sdata;
+        uint32_t *pDst  = (uint32_t*)&__sdata;              // RAM
         uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
 
         for (uint32_t i = 0; i < size; i++) {
             *pDst++ = *pSrc++;
         }
 
-                // Init. the .bss section to zero in RAM
-        size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
-        pDst = (uint32_t*)&__bss_start__;
+        // Init. the .bss section to zero in RAM
+        size = (uint32_t)&__ebss - (uint32_t)&__sbss;
+        pDst = (uint32_t*)&__sbss;
         for(uint32_t i = 0; i < size; i++) {
             *pDst++ = 0;
         }
+        
+        syscalls_init();
 
-    // Initialize tinyalloc.
-    ta_init( 
-        &end, // start of the heap space
-        (void *) DSPM_END,
-        TA_MAX_HEAP_BLOCK, 
-        16, // split_thresh: 16 bytes (Only used when reusing blocks.)
-        TA_ALIGNMENT
-    );
+        // Initialize tinyalloc.
+        ta_init( 
+            &__end, // start of the heap space
+            (void *) DSPM_END,
+            TA_MAX_HEAP_BLOCK, 
+            16, // split_thresh: 16 bytes (Only used when reusing blocks.)
+            TA_ALIGNMENT
+        );
 
         /**
          * Configure flexible scheduling
