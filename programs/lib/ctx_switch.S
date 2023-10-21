@@ -127,14 +127,7 @@ thread_ctx_switch_load:
     lw a1, 24(sp)
     addi sp, sp, 32
 
-    // Read exception PC into a0
-    csrr a0, CSR_EPC
-
-    // Get the return address from the exception PC register
-    csrr ra, CSR_EPC
-
     // Write the register and set the interrupt bit again
     csrwi CSR_STATUS, 0x10
 
-    // Same as ret, just using a0 instead of ra
-    jalr x0, a0
+    sret

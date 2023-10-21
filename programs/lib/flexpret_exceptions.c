@@ -48,7 +48,7 @@ static const char *exception_to_str(const uint32_t cause) {
     }
 }
 
-static void fp_exception_handler(void) {
+void fp_exception_handler(void) {
     int cause = read_csr(CSR_CAUSE);
     
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  

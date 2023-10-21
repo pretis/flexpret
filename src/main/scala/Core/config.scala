@@ -68,7 +68,7 @@ case class FlexpretConfiguration(
   val regSchedule       = true // delay DU, WU and schedule update 1 cycle to reduce timing path
   val dedicatedCsrData  = true // otherwise wait for pass through ALU
   val iMemCoreRW        = true // 'true' required for load/store to ISPM
-  val privilegedMode    = false // Off until updated to latest compiler..
+  val privilegedMode    = true // Off until updated to latest compiler..
 
   // ************************************************************
 

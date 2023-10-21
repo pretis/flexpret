@@ -119,22 +119,33 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     CSR_W -> io.rw.data_in
   ))
 
+  // Check whether the write does not make any alterations; i.e. it is a fake write
+  // This is the case if the CSRRS (sets bits) or CSRRC (clears bits) provide
+  // bitmasks that are zero
+  // This allows non-priviledged mode for instructions that do not alter the CSRs
+  val fake_write = WireInit(false.B)
+  if (conf.privilegedMode) {
+    fake_write := MuxLookup(io.rw.csr_type, false.B, Array(
+      CSR_S -> (io.rw.data_in === 0.U),
+      CSR_C -> (io.rw.data_in === 0.U),
+      CSR_W -> false.B
+    ))
+  }
+
   // check permission (if privileged)
   val priv_fault = WireInit(false.B) // default value
   if (conf.privilegedMode) {
     val addr_read_only = io.rw.addr(11, 10) === 3.U // 0xC__ suggests read-only.
     val addr_no_priv = (io.rw.addr(9, 8) =/= 0.U) && (reg_prv(io.rw.thread) === 0.U(2.W))
-    when(io.rw.write && (addr_read_only || addr_no_priv)) {
+    when((io.rw.write && !fake_write) && (addr_read_only || addr_no_priv)) {
       priv_fault := true.B
     }
-    // TODO: read without permission?
   }
-
 
   // ************************************************************
   // CSR write (may be later over-written)
 
-  val write = io.rw.write && !priv_fault && !io.kill
+  val write = io.rw.write && !priv_fault && !io.kill && !fake_write
   when(write) {
     when(compare_addr(CSRs.slots)) {
       for ((slot, i) <- reg_slots.view.zipWithIndex) {
@@ -463,7 +474,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       reg_prv1 := reg_prv
       reg_ie1 := reg_ie
       // privileged mode with interrupts disabled
-      reg_prv := 3.U(2.W)
+      reg_prv := RegInit(VecInit(Seq.fill(conf.threads) { 3.U(2.W) }))
       reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
     } .elsewhen (io.sret) {
       // restore
