@@ -97,7 +97,6 @@ int main(int argc, char* argv[]) {
   }
 
   printf_init();
-  std::list<pin_event_t> in_exts_0_events = {};
   if (pin_client_enabled) {
     eventlist_accept_clients();
   }
@@ -120,8 +119,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (pin_client_enabled) {
-      eventlist_listen(in_exts_0_events);
-      eventlist_set_pin(in_exts_0_events, top);
+      eventlist_listen();
+      eventlist_set_pin(top);
     }
 
     top->clock = 0;

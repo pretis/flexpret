@@ -1,3 +1,16 @@
+/**
+ * @author Magnus Mæhlum (magnmaeh@stud.ntnu.no)
+ * @brief The code implements a simple API for setting pins through an external
+ * socket connection.
+ * 
+ * When a `pinevent_t` is received, the pin number is used as an index into the 
+ * state_t array and added to the list. When the eventlist_set_pin function is 
+ * called, it checks the list. If an event is found, the ncycles variable starts 
+ * counting until the in_n_cycles limit is reached. Once the limit is reached,
+ * the event triggers and the event itself is popped from the list.
+ * 
+ */
+
 #include <list>
 #include <cstdint>
 #include <cstdlib>
@@ -12,7 +25,22 @@
 
 #include "../../programs/lib/include/flexpret_hwconfig.h"
 
-static uint64_t ncycles = 0;
+#define NUM_GPI (4)
+#define MAX_NUM_THREADS (8)
+#define NUM_PINS (MAX_NUM_THREADS + NUM_GPI)
+
+typedef struct {
+    uint64_t ncycles;
+    std::list<pin_event_t> eventlist;
+} state_t;
+
+/**
+ * Each pin needs its own state (ncycles + eventlist).
+ * 
+ * Note: The #defines in clients/common.h are used as indecies to this array.
+ * 
+ */
+static state_t pinstates[NUM_PINS];
 static int new_socket = 0;
 
 static inline void set_pin(uint32_t which_pin, VVerilatorTop *top, uint8_t val)
@@ -97,49 +125,39 @@ void eventlist_accept_clients(void)
     ioctl(new_socket, FIONBIO, &dontblock);
 }
 
-void eventlist_listen(std::list<pin_event_t> &appendto) {
+void eventlist_listen(void) {
     static pin_event_t events[128];
     int bytes_read = read(new_socket, events, sizeof(events));
     if (bytes_read < 0) {
         return;
     } else {
         int nevents = bytes_read / sizeof(pin_event_t);
-        std::list<pin_event_t> list;
         for (int i = 0; i < nevents; i++) {
-            list.push_back(events[i]);
-        }
+            pin_event_t event = events[i];
 
-        eventlist_push(appendto, list);
-    }
-}
-
-void eventlist_set_pin(std::list<pin_event_t> &events, VVerilatorTop *top) {
-    if (events.empty()) {
-        // Nothing to do
-        return;
-    } else {
-        pin_event_t event = events.front();
-        if (event.in_n_cycles == ncycles) {
-            printf("event occur @ %li cycles: %s\n", ncycles, 
-                event.high_low == HIGH ? "high" : "low");
-            events.pop_front();
-            set_pin(event.pin, top, event.high_low);
-            ncycles = 0;
-        } else {
-            ncycles++;
+            // Push the event to the correct list; which one to use is given
+            // by the event.pin
+            assert(event.pin < NUM_PINS);
+            pinstates[event.pin].eventlist.push_back(event);
         }
     }
 }
 
-void eventlist_push(std::list<pin_event_t> &eventlist, 
-    const std::list<pin_event_t> &push) {
-    eventlist.insert(eventlist.end(), push.cbegin(), push.cend());
-}
-
-std::list<pin_event_t> eventlist_get_interrupt(const uint32_t pin, 
-    const uint32_t ncycles) {
-    return {
-        { .pin = pin, .in_n_cycles = ncycles, .high_low = HIGH },
-        { .pin = pin, .in_n_cycles = 0,       .high_low = LOW  },
-    };
+void eventlist_set_pin(VVerilatorTop *top) {
+    for (int i = 0; i < NUM_PINS; i++) {
+        state_t state = pinstates[i];
+        if (!state.eventlist.empty()) {
+            pin_event_t event = state.eventlist.front();
+            if (event.in_n_cycles == state.ncycles) {
+                printf("event occur on pin %i, @ %li cycles: %s\n", event.pin,
+                    state.ncycles, event.high_low == HIGH ? "high" : "low");
+                state.eventlist.pop_front();
+                set_pin(event.pin, top, event.high_low);
+                state.ncycles = 0;
+            } else {
+                state.ncycles++;
+            }
+        }
+        pinstates[i] = state;
+    }
 }

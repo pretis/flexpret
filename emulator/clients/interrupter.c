@@ -20,7 +20,7 @@
 
 #include "common.h"
 
-static pin_event_t interrupt[2] = {
+static pin_event_t interrupt[] = {
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 10000, .high_low = HIGH },
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 0,     .high_low = LOW  },
 };
