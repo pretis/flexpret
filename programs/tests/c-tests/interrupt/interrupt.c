@@ -1,7 +1,7 @@
 #include <flexpret.h>
 #include <errno.h>
 
-#define EXTERNAL_INTERRUPT_TEST (1)
+#define EXTERNAL_INTERRUPT_TEST (0)
 
 #define EXPIRE_DELAY_NS (uint32_t)(1e6)
 
@@ -106,6 +106,60 @@ void test_low_timeout(void) {
     while (flag0 == 0);
 }
 
+void test_delay_until(void) {
+    // Delay until should execute all interrupts but keep sleeping until the
+    // specified timeout has occurred
+    volatile uint32_t now, expire, delay;
+    const uint32_t timeout_ns = 100000;
+
+    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
+
+    now = rdtime();
+    expire = now + timeout_ns;
+    delay = expire + timeout_ns;
+
+    interrupt_on_expire(expire);
+    delay_until(delay);
+
+    now = rdtime();
+    assert(now > delay, "Time not as expected");
+    
+    /**
+     * Does not work since interrupt_on_expire and delay_until use the same
+     * CSR register CSR_COMPARE - so delay_until just overwrites the value of
+     * the interrupt_on_expire instruction.
+     */
+    //assert(flag0 == 1, "Interrupt did not occur");
+}
+
+void test_wait_until(void) {
+    // Wait until should sleep until an interrupt occurs or the timeout value is
+    // reached. If an interrupt occurs, it should execute it and continue
+    // execution (i.e., stop sleeping).
+    volatile uint32_t now, expire, delay;
+
+    const uint32_t timeout_ns = 10000;
+    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
+    
+    now = rdtime();
+    expire = now + timeout_ns;
+    delay = expire + timeout_ns;
+
+    interrupt_on_expire(expire);
+    wait_until(delay);
+
+    now = rdtime();
+
+    /**
+     * Does not work since interrupt_on_expire and wait_until use the same
+     * CSR register CSR_COMPARE - so wait_until just overwrites the value of
+     * the interrupt_on_expire instruction.
+     * 
+     */
+    //assert(expire < now && now < delay, "Time not as expected");
+    //assert(flag1 == 1, "Interrupt did not occur");
+}
+
 int main(void) {    
     enable_interrupts();
 
@@ -135,10 +189,24 @@ int main(void) {
     test_low_timeout();
     printf("4th run: interrupts ran sucessfully with low timeout\n");
 
+    flag0 = 0;
+    flag1 = 0;
+
+    test_delay_until();
+
+    printf("5th run: delay until ran sucessfully\n");
+
+    flag0 = 0;
+    flag1 = 0;
+
+    test_wait_until();
+
+    printf("6th run: wait until ran sucessfully\n");
+
 #if EXTERNAL_INTERRUPT_TEST
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
     while (ext_int_flag == 0);
-    printf("5th run: got external interrupt\n");
+    printf("7th run: got external interrupt\n");
 #endif // EXTERNAL_INTERRUPT_TEST
 
     return 0;

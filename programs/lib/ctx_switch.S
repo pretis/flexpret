@@ -39,12 +39,16 @@ thread_ctx_switch_store:
     // Clear the interrupt bit
     csrci CSR_STATUS, 0x10
 
+    // Push a0, a1 to stack
+    addi sp, sp, -32
+    sw a0, 28(sp)
+    sw a1, 24(sp)
+
     getContexts
 
     // Store all registers
     // x0 is hard-wired to zero so no reason to store it
-    // The return address must be fetched from CSR_EPC in the load function,
-    // so no reason to store the x1 = ra
+    sw x1,  ( 0 * 4)(a0)
     sw x2,  ( 1 * 4)(a0)
     sw x3,  ( 2 * 4)(a0)
     sw x4,  ( 3 * 4)(a0)
@@ -86,8 +90,7 @@ thread_ctx_switch_load:
 
     // Load all registers except the a0 itself
     // x0 is hard-wired to zero so no reason to store it
-    // ra = x1 is in the Exception PC CSR
-    csrr ra, CSR_EPC
+    lw x1,  ( 0 * 4)(a0)
     lw x2,  ( 1 * 4)(a0)
     lw x3,  ( 2 * 4)(a0)
     lw x4,  ( 3 * 4)(a0)
@@ -96,8 +99,8 @@ thread_ctx_switch_load:
     lw x7,  ( 6 * 4)(a0)
     lw x8,  ( 7 * 4)(a0)
     lw x9,  ( 8 * 4)(a0)
-    // Skip x10 = a0 since it is in use
-    lw x11, (10 * 4)(a0)
+    // Skip x10 = a0 since it is on the stack
+    // Skip x11 = a1 since it is on the stack
     lw x12, (11 * 4)(a0)
     lw x13, (12 * 4)(a0)
     lw x14, (13 * 4)(a0)
@@ -119,10 +122,19 @@ thread_ctx_switch_load:
     lw x30, (29 * 4)(a0)
     lw x31, (30 * 4)(a0)
     
-    // Finally load the x10 = a0 register
-    lw x10, (9 * 4)(a0)
+    // Load a0, a1 from stack
+    lw a0, 28(sp)
+    lw a1, 24(sp)
+    addi sp, sp, 32
+
+    // Read exception PC into a0
+    csrr a0, CSR_EPC
+
+    // Get the return address from the exception PC register
+    csrr ra, CSR_EPC
 
     // Write the register and set the interrupt bit again
     csrwi CSR_STATUS, 0x10
 
-    ret
+    // Same as ret, just using a0 instead of ra
+    jalr x0, a0
