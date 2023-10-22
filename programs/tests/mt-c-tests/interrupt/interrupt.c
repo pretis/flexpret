@@ -1,5 +1,7 @@
 #include <flexpret.h>
 
+#define EXTERNAL_INTERRUPT_TEST (0)
+
 static_assert(NUM_THREADS >= 4);
 #define USED_THREADS 4
 
@@ -125,12 +127,14 @@ int main() {
 
     printf("3rd run: %i threads all ran one interrupt each\n", USED_THREADS-1);
 
+#if EXTERNAL_INTERRUPT_TEST
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
     enable_interrupts();
     while (ext_int_flag == 0);
     disable_interrupts();
 
     printf("4th run: external interrupt triggered successfully\n");
+#endif // EXTERNAL_INTERRUPT_TEST
 
     return 0;
 }

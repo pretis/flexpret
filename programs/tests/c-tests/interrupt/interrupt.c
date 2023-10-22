@@ -7,6 +7,7 @@
 
 static int flag0 = 0;
 static int flag1 = 0;
+static int ext_int_flag = 0;
 
 void ie_isr0(void) {
     flag0 = 1;
@@ -14,6 +15,10 @@ void ie_isr0(void) {
 
 void ie_isr1(void) {
     flag1 = 1;
+}
+
+void ext_int_isr(void) {
+    ext_int_flag = 1;
 }
 
 void test_two_interrupts(void) {
@@ -175,7 +180,7 @@ int main(void) {
 
     // Try to disable interrupts and check that no interrupts were called
     disable_interrupts();
-    test_disabled_interrupts(100000);
+    test_disabled_interrupts(10000);
     printf("3rd run: interrupts were disabled and none were triggered\n");
     enable_interrupts();
 

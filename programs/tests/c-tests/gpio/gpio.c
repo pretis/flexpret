@@ -1,12 +1,61 @@
 #include <stdint.h>
 #include <flexpret.h>
 
+/**
+ * This test can be run with a client connected to the emulator; see 
+ * ../../../../emulator/clients/gpio.c.
+ * 
+ * Set the #define to 1, recompile and connect the client to run the
+ * test with the emulator.
+ * 
+ */
+#define HAVE_EMULATOR_CLIENT (0)
+
 static inline bool write_and_readback(const uint32_t val) {
     printf("Write gpio: 0x%x\n", val);
     gpo_write_0(val);
     const uint32_t readback = gpo_read_0();
     printf("Read  gpio: 0x%x\n", readback);
     return val == readback;
+}
+
+static void run_emulator_client_tests(void) {
+    // Clear all general purpose pins
+    gpo_write_0(0);
+    gpo_write_1(0);
+    gpo_write_2(0);
+    gpo_write_3(0);
+
+    // Wait for emulator to set general purpose pin 0
+    while (gpi_read_0() == false);
+    while (gpi_read_1() == false);
+    while (gpi_read_0() == true);
+    while (gpi_read_2() == false);
+    while (gpi_read_2() == true);
+    while (gpi_read_2() == false);
+    while (gpi_read_3() == false);
+    while (gpi_read_0() == false);
+
+    assert(
+        gpi_read_0() == true && 
+        gpi_read_1() == true && 
+        gpi_read_2() == true && 
+        gpi_read_3() == true,
+        "Pins not as expected"
+    );
+
+    while (gpi_read_2() == true);
+    while (gpi_read_3() == true);
+    while (gpi_read_0() == true);
+    while (gpi_read_1() == true);
+    
+    assert(
+        gpi_read_0() == false && 
+        gpi_read_1() == false && 
+        gpi_read_2() == false && 
+        gpi_read_3() == false,
+        "Pins not as expected"
+    );
 }
 
 int main() {
@@ -47,6 +96,11 @@ int main() {
     assert(gpo_read_0() == 0x01, "Read incorrect value");       // Expect 1.
 
     printf("Set invalid bit has no effect\n");
+
+#if HAVE_EMULATOR_CLIENT
+    run_emulator_client_tests();
+    printf("Pins were toggled in a random-ish fashion test passed\n");
+#endif // HAVE_EMULATOR_CLIENT
 
     return 0;
 }
