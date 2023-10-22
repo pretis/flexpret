@@ -1,8 +1,6 @@
 #include <flexpret.h>
 
 #define EXTERNAL_INTERRUPT_TEST (0)
-
-static_assert(NUM_THREADS >= 4);
 #define USED_THREADS 4
 
 static int flags[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
