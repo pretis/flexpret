@@ -19,10 +19,14 @@
 #include <sys/socket.h>
 
 #include "common.h"
+#include "../../programs/lib/include/flexpret_hwconfig.h"
 
 static pin_event_t interrupt[] = {
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 10000, .high_low = HIGH },
-    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 0,     .high_low = LOW  },
+
+    // Wait NUM_THREADS cycles before setting low again so the HW thread gets
+    // enough time to react
+    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = NUM_THREADS,     .high_low = LOW  },
 };
 
 int main(int argc, char const* argv[]) 
