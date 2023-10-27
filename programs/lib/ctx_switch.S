@@ -19,7 +19,15 @@
  * see the macro itself for details.
  */
 .macro getContexts
-    // Get a0 as the address of the contexts variable
+    /**
+     * Get a0 as the address of the contexts variable - use norelax option to
+     * ensure the assembler does not optimize la (= auipc + addi) to a reference
+     * relative to the global pointer (gp).
+     * 
+     * Seeing as gp is stored and loaded again, we should assume it might have a
+     * different value when we load. So it is safer to use an absolute address.
+     */
+
     .option push
     .option norelax
     la a0, contexts

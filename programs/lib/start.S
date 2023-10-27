@@ -33,7 +33,14 @@
     sub sp, sp, t1
 .endm
 
-.macro setGlobalPointer 
+.macro setGlobalPointer
+    /**
+     * The option norelax ensures that the assembler does not optimize the la
+     * pseudo instruction from using an aboslute address into using an address
+     * relative to the global pointer (gp). 
+     * 
+     * This is important because gp is not yet set.
+     */
     .option push
     .option norelax
     la gp, __global_pointer$
