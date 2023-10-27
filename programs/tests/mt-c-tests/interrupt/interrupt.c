@@ -28,14 +28,14 @@ void ext_int_isr(void) {
 }
 
 void *single_thread(void *arg) {
-    enable_interrupts();
+    ENABLE_INTERRUPTS();
 
     uint32_t now, expire;
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
     
     now = rdtime();
     expire = now + 1000000;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
     while (flags[0] == 0);
 
@@ -43,11 +43,11 @@ void *single_thread(void *arg) {
     
     now = rdtime();
     expire = now + 100000;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
     while (flags[1] == 0);
 
-    disable_interrupts();
+    DISABLE_INTERRUPTS();
 
     return 0;
 
@@ -83,11 +83,11 @@ void *worker(void *arg) {
 
     now = rdtime();
     expire = now + tid * 100000;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
-    enable_interrupts();
+    ENABLE_INTERRUPTS();
     while (flags[tid] == 0);
-    disable_interrupts();
+    DISABLE_INTERRUPTS();
 
     lock_release(&interrupt_lock);
 }
@@ -127,9 +127,9 @@ int main() {
 
 #if EXTERNAL_INTERRUPT_TEST
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
-    enable_interrupts();
+    ENABLE_INTERRUPTS();
     while (ext_int_flag == 0);
-    disable_interrupts();
+    DISABLE_INTERRUPTS();
 
     printf("4th run: external interrupt triggered successfully\n");
 #endif // EXTERNAL_INTERRUPT_TEST

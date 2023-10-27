@@ -27,7 +27,7 @@ void test_two_interrupts(void) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
     while (flag0 == 0);
 
@@ -38,7 +38,7 @@ void test_two_interrupts(void) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
     while (flag1 == 0);
 
@@ -58,7 +58,7 @@ void test_disabled_interrupts(const uint32_t timeout_init) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
     timeout = timeout_init;
     while (flag0 == 0 && timeout--);
@@ -69,7 +69,7 @@ void test_disabled_interrupts(const uint32_t timeout_init) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
 
     timeout = timeout_init;
     while (flag1 == 0 && timeout--);
@@ -90,7 +90,7 @@ void test_low_timeout(void) {
 
     /**
      * The problem with using such a low value for expire is that it will already
-     * be expired by the time the interrupt_on_expire() function is called.
+     * be expired by the time the INTERRUPT_ON_EXPIRE() function is called.
      * I.e., the exception will trigger right after the CSR_COMPARE register has
      * been written (see the function implementation). Then the second inline
      * assembly will not be executed before the exception occurs. This also 
@@ -102,7 +102,7 @@ void test_low_timeout(void) {
      * is broken and a crash is likely to occur.
      * 
      */
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
     while (flag0 == 0);
 }
 
@@ -118,16 +118,16 @@ void test_delay_until(void) {
     expire = now + timeout_ns;
     delay = expire + timeout_ns;
 
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
     delay_until(delay);
 
     now = rdtime();
     assert(now > delay, "Time not as expected");
     
     /**
-     * Does not work since interrupt_on_expire and delay_until use the same
+     * Does not work since INTERRUPT_ON_EXPIRE and delay_until use the same
      * CSR register CSR_COMPARE - so delay_until just overwrites the value of
-     * the interrupt_on_expire instruction.
+     * the INTERRUPT_ON_EXPIRE instruction.
      */
     //assert(flag0 == 1, "Interrupt did not occur");
 }
@@ -145,15 +145,15 @@ void test_wait_until(void) {
     expire = now + timeout_ns;
     delay = expire + timeout_ns;
 
-    interrupt_on_expire(expire);
+    INTERRUPT_ON_EXPIRE(expire);
     wait_until(delay);
 
     now = rdtime();
 
     /**
-     * Does not work since interrupt_on_expire and wait_until use the same
+     * Does not work since INTERRUPT_ON_EXPIRE and wait_until use the same
      * CSR register CSR_COMPARE - so wait_until just overwrites the value of
-     * the interrupt_on_expire instruction.
+     * the INTERRUPT_ON_EXPIRE instruction.
      * 
      */
     //assert(expire < now && now < delay, "Time not as expected");
@@ -161,7 +161,7 @@ void test_wait_until(void) {
 }
 
 int main(void) {
-    enable_interrupts();
+    ENABLE_INTERRUPTS();
 
     // Test that interrupts work
     test_two_interrupts();
@@ -179,10 +179,10 @@ int main(void) {
     flag1 = 0;
 
     // Try to disable interrupts and check that no interrupts were called
-    disable_interrupts();
+    DISABLE_INTERRUPTS();
     test_disabled_interrupts(10000);
     printf("3rd run: interrupts were disabled and none were triggered\n");
-    enable_interrupts();
+    ENABLE_INTERRUPTS();
 
     // No need to reset flags if the interrupts were not run
 
