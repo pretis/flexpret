@@ -35,7 +35,9 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val epc = Input(UInt(32.W)) // PC of uncommitted instruction
     val cause = Input(UInt(CAUSE_WI.W))
     val evecs = Output(Vec(conf.threads, UInt(32.W)))
-    val epcs  = Output(Vec(conf.threads, UInt(32.W)))
+    val mepcs = Output(Vec(conf.threads, UInt(32.W)))
+    val sepcs = Output(Vec(conf.threads, UInt(32.W)))
+    val uepcs = Output(Vec(conf.threads, UInt(32.W)))
     // timing
     val sleep = Input(Bool()) // valid DU inst
     val ie = Input(Bool()) // valid IE inst
@@ -43,7 +45,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val expire = Output(Bool()) // DU, WU time expired
     val dec_tid = Input(UInt(conf.threadBits.W))
     // privileged
-    val sret = Input(Bool()) // valid sret instruction (ignores exception)
+    val xret = Input(UInt(2.W))
     // I/O
     val host = new HostIO()
     val gpio = new GPIO()
@@ -70,7 +72,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   val reg_tmodes = RegInit(VecInit(conf.initialTmodes.toSeq))
   // exception handling
   val reg_evecs = Reg(Vec(conf.threads, UInt()))
-  val reg_epcs = Reg(Vec(conf.threads, UInt())) // RO?
+  val reg_mepcs = Reg(Vec(conf.threads, UInt())) // RO?
+  val reg_sepcs = Reg(Vec(conf.threads, UInt())) // RO?
+  val reg_uepcs = Reg(Vec(conf.threads, UInt())) // RO?
+
   val reg_causes = Reg(Vec(conf.threads, UInt())) // RO
   val reg_sup0 = Reg(Vec(conf.threads, UInt()))
   // timing instructions
@@ -243,8 +248,14 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     when(compare_addr(CSRs.evec)) {
       data_out := reg_evecs(io.rw.thread)
     }
-    when(compare_addr(CSRs.epc)) {
-      data_out := reg_epcs(io.rw.thread)
+    when(compare_addr(CSRs.mepc)) {
+      data_out := reg_mepcs(io.rw.thread)
+    }
+    when(compare_addr(CSRs.sepc)) {
+      data_out := reg_sepcs(io.rw.thread)
+    }
+    when(compare_addr(CSRs.uepc)) {
+      data_out := reg_uepcs(io.rw.thread)
     }
     when(compare_addr(CSRs.cause)) {
       data_out := Cat(reg_causes(io.rw.thread)(CAUSE_WI - 1), 0.U((32 - CAUSE_WI).W), reg_causes(io.rw.thread)(CAUSE_WI - 2, 0))
@@ -362,9 +373,15 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
   // exception handling
   if (conf.exceptions) {
+    // TODO: The work on exception handling with different priviledge modes
+    // needs to be handled; for now it is just mpc being used.
     when(io.exception) {
-      reg_epcs(io.rw.thread) := io.epc
+      reg_mepcs(io.rw.thread) := io.epc
       reg_causes(io.rw.thread) := io.cause
+
+      // FIXME: The two connections below are probably not correct
+      reg_sepcs(io.rw.thread) := io.epc
+      reg_uepcs(io.rw.thread) := io.epc
     }
   }
 
@@ -477,7 +494,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       // privileged mode with interrupts disabled
       reg_prv := VecInit(Seq.fill(conf.threads) { 3.U(2.W) })
       reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
-    } .elsewhen (io.sret) {
+    } .elsewhen (io.xret === XRET_S) {
       // restore
       reg_prv := reg_prv1
       reg_ie := reg_ie1
@@ -493,7 +510,9 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   io.tmodes := reg_tmodes
   if (conf.exceptions) {
     io.evecs := reg_evecs
-    io.epcs  := reg_epcs
+    io.mepcs  := reg_mepcs
+    io.sepcs  := reg_sepcs
+    io.uepcs  := reg_uepcs
   }
   io.expire := expired(io.rw.thread)
 

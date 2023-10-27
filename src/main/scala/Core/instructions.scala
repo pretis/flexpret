@@ -102,7 +102,9 @@ object Instructions {
   // System calls
   def SCALL              = BitPat("b00000000000000000000000001110011")
   def SBREAK             = BitPat("b00000000000100000000000001110011")
+  def MRET               = BitPat("b00110000001000000000000001110011")
   def SRET               = BitPat("b00010000001000000000000001110011")
+  def URET               = BitPat("b00000000001000000000000001110011")
   // CSR operations
   def CSRRW              = BitPat("b?????????????????001?????1110011")
   def CSRRS              = BitPat("b?????????????????010?????1110011")
@@ -242,7 +244,6 @@ object CSRs {
   val stats     = 0xc0
   val sup0      = 0x500
   val sup1      = 0x501
-  val epc       = 0x502
   val badvaddr  = 0x503
   val ptbr      = 0x504
   val asid      = 0x505   // iMemProtection
@@ -257,6 +258,9 @@ object CSRs {
   val send_ipi  = 0x50e
   val clear_ipi = 0x50f
   val core_id = 0x510
+  val mepc       = 0x511
+  val sepc       = 0x512
+  val uepc       = 0x513
   val reset = 0x51d
   val fromhost = 0x51f
   val hwlock    = 0x520
@@ -311,7 +315,6 @@ object CSRs {
     res += stats
     res += sup0
     res += sup1
-    res += epc
     res += badvaddr
     res += ptbr
     res += asid
@@ -325,8 +328,11 @@ object CSRs {
     res += fatc
     res += send_ipi
     res += clear_ipi
+    res += core_id
+    res += mepc
+    res += sepc
+    res += uepc
     res += reset
-    //res += tohost
     res += fromhost
     res += hwlock
     res += tohost0 
