@@ -160,7 +160,7 @@ void test_wait_until(void) {
     //assert(flag1 == 1, "Interrupt did not occur");
 }
 
-int main(void) {    
+int main(void) {
     enable_interrupts();
 
     // Test that interrupts work
