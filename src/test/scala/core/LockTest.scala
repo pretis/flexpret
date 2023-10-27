@@ -20,7 +20,7 @@ class LockTest extends FlatSpec with ChiselScalatestTester {
   val threads = 2
   val conf = FlexpretConfiguration(threads=threads, flex=false,
     InstMemConfiguration(bypass=false, sizeKB=512),
-    dMemKB=512, mul=false, features="all")
+    dMemKB=512, mul=false, priv=false, features="all")
 
   // Acquire lock and expect grant immediatly
   def acquire(c: Lock, tid: Int) = {
