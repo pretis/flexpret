@@ -57,6 +57,15 @@ int tmode_sleep(uint32_t hartid);
 
 
 /* Pthreads-like threading library APIs */
+
+/**
+ * This struct contains a context; i.e., the values of the registers before a
+ * context switch occurred. A context switch typically occurs due to an interrupt.
+ * 
+ * The struct is not in direct use anywhere, but is kept for reference. An
+ * implementation of a context switch can be found in ../ctx_switch.S
+ * 
+ */
 typedef struct thread_ctx_t {
     uint32_t regs[32];
 } thread_ctx_t;

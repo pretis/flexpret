@@ -43,7 +43,7 @@ static const char *exception_to_str(const uint32_t cause) {
     case EXE_CAUSE_EXT_INTERRUPT6: return "External interrupt 6";
     case EXE_CAUSE_TIMER_INTERRUPT: return "Timer interrupt";
     case EXC_CAUSE_INTERRUPT_EXPIRE: return "Interrupt expire";
-    case EXC_CAUSE_EXTERNAL_INT: return "External int"; // FIXME: int = interrupt? 
+    case EXC_CAUSE_EXTERNAL_INT: return "External interrupt";
     default: return "Unknown exception code";
     }
 }
