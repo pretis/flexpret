@@ -108,7 +108,7 @@ object FlexpretConstants
   val NPC_PCREG = 0.U(2.W)
   val NPC_PLUS4 = 1.U(2.W)
   val NPC_BRJMP = 2.U(2.W)
-  val NPC_EVEC  = 3.U(2.W)
+  val NPC_CSR   = 3.U(2.W)
 
   // rs1 source select
   val RS1_WI = 2

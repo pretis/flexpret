@@ -20,6 +20,8 @@ import Core.Scheduler
 import Core.FlexpretConstants._
 import Core.Instructions._
 
+import Core.CSRs
+
 import scala.language.implicitConversions
 import flexpret.util.uintToBitPatObject._
 
@@ -39,6 +41,7 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
 
   // outputs to datapath (control dependent)
   val next_pc_sel     = Output(Vec(conf.threads, UInt(NPC_WI.W)))
+  val next_pc_sel_csr_addr = Output(UInt(12.W))
   val next_tid        = Output(UInt(conf.threadBits.W))
   val next_valid      = Output(Bool())
   val dec_rs1_sel     = Output(UInt(RS1_WI.W))
@@ -388,12 +391,25 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     } else {
     when(mem_reg_brjmp)         { next_pc_sel(io.mem_tid) := NPC_BRJMP }
   }
+
+  io.next_pc_sel_csr_addr := RegInit(0.U(12.W))
   if(conf.exceptions) {
     if(!conf.regEvec) {
-      when(exe_exception)       { next_pc_sel(io.exe_tid) := NPC_EVEC  }
+      when(exe_exception) {
+        next_pc_sel(io.exe_tid) := NPC_CSR
+        io.next_pc_sel_csr_addr := CSRs.evec.U
+      }
     } else {
-      when(mem_reg_exception)   { next_pc_sel(io.mem_tid) := NPC_EVEC  }
+      when(mem_reg_exception) {
+        next_pc_sel(io.mem_tid) := NPC_CSR
+        io.next_pc_sel_csr_addr := CSRs.evec.U
+      }
     }
+  }
+
+  when(exe_sret) {
+    next_pc_sel(io.exe_tid) := NPC_CSR
+    io.next_pc_sel_csr_addr :=  CSRs.epc.U
   }
 
   // ************************************************************

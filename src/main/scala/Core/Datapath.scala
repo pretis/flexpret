@@ -13,6 +13,7 @@ import chisel3.util._
 import Core.Causes
 import Core.FlexpretConstants._
 import Core.LoadStore
+import Core.CSRs
 
 class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
@@ -73,6 +74,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val exe_address = Wire(UInt())
   val exe_rd_data = Wire(UInt())
   val exe_evec = Wire(UInt()) // trap handler address
+  val exe_epc  = Wire(UInt()) // return of trap address
 
   // memory stage
   val mem_reg_tid = Reg(UInt())
@@ -80,6 +82,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val mem_reg_rd_data = Reg(UInt()) // result from execute stage
   val mem_reg_address = Reg(UInt())
   val mem_evec = Wire(UInt())
+  val mem_epc  = Wire(UInt())
   val mem_rd_data = Wire(UInt())
 
   // writeback stage
@@ -112,13 +115,23 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // higher priority than BRJMP
   if (conf.exceptions) {
     if (!conf.regEvec) {
-      when(io.control.next_pc_sel(exe_reg_tid) === NPC_EVEC) {
-        next_pcs(exe_reg_tid) := exe_evec
+      when(io.control.next_pc_sel(exe_reg_tid) === NPC_CSR) {
+        when(io.control.next_pc_sel_csr_addr === CSRs.evec.U) {
+          next_pcs(exe_reg_tid) := exe_evec
+        }
       }
     } else {
-      when(io.control.next_pc_sel(mem_reg_tid) === NPC_EVEC) {
-        next_pcs(mem_reg_tid) := mem_evec
+      when(io.control.next_pc_sel(mem_reg_tid) === NPC_CSR) {
+        when(io.control.next_pc_sel_csr_addr === CSRs.evec.U) {
+          next_pcs(mem_reg_tid) := mem_evec
+        }
       }
+    }
+  }
+
+  when(io.control.next_pc_sel(exe_reg_tid) === NPC_CSR) {
+    when(io.control.next_pc_sel_csr_addr === CSRs.epc.U) {
+      next_pcs(exe_reg_tid) := exe_epc
     }
   }
 
@@ -351,6 +364,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
 
   // trap handling address, depends on conf.regEvec
   exe_evec := csr.io.evecs(exe_reg_tid)
+  exe_epc  := csr.io.epcs(exe_reg_tid)
 
   // memory protection
   loadstore.io.dmem_protection := csr.io.dmem_protection
@@ -416,6 +430,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
 
   // trap handling address, depends on conf.regEvec
   mem_evec := csr.io.evecs(mem_reg_tid)
+  mem_epc  := csr.io.epcs (mem_reg_tid)
 
   wb_reg_tid := mem_reg_tid
   wb_reg_rd_addr := mem_reg_rd_addr

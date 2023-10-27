@@ -35,6 +35,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val epc = Input(UInt(32.W)) // PC of uncommitted instruction
     val cause = Input(UInt(CAUSE_WI.W))
     val evecs = Output(Vec(conf.threads, UInt(32.W)))
+    val epcs  = Output(Vec(conf.threads, UInt(32.W)))
     // timing
     val sleep = Input(Bool()) // valid DU inst
     val ie = Input(Bool()) // valid IE inst
@@ -474,7 +475,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       reg_prv1 := reg_prv
       reg_ie1 := reg_ie
       // privileged mode with interrupts disabled
-      reg_prv := RegInit(VecInit(Seq.fill(conf.threads) { 3.U(2.W) }))
+      reg_prv := VecInit(Seq.fill(conf.threads) { 3.U(2.W) })
       reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
     } .elsewhen (io.sret) {
       // restore
@@ -492,6 +493,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   io.tmodes := reg_tmodes
   if (conf.exceptions) {
     io.evecs := reg_evecs
+    io.epcs  := reg_epcs
   }
   io.expire := expired(io.rw.thread)
 
