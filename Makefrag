@@ -16,6 +16,7 @@ endif
 all: compile
 
 # Include specification for how to build libflexpret
+include $(FLEXPRET_ROOT_DIR)/defines.mk
 include $(FLEXPRET_ROOT_DIR)/programs/lib/Makefrag-lib
 
 LINKER_SCRIPT ?= $(FP_LIB_DIR)/linker/flexpret.ld
@@ -25,8 +26,6 @@ AR = $(RISCV_PREFIX)ar
 OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
-
-include $(FLEXPRET_ROOT_DIR)/defines.mk
 
 CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs $(APP_DEFS) $(DEFINES)
 INCS = $(LIB_INCS) $(APP_INCS)

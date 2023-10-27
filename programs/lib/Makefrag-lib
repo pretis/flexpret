@@ -6,7 +6,6 @@ LIB_SOURCES += \
 	$(FP_LIB_DIR)/flexpret_exceptions.c 
 else
 LIB_SOURCES += \
-	$(FP_LIB_DIR)/printf/src/printf/printf.c \
 	$(FP_LIB_DIR)/syscalls/syscalls.c \
 	$(FP_LIB_DIR)/syscalls/printf_putchar.c \
 	$(FP_LIB_DIR)/flexpret_thread.c \
@@ -15,6 +14,14 @@ LIB_SOURCES += \
 	$(FP_LIB_DIR)/tinyalloc/tinyalloc.c \
 	$(FP_LIB_DIR)/flexpret_exceptions.c \
 	$(FP_LIB_DIR)/ctx_switch.S
+
+ifeq ($(PRINTF_ENABLED),true)
+LIB_SOURCES += $(FP_LIB_DIR)/printf/src/printf/printf.c
+LIB_INCS += 
+else
+LIB_SOURCES += $(FP_LIB_DIR)/syscalls/printf_stubs.c
+endif
+
 endif
 
 LIB_INCS += -I$(FP_LIB_DIR)/include -I$(FP_LIB_DIR)/printf/src/

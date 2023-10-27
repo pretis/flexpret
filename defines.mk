@@ -4,6 +4,11 @@
 
 include ${FLEXPRET_ROOT_DIR}/config.mk
 
+# printf can easily be disabled by setting this variable to false. In that case,
+# the printf functions will be replaced with stub versions, taking significantly
+# less space.
+PRINTF_ENABLED ?= true
+
 PRINTF_DEFINES := -D PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT \
 				  -D PRINTF_SUPPORT_DECIMAL_SPECIFIERS=0 \
 				  -D PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS=0 \
