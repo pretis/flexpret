@@ -2,6 +2,8 @@
 #include <setjmp.h>
 #include "flexpret.h"
 
+#include <errno.h>
+
 /*************************************************
  * FlexPRET's hardware thread scheduling functions
  * These functions assume that a lock is held
@@ -215,6 +217,37 @@ uint32_t num_threads_exited = 0;
 
 /* Pthreads-like threading library functions */
 
+static int check_args(
+    thread_t *hartid,
+    void *(*start_routine)(void *)
+) {
+    if (hartid == NULL) {
+        errno = EINVAL;
+    } else if (start_routine == NULL) {
+        errno = EINVAL;
+    } else {
+        return 0;
+    }
+    return -1;
+}
+
+static int assign_hartid(
+    thread_t hartid,
+    void *(*start_routine)(void *),
+    void *restrict arg
+) {
+    routines[hartid] = start_routine;
+    args[hartid] = arg;
+    num_threads_busy += 1;
+
+    // Signal the worker thread to do work.
+    in_use[hartid] = true;
+    // FIXME: If the thread is asleep,
+    // wake up the thread.
+    hwlock_release();
+    return 0;
+}
+
 // Assign a routine to the first available
 // hardware thread.
 int thread_create(
@@ -223,25 +256,21 @@ int thread_create(
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
+    if (check_args(hartid, start_routine) < 0) {
+        return 1;
+    }
     // Allocate an available thread.
     // Cannot allocate to thread 0.
     hwlock_acquire();
     for (int i = 1; i < NUM_THREADS; i++) {
         if (!in_use[i]) {
             *hartid = i;
-            routines[i] = start_routine;
-            args[i] = arg;
-            num_threads_busy += 1;
-            // Signal the worker thread to do work.
-            in_use[i] = true;
-            // FIXME: If the thread is asleep,
-            // wake up the thread.
-            hwlock_release();
-            return 0;
+            return assign_hartid(i, start_routine, arg);
         }
     }
     hwlock_release();
     // All the threads are occupied, return error.
+    errno = EBUSY;
     return 1;
 }
 
@@ -254,22 +283,25 @@ int thread_map(
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
+    if (check_args(hartid, start_routine) < 0) {
+        return 1;
+    }
+
+    // Do an additional check on hartid, since user requests a specific thread here
+    if (!(0 < *hartid && *hartid < NUM_THREADS)) {
+        errno = EINVAL;
+        return 1;
+    }
+
     // Allocate an available thread.
     // Cannot allocate to thread 0.
     hwlock_acquire();
     if (!in_use[*hartid]) {
-        routines[*hartid] = start_routine;
-        args[*hartid] = arg;
-        num_threads_busy += 1;
-        // Signal the worker thread to do work.
-        in_use[*hartid] = true;
-        // FIXME: If the thread is asleep,
-        // wake up the thread.
-        hwlock_release();
-        return 0;
+        return assign_hartid(*hartid, start_routine, arg);
     }
     hwlock_release();
     // All the threads are occupied, return error.
+    errno = EBUSY;
     return 1;
 }
 
@@ -278,7 +310,9 @@ int thread_join(thread_t hartid, void **retval) {
     while(in_use[hartid]); // Wait
     // Get the exit code from the exiting thread.
     hwlock_acquire();
-    *retval = exit_code[hartid];
+    if (retval) {
+        *retval = exit_code[hartid];
+    }
     // FIXME: To avoid losing lots of cycles,
     // a worker thread should put itself to sleep.
     // Put the thread to sleep.
