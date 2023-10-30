@@ -102,6 +102,12 @@ int main(int argc, char* argv[]) {
   }
 
   int ncycles = 0;
+  
+  // Check for abort signals from FlexPRET and propagate the exit code
+  // by returning it from the emulator
+  bool should_exit = false;
+  bool unknown_reason = true;
+  int exit_in_n_cycles = 0;
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
     if (timestamp <= 2) {
@@ -113,6 +119,13 @@ int main(int argc, char* argv[]) {
     top->clock = 1;
     top->eval();
     timestamp++;
+
+    if (top->io_imem_store) {
+      printf("warn: IMEM store\n");
+      should_exit = true;
+      unknown_reason = false;
+      exit_in_n_cycles = 10;
+    }
 
     if (trace_enabled) {
       trace->dump(10*timestamp);
@@ -126,10 +139,6 @@ int main(int argc, char* argv[]) {
     top->clock = 0;
     top->eval();
 
-    // Check for abort signals from FlexPRET and propagate the exit code
-    // by returning it from the emulator
-    bool should_exit = false;
-    bool unknown_reason = true;
     for (int i = 0; i < NUM_THREADS; i++) {
       const uint32_t to_host = get_to_host(i, top);
       
@@ -145,11 +154,13 @@ int main(int argc, char* argv[]) {
     }
 
     if (should_exit) {
-      if (unknown_reason) {
-        printf("%s: Exit due to unknown reason\n", argv[0]);
-        exitcode = EXIT_FAILURE;
+      if (exit_in_n_cycles-- == 0) {
+        if (unknown_reason) {
+          printf("%s: Exit due to unknown reason\n", argv[0]);
+          exitcode = EXIT_FAILURE;
+        }
+        break;
       }
-      break;
     }
 
     for (int i = 0; i < NUM_THREADS; i++) {

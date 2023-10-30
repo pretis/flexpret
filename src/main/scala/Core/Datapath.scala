@@ -24,6 +24,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
     val host = new HostIO()
     val gpio = new GPIO()
     val int_exts = Input(Vec(conf.threads, Bool()))
+    val imem_store = Output(Bool())
 
     // Debugging-only inputs.
     val debugIO = if (!debug) None else Some(new Bundle {
@@ -37,6 +38,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
       val rs2_value = Input(UInt(32.W))
       // Other pipeline signals.
       val exe_alu_result = Output(UInt())
+
     })
   })
 
@@ -339,6 +341,9 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   loadstore.io.data_in := exe_reg_rs2_data
   // control inputs
   loadstore.io.kill := io.control.exe_kill
+
+  // Debug signals
+  io.imem_store := loadstore.io.imem_store
 
   // Control and Status Register (CSR) Unit
   val csr = Module(new CSR())

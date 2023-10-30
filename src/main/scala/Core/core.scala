@@ -79,6 +79,7 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val host = new HostIO()
   val gpio = new GPIO()
   val int_exts = Input(Vec(conf.threads, Bool()))
+  val imem_store = Output(Bool())
 }
 
 class Core(confIn: FlexpretConfiguration) extends Module {
@@ -112,6 +113,8 @@ class Core(confIn: FlexpretConfiguration) extends Module {
   for (tid <- 0 until conf.threads) {
     datapath.io.int_exts(tid) := io.int_exts(tid)
   }
+
+  io.imem_store := datapath.io.imem_store
 
   //io.int_exts <> datapath.io.int_exts
 }

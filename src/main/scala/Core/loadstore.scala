@@ -106,6 +106,8 @@ class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
     val load_fault       = Output(Bool())
     val store_misaligned = Output(Bool())
     val store_fault      = Output(Bool())
+
+    val imem_store = Output(Bool())
   })
 
   // Preserve byte location and type of operation.
@@ -122,6 +124,8 @@ class LoadStore(implicit val conf: FlexpretConfiguration) extends Module
     (dmem_op && io.addr(31-ADDR_DSPM_BITS, conf.dMemAddrBits) =/= 0.U) ||
     (imem_op && io.addr(31-ADDR_ISPM_BITS, conf.iMemAddrBits+2) =/= 0.U) ||
     (bus_op  && io.addr(31-ADDR_BUS_BITS,  conf.busAddrBits-conf.threadBits) =/= 0.U) )
+
+  io.imem_store := imem_op && io.store
 
   // Memory protection (for write)
   val permission = Wire(Bool())
