@@ -19,43 +19,34 @@ static inline bool write_and_readback(const uint32_t val) {
     return val == readback;
 }
 
+#define AWAIT_AND_CHECK_BIT(current, expected, port, high_low, bitpos) do { \
+    if (high_low == 0) { \
+        expected &= ~(1 << bitpos); \
+    } else { \
+        expected |=  (1 << bitpos); \
+    } \
+    while(gpi_read_##port() == current); \
+    assert(gpi_read_##port() == expected, "Pin not as expected"); \
+    current = expected; \
+} while(0)
+
 static void run_emulator_client_tests(void) {
-    // Clear all general purpose pins
-    gpo_write_0(0);
-    gpo_write_1(0);
-    gpo_write_2(0);
-    gpo_write_3(0);
+    // See the client's implementation for the sequence of setting/clearing bits
+    // it uses
+    uint32_t current_gpi  = 0x00000000;
+    uint32_t expected_gpi = 0x00000000;
 
-    // Wait for emulator to set general purpose pin 0
-    while (gpi_read_0() == false);
-    while (gpi_read_1() == false);
-    while (gpi_read_0() == true);
-    while (gpi_read_2() == false);
-    while (gpi_read_2() == true);
-    while (gpi_read_2() == false);
-    while (gpi_read_3() == false);
-    while (gpi_read_0() == false);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 1, 0);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 1, 2);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 1, 7);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 1, 3);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 1, 5);
 
-    assert(
-        gpi_read_0() == true && 
-        gpi_read_1() == true && 
-        gpi_read_2() == true && 
-        gpi_read_3() == true,
-        "Pins not as expected"
-    );
-
-    while (gpi_read_2() == true);
-    while (gpi_read_3() == true);
-    while (gpi_read_0() == true);
-    while (gpi_read_1() == true);
-    
-    assert(
-        gpi_read_0() == false && 
-        gpi_read_1() == false && 
-        gpi_read_2() == false && 
-        gpi_read_3() == false,
-        "Pins not as expected"
-    );
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 0);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 2);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 7);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 3);
+    AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 5);
 }
 
 int main() {

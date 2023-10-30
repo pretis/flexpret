@@ -23,7 +23,7 @@ int setup_socket(void) {
   
     if ((status = connect(client_fd, (struct sockaddr*)&serv_addr,
             sizeof(serv_addr))) < 0) {
-        printf("\nConnection Failed \n"); 
+        printf("Connection failed \n"); 
         return -1;
     }
 
