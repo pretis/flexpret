@@ -99,6 +99,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   val reg_prv = RegInit(VecInit(Seq.fill(conf.threads) { 3.U(2.W) }))
   val reg_ie = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
   val reg_msip = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val reg_in_interrupt = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
 
   // Invisible
   val reg_timer = RegInit(VecInit(Seq.fill(conf.threads) { TIMER_OFF }))
@@ -106,7 +107,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   // for reading of status CSR
   val status = Wire(Vec(conf.threads, UInt()))
   for (tid <- 0 until conf.threads) {
-    status(tid) := Cat(1.U(1.W), 0.U(4.W), reg_mtie(tid), 0.U(20.W), reg_prv1(tid), reg_ie1(tid), reg_prv(tid), reg_ie(tid), reg_msip(tid), 0.U(3.W))
+    status(tid) := Cat(1.U(1.W), 0.U(4.W), reg_mtie(tid), 0.U(20.W), reg_prv1(tid), reg_ie1(tid), reg_prv(tid), reg_ie(tid), reg_msip(tid), reg_in_interrupt(tid), 0.U(2.W))
   }
 
 
@@ -378,10 +379,13 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     when(io.exception) {
       reg_mepcs(io.rw.thread) := io.epc
       reg_causes(io.rw.thread) := io.cause
+      reg_in_interrupt(io.rw.thread) := true.B
 
       // FIXME: The two connections below are probably not correct
       reg_sepcs(io.rw.thread) := io.epc
       reg_uepcs(io.rw.thread) := io.epc
+    } .elsewhen (io.xret === XRET_M) {
+      reg_in_interrupt(io.rw.thread) := false.B
     }
   }
 

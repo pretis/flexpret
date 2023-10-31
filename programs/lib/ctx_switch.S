@@ -52,12 +52,6 @@ thread_ctx_switch_store:
     sw a0, 28(sp)
     sw a1, 24(sp)
 
-    // Set the boolean used by the critical section enter and exit functions
-    lw a0, critical_section_in_interrupt
-    la a1, critical_section_in_interrupt
-    addi a0, x0, 1
-    sw a0, 0(a1)
-
     getContexts
 
     // Store all registers
@@ -100,12 +94,6 @@ thread_ctx_switch_store:
 .type thread_ctx_switch_load,@function
 
 thread_ctx_switch_load:
-    // Clear the boolean used by the critical section enter and exit functions
-    lw a0, critical_section_in_interrupt
-    la a1, critical_section_in_interrupt
-    addi a0, x0, 0
-    sw a0, 0(a1)
-
     getContexts
 
     // Load all registers except the a0 itself
