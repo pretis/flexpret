@@ -28,12 +28,12 @@ int main() {
 
     fp_thread_t tid[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
-        fp_assert(thread_create(HRTT, &tid[i], printer, NULL) == 0, "Could not create thread");
+        fp_assert(fp_thread_create(HRTT, &tid[i], printer, NULL) == 0, "Could not create thread");
     }
 
     void *exit_codes[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
-        thread_join(tid[i], &exit_codes[i]);
+        fp_thread_join(tid[i], &exit_codes[i]);
         fp_assert(exit_codes[i] == 0, "Thread's exit code was non-zero");
     }
 

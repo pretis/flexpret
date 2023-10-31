@@ -24,9 +24,9 @@ void* t2() {
 int test_signal() {
     count=0;
     fp_thread_t tid[2];
-    int errno = thread_create(HRTT, &tid[0], t1, NULL);
+    int errno = fp_thread_create(HRTT, &tid[0], t1, NULL);
     fp_assert(errno == 0, "Could not create thread");
-    errno = thread_create(HRTT, &tid[1], t2, NULL);
+    errno = fp_thread_create(HRTT, &tid[1], t2, NULL);
     fp_assert(errno == 0, "Could not create thread");
     
     delay_for(100000);
@@ -46,16 +46,16 @@ int test_signal() {
 
     void * exit_code_t1;
     void * exit_code_t2;
-    thread_join(tid[0], &exit_code_t1);
-    thread_join(tid[1], &exit_code_t2);
+    fp_thread_join(tid[0], &exit_code_t1);
+    fp_thread_join(tid[1], &exit_code_t2);
 }
 
 int test_broadcast() {
     count=0;
     fp_thread_t tid[2];
-    int errno = thread_create(HRTT, &tid[0], t1, NULL);
+    int errno = fp_thread_create(HRTT, &tid[0], t1, NULL);
     fp_assert(errno == 0, "Could not create thread");
-    errno = thread_create(HRTT, &tid[1], t2, NULL);
+    errno = fp_thread_create(HRTT, &tid[1], t2, NULL);
     fp_assert(errno == 0, "Could not create thread");
     delay_for(100000);
     printf("count is %i\n", count);
@@ -67,8 +67,8 @@ int test_broadcast() {
 
     void * exit_code_t1;
     void * exit_code_t2;
-    thread_join(tid[0], &exit_code_t1);
-    thread_join(tid[1], &exit_code_t2);
+    fp_thread_join(tid[0], &exit_code_t1);
+    fp_thread_join(tid[1], &exit_code_t2);
 }
 
 void test_timed_wait() {

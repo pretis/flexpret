@@ -103,10 +103,10 @@ int main() {
 
     // Run the single thread test with another thread
     fp_thread_t another_thread;
-    fp_assert(thread_create(HRTT, &another_thread, single_thread, NULL) == 0,
+    fp_assert(fp_thread_create(HRTT, &another_thread, single_thread, NULL) == 0,
         "Could not create thread");
     
-    thread_join(another_thread, NULL);
+    fp_thread_join(another_thread, NULL);
     printf("2nd run: single thread from different thread success\n");
 
     flags[0] = 0;
@@ -115,12 +115,12 @@ int main() {
     // Run multiple tests simultaneously
     fp_thread_t tid[USED_THREADS-1];
     for (int i = 0; i < USED_THREADS-1; i++) {
-        fp_assert(thread_create(HRTT, &tid[i], worker, NULL) == 0,
+        fp_assert(fp_thread_create(HRTT, &tid[i], worker, NULL) == 0,
             "Could not create thread");
     }
 
     for (int i = 0; i < USED_THREADS-1; i++) {
-        thread_join(tid[i], NULL);
+        fp_thread_join(tid[i], NULL);
     }
 
     printf("3rd run: %i threads all ran one interrupt each\n", USED_THREADS-1);

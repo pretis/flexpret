@@ -250,7 +250,7 @@ static int assign_hartid(
 
 // Assign a routine to the first available
 // hardware thread.
-int thread_create(
+int fp_thread_create(
     bool is_hrtt,   // HRTT = true, SRTT = false
     fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
@@ -277,7 +277,7 @@ int thread_create(
 // Assign a routine to a _specific_
 // hardware thread. If the thread is in use,
 // return 1. Otherwise, map the routine and return 0.
-int thread_map(
+int fp_thread_map(
     bool is_hrtt,   // HRTT = true, SRTT = false
     fp_thread_t *restrict hartid, // hartid requested by the user
     void *(*start_routine)(void *),
@@ -305,7 +305,7 @@ int thread_map(
     return 1;
 }
 
-int thread_join(fp_thread_t hartid, void **retval) {
+int fp_thread_join(fp_thread_t hartid, void **retval) {
     // FIXME: What if it waits for the long-running thread?
     while(in_use[hartid]); // Wait
     // Get the exit code from the exiting thread.
@@ -325,7 +325,7 @@ int thread_join(fp_thread_t hartid, void **retval) {
  * This should be called by a thread
  * that hopes to exit.
  */
-void thread_exit(void *retval) {
+void fp_thread_exit(void *retval) {
     uint32_t hartid = read_hartid();
     hwlock_acquire();
     exit_code[hartid] = retval;
@@ -336,7 +336,7 @@ void thread_exit(void *retval) {
     return;
 }
 
-int thread_cancel(fp_thread_t hartid) {
+int fp_thread_cancel(fp_thread_t hartid) {
     hwlock_acquire(); // FIXME: Unnecessary?
     cancel_requested[hartid] = true;
     hwlock_release();
@@ -360,7 +360,7 @@ void worker_main() {
     uint32_t hartid = read_hartid();
 
     // Save the environment buffer
-    // for potential thread_cancel calls.
+    // for potential fp_thread_cancel calls.
     // The execution will jump here
     // if a cancellation request is handled.
     int val = setjmp(envs[hartid]);

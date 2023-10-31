@@ -22,23 +22,23 @@ int main() {
     fp_thread_t tid[2] = {1, 2};
 
     // Map t1_do_work to thread 1 specifically by
-    // calling thread_map() instead of thread_create().
+    // calling fp_thread_map() instead of fp_thread_create().
     //
-    // If we use thread_create(), t2_do_work will be mapped
+    // If we use fp_thread_create(), t2_do_work will be mapped
     // to thread 1 again after it returns from
     // t1_do_work and the exception does not get triggered.
-    int errno = thread_map(HRTT, &tid[0], t1_do_work, NULL);
+    int errno = fp_thread_map(HRTT, &tid[0], t1_do_work, NULL);
     fp_assert(errno == 0, "Could not create thread");
     void * exit_code_t1;
-    thread_join(tid[0], &exit_code_t1);
+    fp_thread_join(tid[0], &exit_code_t1);
 
     // Map t2_do_work to thread 2 specifically.
     // Expect an exception raised by thread 2.
-    errno = thread_map(HRTT, &tid[0], t2_do_work, NULL);
+    errno = fp_thread_map(HRTT, &tid[0], t2_do_work, NULL);
     fp_assert(errno == 0, "Could not create thread");
     
     void * exit_code_t2;
-    thread_join(tid[1], &exit_code_t2);
+    fp_thread_join(tid[1], &exit_code_t2);
 
     printf("Test sucess\n");
 

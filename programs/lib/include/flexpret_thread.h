@@ -22,7 +22,7 @@
 #define SLOTS_SIZE  8
 
 // Helper macros for making
-// thread_create() and thread_map()
+// fp_thread_create() and fp_thread_map()
 // more readable.
 #define HRTT        true
 #define SRTT        false
@@ -72,21 +72,21 @@ typedef struct thread_ctx_t {
 
 typedef uint32_t fp_thread_t;
 
-int thread_create(
+int fp_thread_create(
     bool is_hrtt,   // HRTT = true, SRTT = false
     fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 );
-int thread_map(
+int fp_thread_map(
     bool is_hrtt,   // HRTT = true, SRTT = false
     fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 );
-int thread_join(fp_thread_t thread, void **retval);
-void thread_exit(void *retval);
-int thread_cancel(fp_thread_t thread);
+int fp_thread_join(fp_thread_t thread, void **retval);
+void fp_thread_exit(void *retval);
+int fp_thread_cancel(fp_thread_t thread);
 void fp_thread_testcancel();
 void worker_main();
 

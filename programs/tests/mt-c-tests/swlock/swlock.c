@@ -30,15 +30,15 @@ int main() {
     printf("num is %i\n", *num);
 
     fp_thread_t tid[2];
-    int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
+    int errno = fp_thread_create(HRTT, &tid[0], t1_do_work, num);
     fp_assert(errno == 0, "Could not create thread");
-    errno = thread_create(HRTT, &tid[1], t2_do_work, num);
+    errno = fp_thread_create(HRTT, &tid[1], t2_do_work, num);
     fp_assert(errno == 0, "Could not create thread");
 
     void * exit_code_t1;
     void * exit_code_t2;
-    thread_join(tid[0], &exit_code_t1);
-    thread_join(tid[1], &exit_code_t2);
+    fp_thread_join(tid[0], &exit_code_t1);
+    fp_thread_join(tid[1], &exit_code_t2);
 
     printf("num is %i\n", *num);
 

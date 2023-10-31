@@ -118,7 +118,7 @@ void Reset_Handler() {
          * and T3 are then used for SRTTs.
          * 
          * The user can set the thread modes when
-         * thread_create() or thread_map() is called. 
+         * fp_thread_create() or fp_thread_map() is called. 
          * 
          * If the user wants to change the schedule,
          * the user can call slot_set(), slot_set_hrtt(),
