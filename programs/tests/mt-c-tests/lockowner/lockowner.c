@@ -5,7 +5,7 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-lock_t lock = LOCK_INITIALIZER;
+fp_lock_t lock = LOCK_INITIALIZER;
 
 void* t1_do_work() {
     lock_acquire(&lock);
@@ -19,7 +19,7 @@ int main() {
 
     // Intentionally map the do_work functions to
     // two different threads.
-    thread_t tid[2] = {1, 2};
+    fp_thread_t tid[2] = {1, 2};
 
     // Map t1_do_work to thread 1 specifically by
     // calling thread_map() instead of thread_create().

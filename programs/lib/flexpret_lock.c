@@ -16,7 +16,7 @@ void hwlock_release() {
     };
 }
 
-int do_acquire(lock_t* lock) {
+int do_acquire(fp_lock_t* lock) {
     hwlock_acquire();
     if (lock->locked) {
         hwlock_release();
@@ -28,12 +28,12 @@ int do_acquire(lock_t* lock) {
     return 0;
 }
 
-void lock_acquire(lock_t* lock) {
+void lock_acquire(fp_lock_t* lock) {
     // Spin lock
     while(do_acquire(lock));
 }
 
-void lock_release(lock_t* lock) {
+void lock_release(fp_lock_t* lock) {
     hwlock_acquire();
     fp_assert(read_hartid() == lock->owner, "Attempt to release lock not owned by thread");
     lock->locked = false;

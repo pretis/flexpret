@@ -22,7 +22,7 @@ int main() {
     *num = 0;
     printf("num initialized to: %i\n", *num);
 
-    thread_t tid[2];
+    fp_thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
     fp_assert(errno == 0, "Could not create thread");
     errno = thread_create(HRTT, &tid[1], t2_do_work, num);

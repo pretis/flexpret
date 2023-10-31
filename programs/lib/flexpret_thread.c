@@ -218,7 +218,7 @@ uint32_t num_threads_exited = 0;
 /* Pthreads-like threading library functions */
 
 static int check_args(
-    thread_t *hartid,
+    fp_thread_t *hartid,
     void *(*start_routine)(void *)
 ) {
     if (hartid == NULL) {
@@ -232,7 +232,7 @@ static int check_args(
 }
 
 static int assign_hartid(
-    thread_t hartid,
+    fp_thread_t hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
@@ -252,7 +252,7 @@ static int assign_hartid(
 // hardware thread.
 int thread_create(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid,
+    fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
@@ -279,7 +279,7 @@ int thread_create(
 // return 1. Otherwise, map the routine and return 0.
 int thread_map(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid, // hartid requested by the user
+    fp_thread_t *restrict hartid, // hartid requested by the user
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
@@ -305,7 +305,7 @@ int thread_map(
     return 1;
 }
 
-int thread_join(thread_t hartid, void **retval) {
+int thread_join(fp_thread_t hartid, void **retval) {
     // FIXME: What if it waits for the long-running thread?
     while(in_use[hartid]); // Wait
     // Get the exit code from the exiting thread.
@@ -336,14 +336,14 @@ void thread_exit(void *retval) {
     return;
 }
 
-int thread_cancel(thread_t hartid) {
+int thread_cancel(fp_thread_t hartid) {
     hwlock_acquire(); // FIXME: Unnecessary?
     cancel_requested[hartid] = true;
     hwlock_release();
     return 0;
 }
 
-void thread_testcancel() {
+void fp_thread_testcancel() {
     uint32_t hartid = read_hartid();
     hwlock_acquire();
     if (cancel_requested[hartid]) {

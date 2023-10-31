@@ -8,7 +8,7 @@
 typedef struct {
     bool locked;
     uint32_t owner;
-} lock_t;
+} fp_lock_t;
 
 /**
  * Acquire a hardware lock.
@@ -25,7 +25,7 @@ void hwlock_release();
  * 
  * @param lock the software lock instance to acquire/release
  */
-void lock_acquire(lock_t* lock);
-void lock_release(lock_t* lock);
+void lock_acquire(fp_lock_t* lock);
+void lock_release(fp_lock_t* lock);
 
 #endif // FLEXPRET_LOCK_H

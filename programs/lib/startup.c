@@ -69,7 +69,7 @@ void free(void *ptr) {
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
-lock_t _lock = LOCK_INITIALIZER;
+fp_lock_t _lock = LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();

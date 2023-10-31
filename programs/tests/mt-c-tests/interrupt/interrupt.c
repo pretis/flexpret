@@ -5,7 +5,7 @@
 
 static int flags[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 static int ext_int_flag = 0;
-static lock_t interrupt_lock = LOCK_INITIALIZER;
+static fp_lock_t interrupt_lock = LOCK_INITIALIZER;
 
 void ie_isr0(void) {
     flags[0] = 1;
@@ -102,7 +102,7 @@ int main() {
     flags[1] = 0;
 
     // Run the single thread test with another thread
-    thread_t another_thread;
+    fp_thread_t another_thread;
     fp_assert(thread_create(HRTT, &another_thread, single_thread, NULL) == 0,
         "Could not create thread");
     
@@ -113,7 +113,7 @@ int main() {
     flags[1] = 0;
 
     // Run multiple tests simultaneously
-    thread_t tid[USED_THREADS-1];
+    fp_thread_t tid[USED_THREADS-1];
     for (int i = 0; i < USED_THREADS-1; i++) {
         fp_assert(thread_create(HRTT, &tid[i], worker, NULL) == 0,
             "Could not create thread");

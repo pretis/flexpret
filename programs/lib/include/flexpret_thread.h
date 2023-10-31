@@ -70,24 +70,24 @@ typedef struct thread_ctx_t {
     uint32_t regs[32];
 } thread_ctx_t;
 
-typedef uint32_t thread_t;
+typedef uint32_t fp_thread_t;
 
 int thread_create(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid,
+    fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 );
 int thread_map(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid,
+    fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 );
-int thread_join(thread_t thread, void **retval);
+int thread_join(fp_thread_t thread, void **retval);
 void thread_exit(void *retval);
-int thread_cancel(thread_t thread);
-void thread_testcancel();
+int thread_cancel(fp_thread_t thread);
+void fp_thread_testcancel();
 void worker_main();
 
 #endif

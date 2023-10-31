@@ -26,7 +26,7 @@ void *printer(void *args) {
 int main() {
     printf("Hello world %i\n", i);
 
-    thread_t tid[NUM_THREADS-1];
+    fp_thread_t tid[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
         fp_assert(thread_create(HRTT, &tid[i], printer, NULL) == 0, "Could not create thread");
     }

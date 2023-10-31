@@ -1,7 +1,7 @@
 #include <flexpret.h>
 #include "flexpret_cond.h"
 
-fp_ret_t cond_wait(cond_t * cond) {
+fp_ret_t cond_wait(fp_cond_t * cond) {
     int hartid = read_hartid();
     cond->waiting[hartid] = true;
     lock_release(cond->lock);
@@ -10,7 +10,7 @@ fp_ret_t cond_wait(cond_t * cond) {
     return FP_SUCCESS;
 }
 
-fp_ret_t cond_timed_wait(cond_t * cond, uint64_t timeout) {
+fp_ret_t fp_cond_timed_wait(fp_cond_t * cond, uint64_t timeout) {
     bool has_timed_out = false;
     uint32_t now = rdtime();
     int hartid = read_hartid();
@@ -28,7 +28,7 @@ fp_ret_t cond_timed_wait(cond_t * cond, uint64_t timeout) {
     }
 }
 
-fp_ret_t cond_signal(cond_t * cond) {
+fp_ret_t cond_signal(fp_cond_t * cond) {
     lock_acquire(cond->lock);
     for (int i = 0; i<NUM_THREADS; i++) {
         if (cond->waiting[i]) {
@@ -40,7 +40,7 @@ fp_ret_t cond_signal(cond_t * cond) {
     return FP_SUCCESS;
 }
 
-fp_ret_t cond_broadcast(cond_t * cond) {
+fp_ret_t cond_broadcast(fp_cond_t * cond) {
     lock_acquire(cond->lock);
     for (int i = 0; i<NUM_THREADS; i++) {
         cond->waiting[i] = false;

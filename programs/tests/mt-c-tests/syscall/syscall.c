@@ -35,7 +35,7 @@ void* t2_close(void* arg) {
 
 int main() {
     int iterations = 100;
-    thread_t tid[2];
+    fp_thread_t tid[2];
     int ok = thread_create(HRTT, &tid[0], t1_gettimeofday, &iterations);
     fp_assert(ok == 0, "Could not create thread");
     ok = thread_create(HRTT, &tid[1], t2_close, &iterations);
@@ -47,12 +47,12 @@ int main() {
     thread_join(tid[1], &exit_code_t2);
 
     // Try to create a thread which does not make sense and expect error code
-    thread_t invalid_tid = 99;
+    fp_thread_t invalid_tid = 99;
     ok = thread_map(HRTT, &invalid_tid, t2_close, NULL);
     fp_assert(ok == 1 && errno == EINVAL, "Error codes not as expected");
 
     // Try to create a thread with an id already in use and expect error code
-    thread_t tid_in_use;
+    fp_thread_t tid_in_use;
     fp_assert(thread_create(HRTT, &tid_in_use, t2_close, &iterations) == 0, "Could not create thread");
     ok = thread_map(HRTT, &tid_in_use, t2_close, NULL);
     fp_assert(ok == 1 && errno == EBUSY, "Error codes not as expected");

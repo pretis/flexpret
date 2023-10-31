@@ -5,7 +5,7 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-lock_t lock = LOCK_INITIALIZER;
+fp_lock_t lock = LOCK_INITIALIZER;
 
 void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
@@ -29,7 +29,7 @@ int main() {
     *num = 0;
     printf("num is %i\n", *num);
 
-    thread_t tid[2];
+    fp_thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
     fp_assert(errno == 0, "Could not create thread");
     errno = thread_create(HRTT, &tid[1], t2_do_work, num);

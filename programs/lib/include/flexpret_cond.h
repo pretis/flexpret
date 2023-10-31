@@ -8,8 +8,8 @@
 
 typedef struct {
     volatile bool waiting[NUM_THREADS];
-    lock_t *lock;    
-} cond_t;
+    fp_lock_t *lock;    
+} fp_cond_t;
 #define COND_INITIALIZER(lock_ptr) { .waiting = {false}, .lock = lock_ptr}
 
 /**
@@ -18,7 +18,7 @@ typedef struct {
  * @param cond 
  * @return fp_ret_t 
  */
-fp_ret_t cond_wait(cond_t * cond);
+fp_ret_t cond_wait(fp_cond_t * cond);
 
 /**
  * @brief Wait on the condition variable with a timeout. Timeout is a 64 bit absolute timepoint given in nanosconds
@@ -26,7 +26,7 @@ fp_ret_t cond_wait(cond_t * cond);
  * @param cond 
  * @return fp_ret_t FP_SUCCESS or FP_TIMEOUT
  */
-fp_ret_t cond_timed_wait(cond_t * cond, uint64_t timeout);
+fp_ret_t fp_cond_timed_wait(fp_cond_t * cond, uint64_t timeout);
 
 /**
  * @brief Signal a condition variable and wake up a waiting thread.
@@ -35,7 +35,7 @@ fp_ret_t cond_timed_wait(cond_t * cond, uint64_t timeout);
  * @param cond 
  * @return fp_ret_t 
  */
-fp_ret_t cond_signal(cond_t * cond);
+fp_ret_t cond_signal(fp_cond_t * cond);
 
 /**
  * @brief Signal all waiting threads
@@ -43,6 +43,6 @@ fp_ret_t cond_signal(cond_t * cond);
  * @param cond 
  * @return fp_ret_t 
  */
-fp_ret_t cond_broadcast(cond_t * cond);
+fp_ret_t cond_broadcast(fp_cond_t * cond);
 
 #endif

@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <flexpret.h>
 
-lock_t lock = LOCK_INITIALIZER;
-cond_t cond = COND_INITIALIZER(&lock);
+fp_lock_t lock = LOCK_INITIALIZER;
+fp_cond_t cond = COND_INITIALIZER(&lock);
 int count = 0;
 
 void* t1() {
@@ -23,7 +23,7 @@ void* t2() {
 
 int test_signal() {
     count=0;
-    thread_t tid[2];
+    fp_thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1, NULL);
     fp_assert(errno == 0, "Could not create thread");
     errno = thread_create(HRTT, &tid[1], t2, NULL);
@@ -52,7 +52,7 @@ int test_signal() {
 
 int test_broadcast() {
     count=0;
-    thread_t tid[2];
+    fp_thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1, NULL);
     fp_assert(errno == 0, "Could not create thread");
     errno = thread_create(HRTT, &tid[1], t2, NULL);
@@ -79,7 +79,7 @@ void test_timed_wait() {
     uint64_t wakeup = t1 + 100000;
     printf("wakeup is %i\n", wakeup);
 
-    cond_timed_wait(&cond, wakeup);
+    fp_cond_timed_wait(&cond, wakeup);
     uint64_t t2 = rdtime64();
     printf("t2 is %i\n", t2);
 

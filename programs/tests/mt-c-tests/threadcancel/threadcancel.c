@@ -5,12 +5,12 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-lock_t lock = LOCK_INITIALIZER;
+fp_lock_t lock = LOCK_INITIALIZER;
 bool ready = false;
 
 // Intentionally map the do_work functions to
 // two different threads.
-thread_t tid[2] = {1, 2};
+fp_thread_t tid[2] = {1, 2};
 
 // t1 to be canceled by t2
 void* t1_do_work() {
@@ -18,7 +18,7 @@ void* t1_do_work() {
     ready = true;
     lock_release(&lock);
     while(1) {
-        thread_testcancel();
+        fp_thread_testcancel();
     }
     printf("Got to non reachable code\n"); // Not reachable.
     fp_assert(0, "Unreachable code reached");
