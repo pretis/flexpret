@@ -29,17 +29,17 @@ int test_signal() {
     errno = fp_thread_create(HRTT, &tid[1], t2, NULL);
     fp_assert(errno == 0, "Could not create thread");
     
-    delay_for(100000);
+    fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 0, "Incorrect value for count");
     cond_signal(&cond);
 
-    delay_for(100000);
+    fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 1, "Incorrect value for count");
     cond_signal(&cond);
     
-    delay_for(100000);
+    fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 2, "Incorrect value for count");
 
@@ -57,11 +57,11 @@ int test_broadcast() {
     fp_assert(errno == 0, "Could not create thread");
     errno = fp_thread_create(HRTT, &tid[1], t2, NULL);
     fp_assert(errno == 0, "Could not create thread");
-    delay_for(100000);
+    fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 0, "Incorrect value for count");
     cond_broadcast(&cond);
-    delay_for(100000);
+    fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 2, "Incorrect value for count");
 

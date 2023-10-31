@@ -14,23 +14,23 @@
  * (given that the timer has not expired).
  * 
  */
-#define delay_until(ns) do { \
+#define fp_delay_until(ns) do { \
     write_csr(CSR_COMPARE, ns); \
     __asm__ volatile(".word 0x700B;"); \
 } while(0)
 
 /**
  * @brief Delay execution for a time duration. First read the current time
- * Then do a regular `delay_until`
+ * Then do a regular `fp_delay_until`
  * 
  */
-#define delay_for(ns) do { \
+#define fp_delay_for(ns) do { \
     uint32_t now_ns = rdtime(); \
-    delay_until(now_ns + ns); \
+    fp_delay_until(now_ns + ns); \
 } while(0)
 
 /**
- * @brief Does the same as the @p delay_until pseudo-instruction, but in this case
+ * @brief Does the same as the @p fp_delay_until pseudo-instruction, but in this case
  * the program counter (PC) is incremented before the instruction completes.
  * This means that after an interrupt has completed, the program will continue.
  * 
@@ -38,18 +38,18 @@
  * with a given timeout.
  * 
  */
-#define wait_until(ns) do { \
+#define fp_wait_until(ns) do { \
     write_csr(CSR_COMPARE, ns); \
     __asm__ volatile(".word 0x702B;"); \
 } while(0)
 
 /**
- * @brief Same as delay_for, just doing wait instead of delay.
+ * @brief Same as fp_delay_for, just doing wait instead of delay.
  * 
  */
-#define wait_for(ns) do { \
+#define fp_wait_for(ns) do { \
     uint32_t now_ns = rdtime(); \
-    wait_until(now_ns + ns); \
+    fp_wait_until(now_ns + ns); \
 } while(0)
 
 /**

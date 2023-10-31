@@ -106,7 +106,7 @@ void test_low_timeout(void) {
     while (flag0 == 0);
 }
 
-void test_delay_until(void) {
+void test_fp_delay_until(void) {
     // Delay until should execute all interrupts but keep sleeping until the
     // specified timeout has occurred
     volatile uint32_t now, expire, delay;
@@ -119,20 +119,20 @@ void test_delay_until(void) {
     delay = expire + timeout_ns;
 
     INTERRUPT_ON_EXPIRE(expire);
-    delay_until(delay);
+    fp_delay_until(delay);
 
     now = rdtime();
     fp_assert(now > delay, "Time not as expected");
     
     /**
-     * Does not work since INTERRUPT_ON_EXPIRE and delay_until use the same
-     * CSR register CSR_COMPARE - so delay_until just overwrites the value of
+     * Does not work since INTERRUPT_ON_EXPIRE and fp_delay_until use the same
+     * CSR register CSR_COMPARE - so fp_delay_until just overwrites the value of
      * the INTERRUPT_ON_EXPIRE instruction.
      */
     //fp_assert(flag0 == 1, "Interrupt did not occur");
 }
 
-void test_wait_until(void) {
+void test_fp_wait_until(void) {
     // Wait until should sleep until an interrupt occurs or the timeout value is
     // reached. If an interrupt occurs, it should execute it and continue
     // execution (i.e., stop sleeping).
@@ -146,13 +146,13 @@ void test_wait_until(void) {
     delay = expire + timeout_ns;
 
     INTERRUPT_ON_EXPIRE(expire);
-    wait_until(delay);
+    fp_wait_until(delay);
 
     now = rdtime();
 
     /**
-     * Does not work since INTERRUPT_ON_EXPIRE and wait_until use the same
-     * CSR register CSR_COMPARE - so wait_until just overwrites the value of
+     * Does not work since INTERRUPT_ON_EXPIRE and fp_wait_until use the same
+     * CSR register CSR_COMPARE - so fp_wait_until just overwrites the value of
      * the INTERRUPT_ON_EXPIRE instruction.
      * 
      */
@@ -192,14 +192,14 @@ int main(void) {
     flag0 = 0;
     flag1 = 0;
 
-    test_delay_until();
+    test_fp_delay_until();
 
     printf("5th run: delay until ran sucessfully\n");
 
     flag0 = 0;
     flag1 = 0;
 
-    test_wait_until();
+    test_fp_wait_until();
 
     printf("6th run: wait until ran sucessfully\n");
 
