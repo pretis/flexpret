@@ -44,13 +44,19 @@
 .endm
 
 thread_ctx_switch_store:
-    // Clear the interrupt bit
+    // Disable interrupts
     csrci CSR_STATUS, 0x10
 
     // Push a0, a1 to stack
     addi sp, sp, -32
     sw a0, 28(sp)
     sw a1, 24(sp)
+
+    // Set the boolean used by the critical section enter and exit functions
+    lw a0, critical_section_in_interrupt
+    la a1, critical_section_in_interrupt
+    addi a0, x0, 1
+    sw a0, 0(a1)
 
     getContexts
 
@@ -94,6 +100,12 @@ thread_ctx_switch_store:
 .type thread_ctx_switch_load,@function
 
 thread_ctx_switch_load:
+    // Clear the boolean used by the critical section enter and exit functions
+    lw a0, critical_section_in_interrupt
+    la a1, critical_section_in_interrupt
+    addi a0, x0, 0
+    sw a0, 0(a1)
+
     getContexts
 
     // Load all registers except the a0 itself
@@ -134,6 +146,9 @@ thread_ctx_switch_load:
     lw a0, 28(sp)
     lw a1, 24(sp)
     addi sp, sp, 32
+
+    // Clear interrupt pending bit
+    csrci CSR_STATUS, 0x08
 
     // Write the register and set the interrupt bit again
     csrwi CSR_STATUS, 0x10
