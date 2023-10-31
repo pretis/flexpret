@@ -31,9 +31,9 @@ int main() {
 
     thread_t tid[2];
     int errno = thread_create(HRTT, &tid[0], t1_do_work, num);
-    assert(errno == 0, "Could not create thread");
+    fp_assert(errno == 0, "Could not create thread");
     errno = thread_create(HRTT, &tid[1], t2_do_work, num);
-    assert(errno == 0, "Could not create thread");
+    fp_assert(errno == 0, "Could not create thread");
 
     void * exit_code_t1;
     void * exit_code_t2;

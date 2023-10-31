@@ -26,7 +26,7 @@ static inline bool write_and_readback(const uint32_t val) {
         expected |=  (1 << bitpos); \
     } \
     while(gpi_read_##port() == current); \
-    assert(gpi_read_##port() == expected, "Pin not as expected"); \
+    fp_assert(gpi_read_##port() == expected, "Pin not as expected"); \
     current = expected; \
 } while(0)
 
@@ -53,13 +53,13 @@ int main() {
     printf("--- Check initial value is zero\n");
     uint32_t x = gpo_read_0();
     printf("Read  gpio: 0x%x\n", x);    // Expect 0.
-    assert(x == 0, "Read incorrect value");
+    fp_assert(x == 0, "Read incorrect value");
 
     printf("--- Check write and readback\n");
-    assert(write_and_readback(0x01) == true, "write and readback test failed");
-    assert(write_and_readback(0x00) == true, "write and readback test failed");
-    assert(write_and_readback(0x03) == true, "write and readback test failed");
-    assert(write_and_readback(0x02) == true, "write and readback test failed");
+    fp_assert(write_and_readback(0x01) == true, "write and readback test failed");
+    fp_assert(write_and_readback(0x00) == true, "write and readback test failed");
+    fp_assert(write_and_readback(0x03) == true, "write and readback test failed");
+    fp_assert(write_and_readback(0x02) == true, "write and readback test failed");
 
     printf("--- Check individual set and clear\n");
     uint32_t set = 0x01;
@@ -69,7 +69,7 @@ int main() {
     uint32_t read = gpo_read_0();       // Expect 3.
 
     printf("Read  gpio: 0x%x\n", read);
-    assert(read == 0x03, "Read incorrect value");
+    fp_assert(read == 0x03, "Read incorrect value");
     
     uint32_t clear = 0x2;
     printf("Clear gpio: 0x%x\n", clear);
@@ -78,13 +78,13 @@ int main() {
     read = gpo_read_0();
 
     printf("Read  gpio: 0x%x\n", read);
-    assert(read == 0x01, "Read incorrect value");               // Expect 1.
+    fp_assert(read == 0x01, "Read incorrect value");               // Expect 1.
 
     printf("--- Check set invalid bit\n");
     gpo_set_0(0b100);                   // Set the 3rd bit,
                                         // but couldn't because
                                         // a GPO only has 2 bits.
-    assert(gpo_read_0() == 0x01, "Read incorrect value");       // Expect 1.
+    fp_assert(gpo_read_0() == 0x01, "Read incorrect value");       // Expect 1.
 
     printf("Set invalid bit has no effect\n");
 

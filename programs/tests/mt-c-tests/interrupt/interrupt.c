@@ -103,7 +103,7 @@ int main() {
 
     // Run the single thread test with another thread
     thread_t another_thread;
-    assert(thread_create(HRTT, &another_thread, single_thread, NULL) == 0,
+    fp_assert(thread_create(HRTT, &another_thread, single_thread, NULL) == 0,
         "Could not create thread");
     
     thread_join(another_thread, NULL);
@@ -115,7 +115,7 @@ int main() {
     // Run multiple tests simultaneously
     thread_t tid[USED_THREADS-1];
     for (int i = 0; i < USED_THREADS-1; i++) {
-        assert(thread_create(HRTT, &tid[i], worker, NULL) == 0,
+        fp_assert(thread_create(HRTT, &tid[i], worker, NULL) == 0,
             "Could not create thread");
     }
 

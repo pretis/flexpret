@@ -9,8 +9,8 @@ int main() {
     printf("global variable x is %i\n", x);
     printf("global variable y is %i\n", y);
 
-    assert(x == 1, "x not properly set");
-    assert(y == 2, "y not properly set");
+    fp_assert(x == 1, "x not properly set");
+    fp_assert(y == 2, "y not properly set");
 
     return 0;
 }

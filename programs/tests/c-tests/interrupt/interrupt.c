@@ -32,7 +32,7 @@ void test_two_interrupts(void) {
     while (flag0 == 0);
 
     now = rdtime();
-    assert(now > expire, "Time is not as expected");
+    fp_assert(now > expire, "Time is not as expected");
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
     
@@ -43,7 +43,7 @@ void test_two_interrupts(void) {
     while (flag1 == 0);
 
     now = rdtime();
-    assert(now > expire, "Time is not as expected");
+    fp_assert(now > expire, "Time is not as expected");
 
     // If context switch is not properly implemented, expect crash when returning
     // from this function because the return address (ra) register has not been
@@ -63,7 +63,7 @@ void test_disabled_interrupts(const uint32_t timeout_init) {
     timeout = timeout_init;
     while (flag0 == 0 && timeout--);
 
-    assert(flag0 == 0, "Interrupt occurred when disabled");
+    fp_assert(flag0 == 0, "Interrupt occurred when disabled");
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
     
@@ -74,7 +74,7 @@ void test_disabled_interrupts(const uint32_t timeout_init) {
     timeout = timeout_init;
     while (flag1 == 0 && timeout--);
 
-    assert(flag1 == 0, "Interrupt occurred when disabled");
+    fp_assert(flag1 == 0, "Interrupt occurred when disabled");
 }
 
 void test_low_timeout(void) {
@@ -122,14 +122,14 @@ void test_delay_until(void) {
     delay_until(delay);
 
     now = rdtime();
-    assert(now > delay, "Time not as expected");
+    fp_assert(now > delay, "Time not as expected");
     
     /**
      * Does not work since INTERRUPT_ON_EXPIRE and delay_until use the same
      * CSR register CSR_COMPARE - so delay_until just overwrites the value of
      * the INTERRUPT_ON_EXPIRE instruction.
      */
-    //assert(flag0 == 1, "Interrupt did not occur");
+    //fp_assert(flag0 == 1, "Interrupt did not occur");
 }
 
 void test_wait_until(void) {
@@ -156,8 +156,8 @@ void test_wait_until(void) {
      * the INTERRUPT_ON_EXPIRE instruction.
      * 
      */
-    //assert(expire < now && now < delay, "Time not as expected");
-    //assert(flag1 == 1, "Interrupt did not occur");
+    //fp_assert(expire < now && now < delay, "Time not as expected");
+    //fp_assert(flag1 == 1, "Interrupt did not occur");
 }
 
 int main(void) {
