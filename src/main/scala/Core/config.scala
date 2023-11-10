@@ -243,6 +243,8 @@ DSPM_SIZE_KB  = ${dMemKB} ;
 BUS_START     = 0x40000000 ;
 BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
 
+NUM_THREADS   = ${threads} ;
+
 """
   }
 

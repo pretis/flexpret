@@ -2,7 +2,12 @@
 # using the -D flag. Many of the #defines are based on the current CPU
 # configuration found in config.mk. 
 
-include ${FLEXPRET_ROOT_DIR}/config.mk
+include ${FLEXPRET_ROOT_DIR}/hwconfig.mk
+
+STACKSIZE ?= 4096
+
+# A cumbersome way to calculate log2(STACKSIZE)
+STACKSIZE_BITS = $(shell echo ${STACKSIZE} | awk '{print log($$1)/log(2)}')
 
 # Setting this variable to false will replace all calls to assert with nothing
 WANT_DEBUG ?= true
@@ -41,3 +46,4 @@ DEFINES += -D __SINGLE_THREADED__
 else
 DEFINES += -D __DYNAMIC_REENT__
 endif
+

@@ -24,6 +24,8 @@ endif
 
 endif
 
+LIB_AUTOGEN := $(FP_LIB_DIR)/include/flexpret_swconfig.h $(FP_LIB_DIR)/linker/flexpret_swconfig.ld
+
 LIB_INCS += -I$(FP_LIB_DIR)/include -I$(FP_LIB_DIR)/printf/src/
 
 # Default is startup.c, but the application can set this variable to use their own startup file
@@ -32,3 +34,50 @@ STARTUP_FILE ?= $(FP_LIB_DIR)/startup.c
 # FIXME: This is extremely brittle. start.C HAS TO BE THE FIRST source file passed to gcc in order
 #	to have the ResetHandler be linked to 0x00.
 STARTUP_SOURCES = $(FP_LIB_DIR)/start.S $(STARTUP_FILE) 
+
+# See https://stackoverflow.com/questions/649246/is-it-possible-to-create-a-multi-line-string-variable-in-a-makefile
+define SWCONFIG_HEADER
+/**
+* This flexpret core config file is auto-generated, and based on the
+* configuration used to build the flexpret emulator.
+*
+* Do not edit.
+*
+*/
+#ifndef FLEXPRET_SWCONFIG_H
+#define FLEXPRET_SWCONFIG_H
+
+/* Stack size configuration */
+#ifndef STACKSIZE_BITS
+#define STACKSIZE_BITS ${STACKSIZE_BITS}
+#define STACKSIZE ${STACKSIZE}
+#endif
+
+#endif // FLEXPRET_SWCONFIG_H
+endef
+export SWCONFIG_HEADER
+
+define SWCONFIG_LDSCRIPT
+/**
+* This flexpret core config file is auto-generated, and based on the
+* configuration used to build the flexpret emulator.
+*
+* Do not edit.
+*
+*/
+
+STACKSIZE   = ${STACKSIZE} ;
+endef
+export SWCONFIG_LDSCRIPT
+
+# FORCE is used to ensure target always runs; see 
+# https://www.gnu.org/software/make/manual/make.html#Force-Targets (4.7)
+FORCE:
+
+$(FP_LIB_DIR)/include/flexpret_swconfig.h: FORCE
+	@echo "$$SWCONFIG_HEADER" > $@
+
+$(FP_LIB_DIR)/linker/flexpret_swconfig.ld: FORCE
+	@echo "$$SWCONFIG_LDSCRIPT" > $@
+
+autogen: $(LIB_AUTOGEN)

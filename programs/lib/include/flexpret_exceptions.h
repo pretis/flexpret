@@ -85,5 +85,7 @@ void register_isr(int cause, isr_t isr);
  */
 void setup_exceptions(void);
 
+#define STACK_GUARD_INITVAL (0xDEADBEEF)
+
 
 #endif

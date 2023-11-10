@@ -35,5 +35,7 @@ emulator/obj_dir/
 emulator/*.v
 
 programs/lib/include/flexpret_hwconfig.h
-programs/lib/linker/flexpret_config.ld
-config.mk
+programs/lib/include/flexpret_swconfig.h
+programs/lib/linker/flexpret_hwconfig.ld
+programs/lib/linker/flexpret_swconfig.ld
+hwconfig.mk

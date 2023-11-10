@@ -33,6 +33,7 @@ MT_C_TESTS_DIRS = \
 	interrupt \
 	lockowner \
 	printf \
+	stack \
 	swlock \
 	printf \
 	syscall \
@@ -42,7 +43,7 @@ MT_C_TESTS_DIRS = \
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)
 
-include $(FLEXPRET_ROOT_DIR)/config.mk
+include $(FLEXPRET_ROOT_DIR)/swconfig.mk
 
 ifeq ($(THREADS),1)
 all: run-c-tests

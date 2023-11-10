@@ -20,9 +20,7 @@
 .endm
 
 .macro setStackPointer
-    // Initialize stack pointer to the MAX DSPM address
-    // This address is code-generated to flexpret_hwconfig.h
-    li sp, DSPM_END
+    la sp, __stack_start$
     
     // Calculate how much to subtract
     // from the max address based on

@@ -129,14 +129,14 @@ clean:
 	rm -rf ./build
 	rm -rf emulator/obj_dir
 	rm -f emulator/*.v
-	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
+	rm -f $(LIB_DIR)/include/flexpret_hwconfig.h $(LIB_DIR)/linker/flexpret_hwconfig.ld
 	rm -rf out
 	rm -rf $(CLIENT_BUILD_DIR)
 
-	# If the config.mk file does not exist, the clean target will fail because
-	# config.mk is included in the programs/tests makefile. Therefore, create an 
+	# If the hwconfig.mk file does not exist, the clean target will fail because
+	# hwconfig.mk is included in the programs/tests makefile. Therefore, create an 
 	# empty file for it to delete.
-	echo "" >> ./config.mk
+	echo "" >> ./hwconfig.mk
 	make -C programs/tests clean
 
 

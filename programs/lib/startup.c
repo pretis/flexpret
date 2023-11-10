@@ -21,7 +21,20 @@ extern uint32_t __sdata;
 extern uint32_t __edata;
 extern uint32_t __sbss;
 extern uint32_t __ebss;
-extern uint32_t __end;
+
+/**
+ * The heap  starts after .text, .data, and .bss (see linker script).
+ * The stack starts at the very end of RAM.
+ * 
+ * The heap grows downwards while the stack grows upwards.
+ * Therefore, the __heap_end and __stack_end variables should be equal.
+ * 
+ */
+extern uint32_t __heap_start;
+extern uint32_t __heap_end;
+extern uint32_t __stack_end;
+extern uint32_t __stack_start;
+
 
 /* Threading */
 static bool     __ready__;
@@ -65,6 +78,10 @@ void free(void *ptr) {
     ta_free(ptr);
 }
 
+static inline bool check_bounds_inclusive(const uint32_t *val, const uint32_t *lower, const uint32_t *upper) {
+    return lower <= val && val <= upper;
+}
+
 /**
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
@@ -95,11 +112,18 @@ void Reset_Handler() {
         
         syscalls_init();
 
+        // Perform some sanity checks on the stack and heap pointers
+        const uint32_t *stack_end_calculated = (uint32_t *)
+            ((uint32_t) (&__stack_start) - (NUM_THREADS * STACKSIZE));
+
+        fp_assert(&__stack_end == stack_end_calculated, "Stack not set up correctly");
+        fp_assert(&__heap_end == &__stack_end, "Heap end and stack end are not equal");
+
         // Initialize tinyalloc.
         ta_init( 
-            &__end, // start of the heap space
-            (void *) DSPM_END,
-            TA_MAX_HEAP_BLOCK, 
+            (&__heap_start) , // start of the heap space; FIXME: For some reason this offset solves some issues
+            (&__heap_end), // stack resides at the end of DSPM
+            TA_MAX_HEAP_BLOCK,
             16, // split_thresh: 16 bytes (Only used when reusing blocks.)
             TA_ALIGNMENT
         );
@@ -160,6 +184,19 @@ void Reset_Handler() {
         // Wait for thread 0 to finish setup.
         while (!__ready__);
     }
+
+    // Check that each thread's stack pointer is within its own stack start/end
+    // addresses
+    register uint32_t *stack_pointer asm("sp");
+    
+    const uint32_t *stack_start = (uint32_t *)
+        ((uint32_t) (&__stack_start) - (hartid * STACKSIZE));
+    
+    const uint32_t *stack_end   = (uint32_t *) 
+        ((uint32_t) (stack_start) - STACKSIZE);
+
+    fp_assert(check_bounds_inclusive(stack_pointer, stack_end, stack_start),
+        "Stack pointer incorrectly set");
 
     // Setup exception handling
     setup_exceptions();

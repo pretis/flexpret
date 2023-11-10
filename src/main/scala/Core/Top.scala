@@ -21,8 +21,8 @@ abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
      * useful.
      */
     cfg.writeHeaderConfigToFile("./programs/lib/include/flexpret_hwconfig.h")
-    cfg.writeLinkerConfigToFile("./programs/lib/linker/flexpret_config.ld")
-    cfg.writeMakeConfigToFile("./config.mk")
+    cfg.writeLinkerConfigToFile("./programs/lib/linker/flexpret_hwconfig.ld")
+    cfg.writeMakeConfigToFile("./hwconfig.mk")
 
     val core = Module(new Core(cfg))
 } 
