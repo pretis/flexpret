@@ -263,8 +263,6 @@ object CSRs {
   val clear_ipi = 0x50f
   val core_id = 0x510
   val mepc       = 0x511
-  val sepc       = 0x512
-  val uepc       = 0x513
   val reset = 0x51d
   val fromhost = 0x51f
   val hwlock    = 0x520
@@ -334,8 +332,6 @@ object CSRs {
     res += clear_ipi
     res += core_id
     res += mepc
-    res += sepc
-    res += uepc
     res += reset
     res += fromhost
     res += hwlock

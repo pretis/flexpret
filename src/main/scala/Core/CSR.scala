@@ -36,8 +36,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val cause = Input(UInt(CAUSE_WI.W))
     val evecs = Output(Vec(conf.threads, UInt(32.W)))
     val mepcs = Output(Vec(conf.threads, UInt(32.W)))
-    val sepcs = Output(Vec(conf.threads, UInt(32.W)))
-    val uepcs = Output(Vec(conf.threads, UInt(32.W)))
     // timing
     val sleep = Input(Bool()) // valid DU inst
     val ie = Input(Bool()) // valid IE inst
@@ -73,8 +71,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   // exception handling
   val reg_evecs = Reg(Vec(conf.threads, UInt()))
   val reg_mepcs = Reg(Vec(conf.threads, UInt())) // RO?
-  val reg_sepcs = Reg(Vec(conf.threads, UInt())) // RO?
-  val reg_uepcs = Reg(Vec(conf.threads, UInt())) // RO?
 
   val reg_causes = Reg(Vec(conf.threads, UInt())) // RO
   val reg_sup0 = Reg(Vec(conf.threads, UInt()))
@@ -252,12 +248,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     when(compare_addr(CSRs.mepc)) {
       data_out := reg_mepcs(io.rw.thread)
     }
-    when(compare_addr(CSRs.sepc)) {
-      data_out := reg_sepcs(io.rw.thread)
-    }
-    when(compare_addr(CSRs.uepc)) {
-      data_out := reg_uepcs(io.rw.thread)
-    }
     when(compare_addr(CSRs.cause)) {
       data_out := Cat(reg_causes(io.rw.thread)(CAUSE_WI - 1), 0.U((32 - CAUSE_WI).W), reg_causes(io.rw.thread)(CAUSE_WI - 2, 0))
     }
@@ -380,10 +370,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       reg_mepcs(io.rw.thread) := io.epc
       reg_causes(io.rw.thread) := io.cause
       reg_in_interrupt(io.rw.thread) := true.B
-
-      // FIXME: The two connections below are probably not correct
-      reg_sepcs(io.rw.thread) := io.epc
-      reg_uepcs(io.rw.thread) := io.epc
     } .elsewhen (io.xret === XRET_M) {
       // Clear pending interrupt
       reg_msip(io.rw.thread) := false.B
@@ -517,8 +503,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   if (conf.exceptions) {
     io.evecs := reg_evecs
     io.mepcs  := reg_mepcs
-    io.sepcs  := reg_sepcs
-    io.uepcs  := reg_uepcs
   }
   io.expire := expired(io.rw.thread)
 

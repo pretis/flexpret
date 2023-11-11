@@ -418,10 +418,6 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     next_pc_sel(io.exe_tid) := NPC_CSR
     when (exe_reg_xret === XRET_M) {
       io.next_pc_sel_csr_addr := CSRs.mepc.U  
-    } .elsewhen (exe_reg_xret === XRET_S) {
-      io.next_pc_sel_csr_addr := CSRs.sepc.U
-    } .elsewhen (exe_reg_xret === XRET_U) {
-      io.next_pc_sel_csr_addr := CSRs.uepc.U
     }
   }
 

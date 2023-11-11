@@ -47,6 +47,10 @@ int main(void);
 
 void syscalls_init(void);
 
+static inline bool check_bounds_inclusive(const void *val, const void *lower, const void *upper) {
+    return lower <= val && val <= upper;
+}
+
 /**
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.

@@ -79,9 +79,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   
   // return of trap address for the three differnet priviledge modes
   val exe_mepc  = Wire(UInt())
-  val exe_sepc  = Wire(UInt())
-  val exe_uepc  = Wire(UInt())
-
 
   // memory stage
   val mem_reg_tid = Reg(UInt())
@@ -90,8 +87,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   val mem_reg_address = Reg(UInt())
   val mem_evec = Wire(UInt())
   val mem_mepc  = Wire(UInt())
-  val mem_sepc  = Wire(UInt())
-  val mem_uepc  = Wire(UInt())
 
   val mem_rd_data = Wire(UInt())
 
@@ -142,10 +137,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   when(io.control.next_pc_sel(exe_reg_tid) === NPC_CSR) {
     when(io.control.next_pc_sel_csr_addr === CSRs.mepc.U) {
       next_pcs(exe_reg_tid) := exe_mepc
-    } .elsewhen(io.control.next_pc_sel_csr_addr === CSRs.sepc.U) {
-      next_pcs(exe_reg_tid) := exe_sepc
-    } .elsewhen(io.control.next_pc_sel_csr_addr === CSRs.uepc.U) {
-      next_pcs(exe_reg_tid) := exe_uepc
     }
   }
 
@@ -382,8 +373,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // trap handling address, depends on conf.regEvec
   exe_evec := csr.io.evecs(exe_reg_tid)
   exe_mepc  := csr.io.mepcs(exe_reg_tid)
-  exe_sepc  := csr.io.sepcs(exe_reg_tid)
-  exe_uepc  := csr.io.uepcs(exe_reg_tid)
 
   // memory protection
   loadstore.io.dmem_protection := csr.io.dmem_protection
@@ -450,9 +439,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   // trap handling address, depends on conf.regEvec
   mem_evec := csr.io.evecs(mem_reg_tid)
   mem_mepc := csr.io.mepcs(mem_reg_tid)
-  mem_sepc := csr.io.sepcs(mem_reg_tid)
-  mem_uepc := csr.io.uepcs(mem_reg_tid)
-
 
   wb_reg_tid := mem_reg_tid
   wb_reg_rd_addr := mem_reg_rd_addr
