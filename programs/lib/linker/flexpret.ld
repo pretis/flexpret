@@ -79,14 +79,14 @@ SECTIONS
     __end = ABSOLUTE(.);
 
     .heap : ALIGN(4) {
-        __heap_start = ABSOLUTE(.);
-        __heap_end = ABSOLUTE(DSPM_END - TOTAL_STACKSIZES);
+        __sheap = ABSOLUTE(.);
+        __eheap = ABSOLUTE(DSPM_END - TOTAL_STACKSIZES);
     } > RAM
 
     .stack : ALIGN(4) {
-        __stack_end = ABSOLUTE(.);
-        __stack_start =  ABSOLUTE(. + TOTAL_STACKSIZES);
+        __estack = ABSOLUTE(.);
+        __sstack =  ABSOLUTE(. + TOTAL_STACKSIZES);
     } > STACK
 
-    PROVIDE(__stack_start$ = __stack_start);
+    PROVIDE(__stack_start$ = __sstack);
 }

@@ -27,13 +27,13 @@ extern uint32_t __ebss;
  * The stack starts at the very end of RAM.
  * 
  * The heap grows downwards while the stack grows upwards.
- * Therefore, the __heap_end and __stack_end variables should be equal.
+ * Therefore, the __eheap and __estack variables should be equal.
  * 
  */
-extern uint32_t __heap_start;
-extern uint32_t __heap_end;
-extern uint32_t __stack_end;
-extern uint32_t __stack_start;
+extern uint32_t __sheap;
+extern uint32_t __eheap;
+extern uint32_t __estack;
+extern uint32_t __sstack;
 
 
 /* Threading */
@@ -46,41 +46,6 @@ extern uint32_t num_threads_exited;
 int main(void);
 
 void syscalls_init(void);
-
-/**
- * Allocate a requested memory and return a pointer to it.
- */
-void *malloc(size_t size) {
-    return ta_alloc(size);
-}
-
-/**
- * Allocate a requested memory, initial the memory to 0,
- * and return a pointer to it.
- */
-void *calloc(size_t nitems, size_t size) {
-    return ta_calloc(nitems, size);
-}
-
-/**
- * resize the memory block pointed to by ptr
- * that was previously allocated with a call
- * to malloc or calloc.
- */
-void *realloc(void *ptr, size_t size) {
-    return ta_realloc(ptr, size);
-}
-
-/**
- * Deallocate the memory previously allocated by a call to calloc, malloc, or realloc.
- */
-void free(void *ptr) {
-    ta_free(ptr);
-}
-
-static inline bool check_bounds_inclusive(const uint32_t *val, const uint32_t *lower, const uint32_t *upper) {
-    return lower <= val && val <= upper;
-}
 
 /**
  * Initialize initialized global variables, set uninitialized global variables
@@ -96,33 +61,33 @@ void Reset_Handler() {
     if (hartid == 0) {
         // Copy .data section into the RAM
         uint32_t size   = &__edata - &__sdata;
-        uint32_t *pDst  = (uint32_t*)&__sdata;              // RAM
-        uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
+        uint32_t *pDst  = (uint32_t*)&__sdata; // RAM
+        uint32_t *pSrc  = (uint32_t*)&__etext; // ROM
 
         for (uint32_t i = 0; i < size; i++) {
-            *pDst++ = *pSrc++;
+            pDst[i] = pSrc[i];
         }
 
         // Init. the .bss section to zero in RAM
         size = (uint32_t)&__ebss - (uint32_t)&__sbss;
         pDst = (uint32_t*)&__sbss;
         for(uint32_t i = 0; i < size; i++) {
-            *pDst++ = 0;
+            pDst[i] = 0;
         }
-        
+
         syscalls_init();
 
         // Perform some sanity checks on the stack and heap pointers
         const uint32_t *stack_end_calculated = (uint32_t *)
-            ((uint32_t) (&__stack_start) - (NUM_THREADS * STACKSIZE));
+            ((uint32_t) (&__sstack) - (NUM_THREADS * STACKSIZE));
 
-        fp_assert(&__stack_end == stack_end_calculated, "Stack not set up correctly");
-        fp_assert(&__heap_end == &__stack_end, "Heap end and stack end are not equal");
+        fp_assert(&__estack == stack_end_calculated, "Stack not set up correctly");
+        fp_assert(&__eheap == &__estack, "Heap end and stack end are not equal");
 
         // Initialize tinyalloc.
         ta_init( 
-            (&__heap_start) , // start of the heap space; FIXME: For some reason this offset solves some issues
-            (&__heap_end), // stack resides at the end of DSPM
+            &__sheap,
+            &__eheap,
             TA_MAX_HEAP_BLOCK,
             16, // split_thresh: 16 bytes (Only used when reusing blocks.)
             TA_ALIGNMENT
@@ -190,7 +155,7 @@ void Reset_Handler() {
     register uint32_t *stack_pointer asm("sp");
     
     const uint32_t *stack_start = (uint32_t *)
-        ((uint32_t) (&__stack_start) - (hartid * STACKSIZE));
+        ((uint32_t) (&__sstack) - (hartid * STACKSIZE));
     
     const uint32_t *stack_end   = (uint32_t *) 
         ((uint32_t) (stack_start) - STACKSIZE);

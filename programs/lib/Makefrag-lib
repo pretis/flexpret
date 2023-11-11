@@ -8,6 +8,7 @@ else
 LIB_SOURCES += \
 	$(FP_LIB_DIR)/syscalls/syscalls.c \
 	$(FP_LIB_DIR)/syscalls/printf_putchar.c \
+	$(FP_LIB_DIR)/syscalls/heap.c \
 	$(FP_LIB_DIR)/flexpret_thread.c \
 	$(FP_LIB_DIR)/flexpret_lock.c \
 	$(FP_LIB_DIR)/flexpret_cond.c \

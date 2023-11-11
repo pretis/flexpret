@@ -385,6 +385,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       reg_sepcs(io.rw.thread) := io.epc
       reg_uepcs(io.rw.thread) := io.epc
     } .elsewhen (io.xret === XRET_M) {
+      // Clear pending interrupt
+      reg_msip(io.rw.thread) := false.B
       reg_in_interrupt(io.rw.thread) := false.B
     }
   }
