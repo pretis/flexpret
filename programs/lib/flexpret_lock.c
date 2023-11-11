@@ -35,7 +35,9 @@ void lock_acquire(fp_lock_t* lock) {
 
 void lock_release(fp_lock_t* lock) {
     hwlock_acquire();
-    fp_assert(read_hartid() == lock->owner, "Attempt to release lock not owned by thread");
+    fp_assert(read_hartid() == lock->owner, 
+        "Attempt to release lock not owned by thread. thread id: %i, lock->owner: %i\n", 
+        read_hartid(), lock->owner);
     lock->locked = false;
     lock->owner  = UINT32_MAX;
     hwlock_release();

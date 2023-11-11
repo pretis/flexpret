@@ -66,8 +66,7 @@ void fp_exception_handler(void) {
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
         if(ee_int_handler) ee_int_handler();
     } else {
-        printf("Exception occured: %i, %s\n", cause, exception_to_str(cause));
-        fp_assert(false, "Exception not handled");
+        fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
 
     // Call the function to load the thread's context
@@ -101,6 +100,6 @@ void register_isr(int cause, void (*isr)(void)) {
     case EXC_CAUSE_EXCEPTION_EXPIRE:
         ee_int_handler  = isr; break;
     default: 
-        fp_assert(false, "Attempt to register isr for non-supported cause");
+        fp_assert(false, "Attempt to register isr for non-supported cause: %i\n", cause);
     }
 }

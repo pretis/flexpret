@@ -20,8 +20,9 @@ static inline void write_tohost(uint32_t val) {
   write_tohost_tid(tid, val);
 }
 
-#define _fp_abort(reason) do { \
-  printf("%s: %i: " PRINTF_COLOR_RED "Abort: %s\n" PRINTF_COLOR_NONE, __FILE__, __LINE__, reason); \
+#define _fp_abort(fmt, ...) do { \
+  printf("%s: %s: %i: " PRINTF_COLOR_RED "Abort:" PRINTF_COLOR_NONE, __FILE__, __func__, __LINE__); \
+  printf(fmt, ##__VA_ARGS__); \
   write_tohost(CSR_TOHOST_ABORT); \
 } while(0)
 
@@ -41,7 +42,7 @@ static inline void write_tohost_tid(uint32_t tid, uint32_t val) {
     case 5: write_csr(CSR_TOHOST(5), val); break;
     case 6: write_csr(CSR_TOHOST(6), val); break;
     case 7: write_csr(CSR_TOHOST(7), val); break;
-    default: _fp_abort("Invalid thread id");
+    default: _fp_abort("Invalid thread id: ", tid);
   }
 }
 
@@ -54,7 +55,7 @@ static inline void gpo_write(uint32_t port, uint32_t val) {
     case 1: write_csr(CSR_UARCH5, val); break;
     case 2: write_csr(CSR_UARCH6, val); break;
     case 3: write_csr(CSR_UARCH7, val); break;
-    default: _fp_abort("Invalid port");
+    default: _fp_abort("Invalid port: ", port);
   }
 }
 
@@ -69,7 +70,7 @@ static inline void gpo_set(uint32_t port, uint32_t mask) {
     case 1: set_csr(CSR_UARCH5, mask); break;
     case 2: set_csr(CSR_UARCH6, mask); break;
     case 3: set_csr(CSR_UARCH7, mask); break;
-    default: _fp_abort("Invalid port");
+    default: _fp_abort("Invalid port: ", port);
   }
 }
 
@@ -85,7 +86,7 @@ static inline void gpo_clear(uint32_t port, uint32_t mask) {
     case 1: clear_csr(CSR_UARCH5, mask); break;
     case 2: clear_csr(CSR_UARCH6, mask); break;
     case 3: clear_csr(CSR_UARCH7, mask); break;
-    default: _fp_abort("Invalid port");
+    default: _fp_abort("Invalid port: ", port);
   }
 }
 
@@ -100,7 +101,7 @@ static inline uint32_t gpo_read(uint32_t port) {
     case 1: return read_csr(CSR_UARCH5); break;
     case 2: return read_csr(CSR_UARCH6); break;
     case 3: return read_csr(CSR_UARCH7); break;
-    default: _fp_abort("Invalid port");
+    default: _fp_abort("Invalid port: ", port);
   }
 }
 
@@ -118,7 +119,7 @@ static inline uint32_t gpi_read(uint32_t port) {
     case 1: return read_csr(CSR_UARCH1); break;
     case 2: return read_csr(CSR_UARCH2); break;
     case 3: return read_csr(CSR_UARCH3); break;
-    default: _fp_abort("Invalid port");
+    default: _fp_abort("Invalid port: ", port);
   }
 }
 

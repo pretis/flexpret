@@ -85,8 +85,13 @@ void Reset_Handler() {
         const uint32_t *stack_end_calculated = (uint32_t *)
             ((uint32_t) (&__sstack) - (NUM_THREADS * STACKSIZE));
 
-        fp_assert(&__estack == stack_end_calculated, "Stack not set up correctly");
-        fp_assert(&__eheap == &__estack, "Heap end and stack end are not equal");
+        fp_assert(&__estack == stack_end_calculated, 
+            "Stack not set up correctly: End of stack: 0x%x, Calculated end of stack: 0x%x\n",
+            &__estack, stack_end_calculated);
+
+        fp_assert(&__eheap == &__estack, 
+            "Heap end and stack end are not equal: Heap end: 0x%x, Stack end: 0x%x\n",
+            &__eheap, &__estack);
 
         // Initialize tinyalloc.
         ta_init( 
@@ -165,7 +170,7 @@ void Reset_Handler() {
         ((uint32_t) (stack_start) - STACKSIZE);
 
     fp_assert(check_bounds_inclusive(stack_pointer, stack_end, stack_start),
-        "Stack pointer incorrectly set");
+        "Stack pointer incorrectly set: %p\n", stack_pointer);
 
     // Setup exception handling
     setup_exceptions();

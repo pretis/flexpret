@@ -15,7 +15,8 @@
 
 #define SANITY_CHECK(addr) do { \
     fp_assert(CHECK_BOUNDS_INCLUSIVE((uint32_t *) (addr), &__sheap, &__eheap), \
-        "tiny alloc: sanity check failed: address outside of heap space"); \
+        "tiny alloc: sanity check failed: address outside of heap space: \
+        addr: %p, heap start: %p, end heap: %p\n", addr, &__sheap, &__eheap); \
 } while(0)
 
 // Linker variables

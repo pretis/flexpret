@@ -22,7 +22,7 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        fp_assert(false, "No more than 8 slots supported");
+        fp_assert(false, "No more than 8 slots supported: %i given", length);
         return 1;
     }
     uint32_t val = 0;
@@ -46,7 +46,7 @@ int slot_set(slot_t slots[], uint32_t length) {
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
-        fp_assert(false, "Invalid slot set");
+        fp_assert(false, "Invalid slot set: %i given", slot);
         return 1;
     }
     if (hartid > NUM_THREADS) {
