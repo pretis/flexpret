@@ -10,13 +10,13 @@
 
 #include "../tinyalloc/tinyalloc.h"
 
-#define CHECK_BOUNDS_INCLUSIVE(val, lower, upper) \
-    lower <= val && val <= upper
+#define CHECK_PTR_WITHIN_HEAP_OR_NULL(ptr, lower, upper) \
+    (lower <= ptr && ptr <= upper) || (ptr == NULL)
 
 #define SANITY_CHECK(addr) do { \
-    fp_assert(CHECK_BOUNDS_INCLUSIVE((uint32_t *) (addr), &__sheap, &__eheap), \
-        "tiny alloc: sanity check failed: address outside of heap space: \
-        addr: %p, heap start: %p, end heap: %p\n", addr, &__sheap, &__eheap); \
+    fp_assert(CHECK_PTR_WITHIN_HEAP_OR_NULL((uint32_t *) (addr), &__sheap, &__eheap), \
+        "sanity check failed: address outside of heap space: addr: %p, heap start: %p, end heap: %p\n", \
+        addr, &__sheap, &__eheap); \
 } while(0)
 
 // Linker variables
