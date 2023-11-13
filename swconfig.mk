@@ -9,6 +9,9 @@ STACKSIZE ?= 2048
 # A cumbersome way to calculate log2(STACKSIZE)
 STACKSIZE_BITS = $(shell echo ${STACKSIZE} | awk '{print log($$1)/log(2)}')
 
+# Use this variable to configure SW for testing purposes only
+TEST_ENVIRONMENT ?= false
+
 # Setting this variable to false will replace all calls to assert with nothing
 WANT_DEBUG ?= true
 
@@ -17,11 +20,11 @@ WANT_DEBUG ?= true
 # less space.
 PRINTF_ENABLED ?= $(WANT_DEBUG)
 
-PRINTF_DEFINES := -D PRINTF_SUPPORT_DECIMAL_SPECIFIERS=0 \
-				  -D PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS=0 \
-				  -D SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS=0 \
-				  -D PRINTF_SUPPORT_WRITEBACK_SPECIFIER=0 \
-				  -D PRINTF_SUPPORT_LONG_LONG=0
+PRINTF_DEFINES := -D PRINTF_SUPPORT_DECIMAL_SPECIFIERS=1 \
+				  -D PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS=1 \
+				  -D SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS=1 \
+				  -D PRINTF_SUPPORT_WRITEBACK_SPECIFIER=1 \
+				  -D PRINTF_SUPPORT_LONG_LONG=1
 
 DEFINES += -D _REENT_SMALL -D PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT
 
@@ -29,14 +32,18 @@ ifeq ($(PRINTF_ENABLED),true)
 DEFINES += $(PRINTF_DEFINES)
 endif
 
-ifeq ($(TARGET), emulator)
+ifeq ($(WANT_DEBUG),false)
+DEFINES += -D NDEBUG # When NDEBUG is defined, assert() becomes nothing
+endif
+
+ifeq ($(TEST_ENVIRONMENT),true)
+DEFINES += -D __TEST__
+endif
+
+ifeq ($(TARGET),emulator)
 DEFINES += -D __EMULATOR__
 else ifeq ($(TARGET), fpga)
 DEFINES += -D __FPGA__
-endif
-
-ifeq ($(WANT_DEBUG),false)
-DEFINES += -D NDEBUG # When NDEBUG is defined, assert() becomes nothing
 endif
 
 # For configuration of newlib's reentracy feature; see comments in

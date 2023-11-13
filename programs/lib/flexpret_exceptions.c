@@ -14,13 +14,21 @@ static isr_t ee_int_handler;
 
 struct thread_ctx_t contexts[NUM_THREADS];
 
+#ifndef NDEBUG
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
-// Weak attribute allows other files to override the implementation, which is
-// very useful for testing purposes
-__attribute__((weak)) void __stack_chk_fail(void) {
+#ifdef __TEST__
+/**
+ * Weak attribute allows other files to override the implementation, which is
+ * very useful for testing purposes - but the function should not be weak by
+ * default.
+ */
+__attribute__((weak))
+#endif // __TEST__
+void __stack_chk_fail(void) {
     _fp_abort("Stack check failed");
 }
+#endif // NDEBUG
 
 static void register_exception_handler(void (*isr)(void)) {
     write_csr(CSR_EVEC, (uint32_t) isr);
