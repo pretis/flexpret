@@ -27,9 +27,13 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
+RISCV_INSTALL := $(subst /$(CC),,$(shell which $(CC)))
+NEWLIB_PATH := $(RISCV_INSTALL)/../lib/gcc/riscv32-unknown-elf/11.1.0/../../../../riscv32-unknown-elf/lib/libc.a
+
 CFLAGS += -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
 INCS += $(LIB_INCS) $(APP_INCS)
 LFLAGS += -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
+LIB_SOURCES += $(FLEXPRET_ROOT_DIR)/libc.a.weakened
 
 ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
@@ -39,6 +43,12 @@ endif
 
 # Default target; generates the riscv, dump, and mem files
 compile: autogen riscv dump mem
+
+autogen: $(LIB_AUTOGEN)
+
+# See programs/lib/linker/newlib-weaken.txt for explanation
+%.weakened: $(NEWLIB_PATH)
+	$(OBJCOPY) --weaken-symbols $(FP_LIB_DIR)/linker/newlib-weaken.txt $^ $@
 
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
@@ -70,5 +80,3 @@ recompile: clean compile
 clean:
 	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
 	rm -f $(LIB_AUTOGEN)
-
-autogen: $(LIB_AUTOGEN)

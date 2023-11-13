@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <flexpret.h>
+#include <reent.h>
 
 #include "../tinyalloc/tinyalloc.h"
 
@@ -32,6 +33,10 @@ void *malloc(size_t size) {
     return ptr;
 }
 
+void *_malloc_r(struct _reent *r, size_t size) {
+    return malloc(size);
+}
+
 /**
  * Allocate a requested memory, initial the memory to 0,
  * and return a pointer to it.
@@ -40,6 +45,10 @@ void *calloc(size_t nitems, size_t size) {
     void *ptr = ta_calloc(nitems, size);
     SANITY_CHECK(ptr);
     return ptr;
+}
+
+void *_calloc_r(struct _reent *r, size_t nitems, size_t size) {
+    return calloc(nitems, size);
 }
 
 /**
@@ -54,11 +63,15 @@ void *realloc(void *ptr, size_t size) {
     return ret;
 }
 
+void *_realloc_r(struct _reent *r, void *ptr, size_t size) {
+    return realloc(ptr, size);
+}
+
 /**
  * Deallocate the memory previously allocated by a call to calloc, malloc, or realloc.
  */
 void free(void *ptr) {
-    //SANITY_CHECK(ptr); // TODO: Free NULL occurs
+    SANITY_CHECK(ptr);
     ta_free(ptr);
 }
 
