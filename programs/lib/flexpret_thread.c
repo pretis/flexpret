@@ -244,7 +244,7 @@ static int assign_hartid(
     in_use[hartid] = true;
     // FIXME: If the thread is asleep,
     // wake up the thread.
-    hwlock_release();
+    fp_hwlock_release();
     return 0;
 }
 
@@ -261,14 +261,14 @@ int fp_thread_create(
     }
     // Allocate an available thread.
     // Cannot allocate to thread 0.
-    hwlock_acquire();
-    for (int i = 1; i < NUM_THREADS; i++) {
+    fp_hwlock_acquire();
+    for (uint32_t i = 1; i < NUM_THREADS; i++) {
         if (!in_use[i]) {
             *hartid = i;
             return assign_hartid(i, start_routine, arg);
         }
     }
-    hwlock_release();
+    fp_hwlock_release();
     // All the threads are occupied, return error.
     errno = EBUSY;
     return 1;
@@ -295,11 +295,11 @@ int fp_thread_map(
 
     // Allocate an available thread.
     // Cannot allocate to thread 0.
-    hwlock_acquire();
+    fp_hwlock_acquire();
     if (!in_use[*hartid]) {
         return assign_hartid(*hartid, start_routine, arg);
     }
-    hwlock_release();
+    fp_hwlock_release();
     // All the threads are occupied, return error.
     errno = EBUSY;
     return 1;
@@ -309,7 +309,7 @@ int fp_thread_join(fp_thread_t hartid, void **retval) {
     // FIXME: What if it waits for the long-running thread?
     while(in_use[hartid]); // Wait
     // Get the exit code from the exiting thread.
-    hwlock_acquire();
+    fp_hwlock_acquire();
     if (retval) {
         *retval = exit_code[hartid];
     }
@@ -317,7 +317,7 @@ int fp_thread_join(fp_thread_t hartid, void **retval) {
     // a worker thread should put itself to sleep.
     // Put the thread to sleep.
     // FIXME: Should we make an idle thread an SRTT?
-    hwlock_release();
+    fp_hwlock_release();
     return 0;
 }
 
@@ -327,30 +327,30 @@ int fp_thread_join(fp_thread_t hartid, void **retval) {
  */
 void fp_thread_exit(void *retval) {
     uint32_t hartid = read_hartid();
-    hwlock_acquire();
+    fp_hwlock_acquire();
     exit_code[hartid] = retval;
     exit_requested[hartid] = true;
-    hwlock_release();
+    fp_hwlock_release();
     // FIXME: Run cleanup handlers
     // registered using thread_cleanup_push.
     return;
 }
 
 int fp_thread_cancel(fp_thread_t hartid) {
-    hwlock_acquire(); // FIXME: Unnecessary?
+    fp_hwlock_acquire(); // FIXME: Unnecessary?
     cancel_requested[hartid] = true;
-    hwlock_release();
+    fp_hwlock_release();
     return 0;
 }
 
 void fp_thread_testcancel() {
     uint32_t hartid = read_hartid();
-    hwlock_acquire();
+    fp_hwlock_acquire();
     if (cancel_requested[hartid]) {
-        hwlock_release();
+        fp_hwlock_release();
         longjmp(envs[hartid], 1);
     }
-    hwlock_release();
+    fp_hwlock_release();
 }
 
 /**
@@ -367,10 +367,10 @@ void worker_main() {
     // Check if the thread returns from longjmp.
     // If so, mark the thread as not in use.
     if (val == 1) {
-        hwlock_acquire();
+        fp_hwlock_acquire();
         num_threads_busy -= 1;
         in_use[hartid] = false;
-        hwlock_release();
+        fp_hwlock_release();
 
         // FIXME: Remove the print? It was kept here because it used to say
         //        _fp_print(6662);
@@ -397,19 +397,19 @@ void worker_main() {
             (*routines[hartid])(args[hartid]);
 
             // Mark the thread as available again.
-            hwlock_acquire();
+            fp_hwlock_acquire();
             num_threads_busy -= 1;
             in_use[hartid] = false;
-            hwlock_release();
+            fp_hwlock_release();
         }
     }
 
     // FIXME: Execute clean up handlers here.
 
     // Increment the counter of exited threads.
-    hwlock_acquire();
+    fp_hwlock_acquire();
     num_threads_exited += 1;
-    hwlock_release();
+    fp_hwlock_release();
 
     return;
 }

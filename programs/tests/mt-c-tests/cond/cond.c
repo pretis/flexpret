@@ -3,22 +3,22 @@
 #include <stdint.h>
 #include <flexpret.h>
 
-fp_lock_t lock = LOCK_INITIALIZER;
-fp_cond_t cond = COND_INITIALIZER(&lock);
+fp_lock_t lock = FP_LOCK_INITIALIZER;
+fp_cond_t cond = FP_COND_INITIALIZER(&lock);
 int count = 0;
 
 void* t1() {
-    lock_acquire(&lock);
-    cond_wait(&cond);
+    fp_lock_acquire(&lock);
+    fp_cond_wait(&cond);
     count++;
-    lock_release(&lock);
+    fp_lock_release(&lock);
 }
 
 void* t2() {
-    lock_acquire(&lock);
-    cond_wait(&cond);
+    fp_lock_acquire(&lock);
+    fp_cond_wait(&cond);
     count++;
-    lock_release(&lock);
+    fp_lock_release(&lock);
 }
 
 int test_signal() {
@@ -32,12 +32,12 @@ int test_signal() {
     fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 0, "Incorrect value for count");
-    cond_signal(&cond);
+    fp_cond_signal(&cond);
 
     fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 1, "Incorrect value for count");
-    cond_signal(&cond);
+    fp_cond_signal(&cond);
     
     fp_delay_for(100000);
     printf("count is %i\n", count);
@@ -60,7 +60,7 @@ int test_broadcast() {
     fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 0, "Incorrect value for count");
-    cond_broadcast(&cond);
+    fp_cond_broadcast(&cond);
     fp_delay_for(100000);
     printf("count is %i\n", count);
     fp_assert(count == 2, "Incorrect value for count");
@@ -73,7 +73,7 @@ int test_broadcast() {
 
 void test_timed_wait() {
 
-    lock_acquire(&lock);
+    fp_lock_acquire(&lock);
     uint64_t t1 = rdtime64();
     printf("t1 is %i\n", t1);
     uint64_t wakeup = t1 + 100000;
@@ -84,7 +84,7 @@ void test_timed_wait() {
     printf("t2 is %i\n", t2);
 
     fp_assert(t2 > wakeup, "rdtime64() got value less than waketime");   
-    lock_release(&lock);
+    fp_lock_release(&lock);
 }
 
 int main() {

@@ -5,7 +5,7 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-fp_lock_t lock = LOCK_INITIALIZER;
+fp_lock_t lock = FP_LOCK_INITIALIZER;
 bool ready = false;
 
 // Intentionally map the do_work functions to
@@ -14,9 +14,9 @@ fp_thread_t tid[2] = {1, 2};
 
 // t1 to be canceled by t2
 void* t1_do_work() {
-    lock_acquire(&lock);
+    fp_lock_acquire(&lock);
     ready = true;
-    lock_release(&lock);
+    fp_lock_release(&lock);
     while(1) {
         fp_thread_testcancel();
     }

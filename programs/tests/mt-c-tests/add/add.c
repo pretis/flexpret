@@ -4,16 +4,16 @@
 
 void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
-    hwlock_acquire();
+    fp_hwlock_acquire();
     *_num += 1;
-    hwlock_release();
+    fp_hwlock_release();
 }
 
 void* t2_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
-    hwlock_acquire();
+    fp_hwlock_acquire();
     *_num += 2;
-    hwlock_release();
+    fp_hwlock_release();
 }
 
 int main() {

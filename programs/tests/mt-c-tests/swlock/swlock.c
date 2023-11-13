@@ -5,22 +5,22 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-fp_lock_t lock = LOCK_INITIALIZER;
+fp_lock_t lock = FP_LOCK_INITIALIZER;
 
 void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
-    lock_acquire(&lock);
+    fp_lock_acquire(&lock);
     *_num += 1;
     printf("num is %i\n", *_num);
-    lock_release(&lock);
+    fp_lock_release(&lock);
 }
 
 void* t2_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;
-    lock_acquire(&lock);
+    fp_lock_acquire(&lock);
     *_num += 2;
     printf("num is %i\n", *_num);
-    lock_release(&lock);
+    fp_lock_release(&lock);
 }
 
 int main() {

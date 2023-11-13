@@ -55,7 +55,7 @@ static inline bool check_bounds_inclusive(const void *val, const void *lower, co
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
-fp_lock_t _lock = LOCK_INITIALIZER;
+fp_lock_t _lock = FP_LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
@@ -137,20 +137,20 @@ void Reset_Handler() {
             slots[j] = SLOT_D;
         
         // Acquire lock and allow all threads to start execute as HRTTs
-        hwlock_acquire();
+        fp_hwlock_acquire();
         for (int i = 0; i < NUM_THREADS; i++) {
             tmode_set(i, TMODE_HA);
         }
         slot_set(slots, 8);
-        hwlock_release();
+        fp_hwlock_release();
 
         // FIXME: Wait for a worker thread to signal
         // ready-to-sleep and put it to sleep.
 
         // Signal everything is ready.
-        hwlock_acquire();
+        fp_hwlock_acquire();
         __ready__ = true;
-        hwlock_release();
+        fp_hwlock_release();
     } else {
         // FIXME: Signal thread 0 to put
         // the worker thread to sleep.
@@ -191,13 +191,13 @@ void Reset_Handler() {
         while (num_threads_busy > 0);
 
         // Signal all threads besides T0 to exit.
-        hwlock_acquire();
+        fp_hwlock_acquire();
         for (int i = 1; i < NUM_THREADS; i++) {
             exit_requested[i] = true;
             // FIXME: If the thread is sleeping,
             // wake up the thread.
         }
-        hwlock_release();
+        fp_hwlock_release();
 
         // Wait for all hardware worker threads to exit.
         while (num_threads_exited < NUM_THREADS-1);

@@ -5,7 +5,7 @@
 
 static int flags[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 static int ext_int_flag = 0;
-static fp_lock_t interrupt_lock = LOCK_INITIALIZER;
+static fp_lock_t interrupt_lock = FP_LOCK_INITIALIZER;
 
 void ie_isr0(void) {
     flags[0] = 1;
@@ -78,7 +78,7 @@ void *worker(void *arg) {
     int tid = read_hartid();
     uint32_t now, expire;
 
-    lock_acquire(&interrupt_lock);
+    fp_lock_acquire(&interrupt_lock);
     register_isr_tid(tid);
 
     now = rdtime();
@@ -89,7 +89,7 @@ void *worker(void *arg) {
     while (flags[tid] == 0);
     DISABLE_INTERRUPTS();
 
-    lock_release(&interrupt_lock);
+    fp_lock_release(&interrupt_lock);
 }
 
 int main() {

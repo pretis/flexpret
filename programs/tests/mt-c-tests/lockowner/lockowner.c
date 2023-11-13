@@ -5,14 +5,14 @@
 #include <flexpret_lock.h>
 #include <flexpret_thread.h>
 
-fp_lock_t lock = LOCK_INITIALIZER;
+fp_lock_t lock = FP_LOCK_INITIALIZER;
 
 void* t1_do_work() {
-    lock_acquire(&lock);
+    fp_lock_acquire(&lock);
 }
 
 void* t2_do_work() {
-    lock_release(&lock);
+    fp_lock_release(&lock);
 }
 
 int main() {
