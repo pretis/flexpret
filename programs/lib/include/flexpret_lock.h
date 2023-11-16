@@ -4,10 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FP_LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX }
+#define FP_LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX, .count = 0 }
 typedef struct {
     bool locked;
     uint32_t owner;
+    uint32_t count;
 } fp_lock_t;
 
 /**
