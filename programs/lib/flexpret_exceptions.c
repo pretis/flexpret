@@ -17,14 +17,7 @@ struct thread_ctx_t contexts[NUM_THREADS];
 #ifndef NDEBUG
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
-#ifdef __TEST__
-/**
- * Weak attribute allows other files to override the implementation, which is
- * very useful for testing purposes - but the function should not be weak by
- * default.
- */
-__attribute__((weak))
-#endif // __TEST__
+FP_TEST_OVERRIDE
 void __stack_chk_fail(void) {
     _fp_abort("Stack check failed");
 }

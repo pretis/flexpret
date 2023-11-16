@@ -30,6 +30,7 @@ C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
 MT_C_TESTS_DIRS = \
 	add \
 	cond \
+	heap \
 	interrupt \
 	lockowner \
 	printf \

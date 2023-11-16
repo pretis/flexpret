@@ -9,8 +9,6 @@
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <flexpret.h>
 
-#include "tinyalloc/tinyalloc.h"
-
 #define TA_MAX_HEAP_BLOCK   1000
 #define TA_ALIGNMENT        4
 
@@ -79,8 +77,6 @@ void Reset_Handler() {
             pDst[i] = 0;
         }
 
-        syscalls_init();
-
         // Perform some sanity checks on the stack and heap pointers
         const uint32_t *stack_end_calculated = (uint32_t *)
             ((uint32_t) (&__sstack) - (NUM_THREADS * STACKSIZE));
@@ -92,15 +88,6 @@ void Reset_Handler() {
         fp_assert(&__eheap == &__estack, 
             "Heap end and stack end are not equal: Heap end: 0x%x, Stack end: 0x%x\n",
             &__eheap, &__estack);
-
-        // Initialize tinyalloc.
-        ta_init( 
-            &__sheap,
-            &__eheap,
-            TA_MAX_HEAP_BLOCK,
-            16, // split_thresh: 16 bytes (Only used when reusing blocks.)
-            TA_ALIGNMENT
-        );
 
         /**
          * Configure flexible scheduling

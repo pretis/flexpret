@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <signal.h>
+#include <errno.h>
+#include <string.h>
 #include <flexpret.h>
 
 #define A_INIT 100
@@ -8,6 +10,9 @@
 #define C_INIT 300
 
 #define NELEMENTS_ARRAY (10)
+
+extern char __sheap;
+extern char __eheap;
 
 int main() {
 
@@ -42,29 +47,41 @@ int main() {
     fp_assert(array, "Could not allocate %i bytes", sizeof(uint32_t) * NELEMENTS_ARRAY);
     free(array);
 
-    /**
-     * newlib's signal() function uses the _malloc_r() function, which does not work
-     * with the custom tinyalloc module used in this project. The _malloc_r() 
-     * function does not have knowledge of the tinyalloc module, meaning it will
-     * overwrite some internal state.
-     * 
-     * The solution to this issue is to overwrite the _malloc_r() function with a
-     * custom (tinyalloc-style) implementation. newlib does not natively support
-     * this, so the _malloc_r() symbol needs to be weakened so we can provide our
-     * own implementation.
-     * 
-     * This is done with the weaken target in the make system.
-     * The custom implementation is found in lib/syscalls/heap.c
-     * 
-     * Try to comment out the custom implementation - then the linker will instead
-     * use the default _malloc_r() and the test will fail since it overwrites 
-     * tinyalloc's state.
-     * 
-     */
+    // signal uses internal malloc functionality; check that it does not mess
+    // up anything
     signal(SIGINT, exit);
     uint32_t *new = malloc(sizeof(uint32_t) * NELEMENTS_ARRAY);
     fp_assert(new, "Could not allocate %i bytes", sizeof(uint32_t) * NELEMENTS_ARRAY);
     free(new);
+
+    // Check that an extremely large malloc does not work
+    char *massive = malloc(0x30000000);
+    fp_assert(massive == NULL, "Massive malloc worked\n");
+    fp_assert(errno == ENOMEM, "Errno not as expected, was: %s\n", strerror(errno));
+
+    printf("Could not allocate massive array: %s (as expected)\n", strerror(errno));
+
+    /**
+     * Malloc the entire heap and check that it is no longer possible to malloc
+     * anything. This is the last test, since we have no way of getting the heap
+     * back :)
+     * 
+     * To malloc the entire heap, it needs to be done in diminishing blocks, since
+     * the heap is likely fragmented from earlier use. It will not work to just
+     * malloc the entire heap in one go - that will leave some fragments.
+     * 
+     */
+    uint32_t block_size = 0x10000;
+    while (block_size > 1) {
+        if (malloc(block_size) == NULL) {
+            block_size /= 2;
+        }
+    }
+
+    fp_assert(malloc(1) == NULL, "Could malloc when not expected\n");
+    fp_assert(errno == ENOMEM, "Errno not set as expected\n");
+
+    printf("Sucessfully malloc'ed entire heap\n");
 
     return 0;
 }

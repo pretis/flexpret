@@ -10,6 +10,18 @@ typedef uint32_t timeout_t;
 #define TIMEOUT_NEVER 0
 #define NON_BLOCKING 0
 
+#ifdef __TEST__
+/**
+ * Weak attribute allows other files to override the implementation, which is
+ * very useful for testing purposes. This macro can be used to easily mark/unmark
+ * functions with the attribute.
+ * 
+ */
+#define FP_TEST_OVERRIDE __attribute__((weak))
+#else
+#define FP_TEST_OVERRIDE
+#endif // __TEST__
+
 // Return types
 typedef enum {
     FP_SUCCESS = 0,
