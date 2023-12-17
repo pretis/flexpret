@@ -22,11 +22,11 @@ void ext_int_isr(void) {
 }
 
 void test_two_interrupts(void) {
-    volatile uint32_t now, expire;
+    volatile uint32_t before, now, expire;
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
     
-    now = rdtime();
-    expire = now + EXPIRE_DELAY_NS;
+    before = rdtime();
+    expire = before + EXPIRE_DELAY_NS;
     INTERRUPT_ON_EXPIRE(expire);
 
     while (flag0 == 0);
@@ -129,7 +129,7 @@ void test_fp_delay_until(void) {
      * CSR register CSR_COMPARE - so fp_delay_until just overwrites the value of
      * the INTERRUPT_ON_EXPIRE instruction.
      */
-    //fp_assert(flag0 == 1, "Interrupt did not occur");
+    fp_assert(flag0 == 1, "Interrupt did not occur");
 }
 
 void test_fp_wait_until(void) {

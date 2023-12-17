@@ -57,7 +57,7 @@ typedef void (*isr_t)(void);
  * @param timeout_ns 
  */
 #define INTERRUPT_ON_EXPIRE(ns) do { \
-    write_csr(CSR_COMPARE, ns); \
+    write_csr(CSR_COMPARE_IE_EE, ns); \
     __asm__ volatile(".word 0x0200705B;"); \
 } while(0)
 
@@ -67,7 +67,7 @@ typedef void (*isr_t)(void);
  * @param timeout_ns 
  */
 #define EXCEPTION_ON_EXPIRE(ns) do { \
-    write_csr(CSR_COMPARE, ns); \
+    write_csr(CSR_COMPARE_IE_EE, ns); \
     __asm__ volatile(".word 0x0000705B;"); \
 } while(0)
 

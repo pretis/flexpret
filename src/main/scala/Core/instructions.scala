@@ -252,7 +252,7 @@ object CSRs {
   val ptbr      = 0x504
   val asid      = 0x505   // iMemProtection
   val count     = 0x506
-  val compare   = 0x507
+  //val compare   = 0x507
   val evec      = 0x508
   val cause     = 0x509
   val status    = 0x50a
@@ -266,6 +266,9 @@ object CSRs {
   val reset = 0x51d
   val fromhost = 0x51f
   val hwlock    = 0x520
+
+  val compare_du_wu = 0x521
+  val compare_ie_ee = 0x522
 
   val tohost0   = 0x530
   val tohost1   = 0x531 
@@ -321,7 +324,7 @@ object CSRs {
     res += ptbr
     res += asid
     res += count
-    res += compare
+    //res += compare
     res += evec
     res += cause
     res += status
@@ -335,6 +338,8 @@ object CSRs {
     res += reset
     res += fromhost
     res += hwlock
+    res += compare_du_wu
+    res += compare_ie_ee
     res += tohost0 
     res += tohost1 
     res += tohost2 

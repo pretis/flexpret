@@ -15,7 +15,7 @@
  * 
  */
 #define fp_delay_until(ns) do { \
-    write_csr(CSR_COMPARE, ns); \
+    write_csr(CSR_COMPARE_DU_WU, ns); \
     __asm__ volatile(".word 0x700B;"); \
 } while(0)
 
@@ -39,7 +39,7 @@
  * 
  */
 #define fp_wait_until(ns) do { \
-    write_csr(CSR_COMPARE, ns); \
+    write_csr(CSR_COMPARE_DU_WU, ns); \
     __asm__ volatile(".word 0x702B;"); \
 } while(0)
 
