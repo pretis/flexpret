@@ -5,7 +5,7 @@
 #include "../../programs/lib/include/flexpret_hwconfig.h"
 
 /**
- * The finite state machine (fsm) is designed with four states: EXPECT_DELIM, 
+ * The finite state machine (fsm) is designed with three states: EXPECT_DELIM, 
  * EXPECT_FD, and EXPECT_DATA. The "protocol" between the CPU and the
  * emulator is as follows:
  * 
@@ -13,8 +13,8 @@
  * 2. The CPU transmits the file descriptor it is printing to
  * 3. The CPU transmits a delimiter
  *      while bytes received < length of data:
- *          6a. The CPU transmits one word of data
- *          6b. The CPU transmits a delimiter
+ *          4a. The CPU transmits one word of data
+ *          4b. The CPU transmits a delimiter
  * 
  * The state transitions associated with one message are:
  * 
