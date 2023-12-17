@@ -354,7 +354,9 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   csr.io.cause := io.control.exe_cause
 
   // timing instructions
-  csr.io.sleep := io.control.exe_sleep
+  csr.io.sleep_du := io.control.exe_sleep_du
+  csr.io.sleep_wu := io.control.exe_sleep_wu
+
   csr.io.ie := io.control.exe_ie
   csr.io.ee := io.control.exe_ee
   io.control.exe_expire := csr.io.expire

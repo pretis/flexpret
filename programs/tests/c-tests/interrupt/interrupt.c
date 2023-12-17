@@ -9,6 +9,8 @@ static int flag0 = 0;
 static int flag1 = 0;
 static int ext_int_flag = 0;
 
+static uint64_t isr_time = 0;
+
 void ie_isr0(void) {
     flag0 = 1;
 }
@@ -19,6 +21,10 @@ void ie_isr1(void) {
 
 void ext_int_isr(void) {
     ext_int_flag = 1;
+}
+
+void ie_isr_get_time(void) {
+    isr_time = rdtime64();
 }
 
 void test_two_interrupts(void) {
@@ -112,7 +118,8 @@ void test_fp_delay_until(void) {
     volatile uint32_t now, expire, delay;
     const uint32_t timeout_ns = 100000;
 
-    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
+    isr_time = 0;
+    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr_get_time);
 
     now = rdtime();
     expire = now + timeout_ns;
@@ -122,27 +129,24 @@ void test_fp_delay_until(void) {
     fp_delay_until(delay);
 
     now = rdtime();
-    fp_assert(now > delay, "Time not as expected");
-    
-    /**
-     * Does not work since INTERRUPT_ON_EXPIRE and fp_delay_until use the same
-     * CSR register CSR_COMPARE - so fp_delay_until just overwrites the value of
-     * the INTERRUPT_ON_EXPIRE instruction.
-     */
-    fp_assert(flag0 == 1, "Interrupt did not occur");
+
+    fp_assert(isr_time != 0, "Interrupt did not occur");
+    fp_assert(now > delay, "Delay until did not delay full duration");
+    fp_assert(expire < isr_time && isr_time < delay, "Interrupt did not occur during delay until");
 }
 
 void test_fp_wait_until(void) {
     // Wait until should sleep until an interrupt occurs or the timeout value is
     // reached. If an interrupt occurs, it should execute it and continue
     // execution (i.e., stop sleeping).
-    volatile uint32_t now, expire, delay;
+    volatile uint32_t before, now, expire, delay;
+    const uint32_t timeout_ns = 1000000;
 
-    const uint32_t timeout_ns = 10000;
-    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
+    isr_time = 0;
+    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr_get_time);
     
-    now = rdtime();
-    expire = now + timeout_ns;
+    before = rdtime();
+    expire = before + timeout_ns;
     delay = expire + timeout_ns;
 
     INTERRUPT_ON_EXPIRE(expire);
@@ -150,14 +154,14 @@ void test_fp_wait_until(void) {
 
     now = rdtime();
 
-    /**
-     * Does not work since INTERRUPT_ON_EXPIRE and fp_wait_until use the same
-     * CSR register CSR_COMPARE - so fp_wait_until just overwrites the value of
-     * the INTERRUPT_ON_EXPIRE instruction.
-     * 
-     */
-    //fp_assert(expire < now && now < delay, "Time not as expected");
-    //fp_assert(flag1 == 1, "Interrupt did not occur");
+    fp_assert(isr_time != 0, "Interrupt did not occur");
+    fp_assert(expire < now && now < delay, "Time not as expected");
+    fp_assert(before < isr_time && 
+              expire < isr_time && 
+              isr_time < now && 
+              isr_time < delay, 
+              "Interrupt did not occur when expected"
+    );
 }
 
 int main(void) {

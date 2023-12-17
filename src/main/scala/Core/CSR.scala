@@ -37,7 +37,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val evecs = Output(Vec(conf.threads, UInt(32.W)))
     val mepcs = Output(Vec(conf.threads, UInt(32.W)))
     // timing
-    val sleep = Input(Bool()) // valid DU inst
+    val sleep_du = Input(Bool())
+    val sleep_wu = Input(Bool())
     val ie = Input(Bool()) // valid IE inst
     val ee = Input(Bool()) // valid EE inst
     val expire = Output(Bool()) // DU, WU time expired
@@ -376,7 +377,13 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     // TODO: The work on exception handling with different priviledge modes
     // needs to be handled; for now it is just mpc being used.
     when(io.exception) {
-      reg_mepcs(io.rw.thread) := io.epc
+      when (reg_timer_du_wu(io.rw.thread) === TIMER_WU) {
+        // Wait until needs to return to the next instruction because it shall
+        // be woken up when an exception occurs
+        reg_mepcs(io.rw.thread) := io.epc + 4.U
+      }.otherwise {
+        reg_mepcs(io.rw.thread) := io.epc
+      }
       reg_causes(io.rw.thread) := io.cause
       reg_in_interrupt(io.rw.thread) := true.B
     } .elsewhen (io.xret === XRET_M) {
@@ -402,12 +409,16 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     reg_time := reg_time + conf.timeInc.U
   }
 
+  val timer_du_or_wu = WireInit(false.B)
+  timer_du_or_wu := reg_timer_du_wu(io.rw.thread) === TIMER_DU ||
+                    reg_timer_du_wu(io.rw.thread) === TIMER_WU
+
   // unless conf.roundRobin, use comparator for each thread
   // otherwise wake precision limited by number of comparators
   if (conf.delayUntil) {
     for (tid <- 0 until conf.threads) {
       // Each value compared to current time
-      when (reg_timer_du_wu(io.rw.thread) === TIMER_DU_WU) {
+      when (timer_du_or_wu) {
         expired_du_wu(tid) := ((reg_time(conf.timeBits - 1, 0) - reg_compare_du_wu(tid)) (conf.timeBits - 1) === 0.U(1.W))
       }
 
@@ -434,31 +445,43 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
   }
 
+  // Only when thread is active, so only one time comparison needed
+  val int_expire = WireInit(false.B)
+  val exc_expire = WireInit(false.B)  
+  
   // compare value should already be set
   if (conf.delayUntil) {
     // DU/WU instruction sleeps thread and sets timer mode
-    when(io.sleep) {
-      sleep := true.B
-      reg_timer_du_wu(io.rw.thread) := TIMER_DU_WU
+    sleep := io.sleep_du || io.sleep_wu
+    
+    when (io.sleep_du) {
+      reg_timer_du_wu(io.rw.thread) := TIMER_DU
     }
+    when (io.sleep_wu) {
+      reg_timer_du_wu(io.rw.thread) := TIMER_WU
+    }
+
+    if (conf.interruptExpire) {
+      when(io.int_ext || int_expire || exc_expire) {
+        wake(io.rw.thread) := true.B
+      }
+    }
+
     // Check each thread for expiration and wake
     for (tid <- 0 until conf.threads) {
-      when((reg_timer_du_wu(tid) === TIMER_DU_WU) && expired_du_wu(tid)) {
+      when(timer_du_or_wu && expired_du_wu(tid)) {
         wake(tid) := true.B
         reg_timer_du_wu(tid) := TIMER_OFF
       }
     }
   }
 
-  // Only when thread is active, so only one time comparison needed
-  val exc_expire = WireInit(false.B)
-  val int_expire = WireInit(false.B)
   if (conf.interruptExpire) {
     when(io.ee) {
       reg_timer_ie_ee(io.rw.thread) := TIMER_EE
     }
     // send exception, but may not have priority
-    when(io.rw.valid && (reg_timer_ie_ee(io.rw.thread) === TIMER_EE) && expired_ie_ee(io.rw.thread)) {
+    when(reg_timer_ie_ee(io.rw.thread) === TIMER_EE && expired_ie_ee(io.rw.thread)) {
       reg_timer_ie_ee(io.rw.thread) := TIMER_OFF
       exc_expire := true.B
     }
@@ -467,7 +490,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
     // capture interrupt and stop comparion
     val mtie = WireInit(false.B)
-    when(io.rw.valid && (reg_timer_ie_ee(io.rw.thread) === TIMER_IE) && expired_ie_ee(io.rw.thread)) {
+    when(reg_timer_ie_ee(io.rw.thread) === TIMER_IE && expired_ie_ee(io.rw.thread)) {
       reg_timer_ie_ee(io.rw.thread) := TIMER_OFF
       mtie := true.B
       reg_mtie(io.rw.thread) := true.B

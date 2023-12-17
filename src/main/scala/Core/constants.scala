@@ -157,11 +157,12 @@ object FlexpretConstants
   val TMODE_OR_Z  = 1.U(2.W)
 
   // timer modes
-  val TIMER_WI = 2
-  val TIMER_OFF   = 0.U(2.W)
-  val TIMER_DU_WU = 1.U(2.W)
-  val TIMER_IE    = 2.U(2.W)
-  val TIMER_EE    = 3.U(2.W)
+  val TIMER_WI  = 3
+  val TIMER_OFF = 0.U(3.W)
+  val TIMER_DU  = 1.U(3.W)
+  val TIMER_WU  = 2.U(3.W)
+  val TIMER_IE  = 3.U(3.W)
+  val TIMER_EE  = 4.U(3.W)
 
   // memory space
   val ADDR_PC_INIT   = "h00000000".U(32.W)
