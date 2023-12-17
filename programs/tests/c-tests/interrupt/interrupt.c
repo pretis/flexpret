@@ -1,13 +1,15 @@
 #include <flexpret.h>
 #include <errno.h>
 
-#define EXTERNAL_INTERRUPT_TEST (0)
+#define EXTERNAL_INTERRUPT_TEST (1)
 
 #define EXPIRE_DELAY_NS (uint32_t)(1e6)
 
 static int flag0 = 0;
 static int flag1 = 0;
 static int ext_int_flag = 0;
+static int du_int_triggered = 0;
+static int wu_int_triggered = 0;
 
 static uint64_t isr_time = 0;
 
@@ -21,6 +23,16 @@ void ie_isr1(void) {
 
 void ext_int_isr(void) {
     ext_int_flag = 1;
+}
+
+void ext_int_du_response(void) {
+    printf("In delay until (should not be early stopped by interrupt)\n");
+    du_int_triggered = 1;
+}
+
+void ext_int_wu_response(void) {
+    printf("In wait until (should be stopped early by interrupt)\n");
+    wu_int_triggered = 1;
 }
 
 void ie_isr_get_time(void) {
@@ -211,6 +223,36 @@ int main(void) {
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
     while (ext_int_flag == 0);
     printf("7th run: got external interrupt\n");
+
+    register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_du_response);
+    volatile uint64_t before, delay, after;
+    
+    before = rdtime64();
+    delay = (int) 50000000;
+    
+    fp_delay_for(delay);
+    after = rdtime64();
+
+    if (du_int_triggered) {
+        fp_assert(before + delay < after, "User was able to stop delay until instruction before timer had run out");
+        printf("8th run: delay for not stopped early\n");
+    } else {
+        printf("Warning: User should provide interrupt to test this feature\n");
+    }
+
+    register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_wu_response);
+    before = rdtime64();
+    delay = (int) 50000000;
+    
+    fp_wait_for(delay);
+    after = rdtime64();
+
+    if (wu_int_triggered) {
+        fp_assert(before + delay > after, "User was unable to stop wait until instruction before timer had run out");
+        printf("9th run: wait for stopped early\n");
+    } else {
+        printf("Warning: User should provide interrupt to test this feature\n");
+    }
 #endif // EXTERNAL_INTERRUPT_TEST
 
     return 0;

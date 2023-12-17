@@ -110,8 +110,8 @@ int main(int argc, char *const* argv)
     if (manual) {
         // In this manual mode, an interupt is sent every time the user presses <enter>
         while(1) {
-            send(client_fd, interrupt, sizeof(interrupt), 0);
             getchar();
+            send(client_fd, interrupt, sizeof(interrupt), 0);
         }
     } else {
         // In this automatic mode, N interrupts are sent automatically with some
