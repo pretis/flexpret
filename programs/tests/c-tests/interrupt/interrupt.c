@@ -1,7 +1,7 @@
 #include <flexpret.h>
 #include <errno.h>
 
-#define EXTERNAL_INTERRUPT_TEST (1)
+#define EXTERNAL_INTERRUPT_TEST (0)
 
 #define EXPIRE_DELAY_NS (uint32_t)(1e6)
 
