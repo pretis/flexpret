@@ -1,9 +1,7 @@
 #include <flexpret.h>
 #include <errno.h>
 
-#define EXTERNAL_INTERRUPT_TEST (0)
-
-#define EXPIRE_DELAY_NS (uint32_t)(1e6)
+#define EXPIRE_DELAY_NS (uint32_t)(1e4)
 
 static int flag0 = 0;
 static int flag1 = 0;
@@ -128,7 +126,7 @@ void test_fp_delay_until(void) {
     // Delay until should execute all interrupts but keep sleeping until the
     // specified timeout has occurred
     volatile uint32_t now, expire, delay;
-    const uint32_t timeout_ns = 100000;
+    const uint32_t timeout_ns = EXPIRE_DELAY_NS;
 
     isr_time = 0;
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr_get_time);
@@ -152,7 +150,7 @@ void test_fp_wait_until(void) {
     // reached. If an interrupt occurs, it should execute it and continue
     // execution (i.e., stop sleeping).
     volatile uint32_t before, now, expire, delay;
-    const uint32_t timeout_ns = 1000000;
+    const uint32_t timeout_ns = EXPIRE_DELAY_NS;
 
     isr_time = 0;
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr_get_time);
@@ -219,7 +217,6 @@ int main(void) {
 
     printf("6th run: wait until ran sucessfully\n");
 
-#if EXTERNAL_INTERRUPT_TEST
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
     while (ext_int_flag == 0);
     printf("7th run: got external interrupt\n");
@@ -228,7 +225,7 @@ int main(void) {
     volatile uint64_t before, delay, after;
     
     before = rdtime64();
-    delay = (int) 50000000;
+    delay = (int) 10000000;
     
     fp_delay_for(delay);
     after = rdtime64();
@@ -242,7 +239,7 @@ int main(void) {
 
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_wu_response);
     before = rdtime64();
-    delay = (int) 50000000;
+    delay = (int) 10000000;
     
     fp_wait_for(delay);
     after = rdtime64();
@@ -253,7 +250,6 @@ int main(void) {
     } else {
         printf("Warning: User should provide interrupt to test this feature\n");
     }
-#endif // EXTERNAL_INTERRUPT_TEST
 
     return 0;
 }

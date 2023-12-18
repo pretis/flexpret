@@ -54,8 +54,9 @@ endif
 
 # .out file is created from compiled .mem file by running the emulator
 %.out: %.mem
-	-@set -o pipefail; $(EMU) +ispm=$< | tee $@; $(RES_PARSER) $@ $$?
-	
+	-@set -o pipefail
+	@make run -C $(dir $@) | tee $@
+	@$(RES_PARSER) $@ $$?
 
 # .mem file is created by compiling using the Makefile in the test dir
 %.mem:
@@ -71,7 +72,7 @@ run-c-tests: $(EMU) $(C_TESTS_RES)
 run-mt-c-tests: $(EMU) $(MT_C_TESTS_RES)
 
 # Remove all generated files by calling make clean in all the test dirs
-clean:
+clean::
 	for test in $(C_TESTS_DIRS) ; do \
         make -C c-tests/$$test clean ; \
     done

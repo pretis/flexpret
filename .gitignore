@@ -23,6 +23,7 @@ firrtl.jar
 **/*.orig
 **/*.dump
 **/*.a
+**/*.elf
 
 **/fp-emu
 

@@ -38,7 +38,8 @@ endif
 .PHONY: compile riscv dump mem run clean recompile
 
 # Default target; generates the riscv, dump, and mem files
-compile: autogen riscv dump mem
+# Double colon makes it possible to extend the target
+compile:: autogen riscv dump mem
 
 autogen: $(LIB_AUTOGEN)
 
@@ -62,13 +63,20 @@ mem: $(NAME).mem
 	@rm $*.binary.txt # Delete the temporary binary file
 
 # runs the program (generated .mem file) using fp-emu 
-run: $(NAME).mem
-	@$(EMU) +ispm=$^;
+run: $(NAME).mem $(CLIENT)
+ifeq ($(CLIENT),)
+	@$(EMU) +ispm=$^
+else
+	@./$(CLIENT) &
+	@$(EMU) +ispm=$^ --client
+	@wait
+endif
 
 # Clean and recompile
 recompile: clean compile
 
-# deletes all generated artifacts
-clean:
+# Deletes all generated artifacts
+# Double colon makes it possible to extend the target
+clean::
 	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
 	rm -f $(LIB_AUTOGEN)
