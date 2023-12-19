@@ -153,7 +153,7 @@ void eventlist_accept_clients(void)
 void eventlist_listen(void) {
     static pin_event_t events[128];
     int bytes_read = read(new_socket, events, sizeof(events));
-    if (bytes_read < 0) {
+    if (bytes_read <= 0) {
         return;
     } else {
         int nevents = bytes_read / sizeof(pin_event_t);

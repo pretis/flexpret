@@ -64,7 +64,7 @@ mem: $(NAME).mem
 
 # runs the program (generated .mem file) using fp-emu 
 run: $(NAME).mem $(CLIENT)
-ifeq ($(CLIENT),)
+ifeq ($(CLIENT_CMD),)
 	@$(EMU) +ispm=$^
 else
 	@$(CLIENT_CMD) &
