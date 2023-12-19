@@ -14,6 +14,7 @@ C_TESTS_DIRS = \
 	gpio \
 	hwlock \
 	interrupt \
+	interrupt-delay \
 	lbu \
 	malloc \
 	realloc \

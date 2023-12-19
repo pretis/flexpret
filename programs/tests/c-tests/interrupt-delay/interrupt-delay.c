@@ -30,8 +30,12 @@
 
 #include <flexpret.h>
 
-#define MAX_INTERRUPTS (10)
-#define TIMESTAMP_SIZE (2 * MAX_INTERRUPTS)
+// Defined in makefile
+#ifndef NINTERRUPTS
+    #define NINTERRUPTS (10)
+#endif // ifndef NINTERRUPTS
+
+#define TIMESTAMP_SIZE (2 * NINTERRUPTS)
 
 
 static uint64_t *timestamps;
@@ -54,7 +58,7 @@ int main(void)
     timestamps = malloc(TIMESTAMP_SIZE * sizeof(uint64_t));
     ENABLE_INTERRUPTS();
 
-    while (ntimes < MAX_INTERRUPTS) {
+    while (ntimes < NINTERRUPTS) {
         if (got_int) {
             timestamps[2 * ntimes++ + 1] = rdtime64();
             got_int = false;
@@ -63,7 +67,7 @@ int main(void)
 
     DISABLE_INTERRUPTS();
  
-    for (int i = 0; i < MAX_INTERRUPTS; i++) {
+    for (int i = 0; i < NINTERRUPTS; i++) {
         printf("Iteration %i: Interrupt: %lli, {0}: %lli,\n",
             i, timestamps[2 * i + 0], timestamps[2 * i + 1]);
     }

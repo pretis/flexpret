@@ -24,12 +24,12 @@ void ext_int_isr(void) {
 }
 
 void ext_int_du_response(void) {
-    printf("In delay until (should not be early stopped by interrupt)\n");
+    printf("Got interrupt while in delay until (should not be early stopped by interrupt)\n");
     du_int_triggered = 1;
 }
 
 void ext_int_wu_response(void) {
-    printf("In wait until (should be stopped early by interrupt)\n");
+    printf("Got interrupt while in wait until (should be stopped early by interrupt)\n");
     wu_int_triggered = 1;
 }
 

@@ -67,7 +67,7 @@ run: $(NAME).mem $(CLIENT)
 ifeq ($(CLIENT),)
 	@$(EMU) +ispm=$^
 else
-	@./$(CLIENT) &
+	@$(CLIENT_CMD) &
 	@$(EMU) +ispm=$^ --client
 	@wait
 endif

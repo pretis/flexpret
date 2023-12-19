@@ -103,8 +103,12 @@ int main(int argc, char *const* argv)
     }
     printf("\n\n");
 
-    printf("Press <enter> to start\n");
-    getchar();
+    if (manual) {
+        printf("Press <enter> to start\n");
+        getchar();
+    } else {
+        sleep(1);
+    }
 
     int client_fd = setup_socket();
     if (manual) {

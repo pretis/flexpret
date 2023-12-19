@@ -174,8 +174,10 @@ void eventlist_set_pin(VVerilatorTop *top) {
         if (!state.eventlist.empty()) {
             pin_event_t event = state.eventlist.front();
             if (event.in_n_cycles == state.ncycles) {
+#if 0
                 printf("event occur on pin %i, @ %li cycles: %s\n", event.pin,
                     state.ncycles, event.high_low == HIGH ? "high" : "low");
+#endif 
                 state.eventlist.pop_front();
                 set_pin(event.pin, top, event.high_low);
                 state.ncycles = 0;
