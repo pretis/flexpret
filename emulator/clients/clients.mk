@@ -9,10 +9,10 @@ CLIENTS += $(patsubst %.cpp,$(CLIENT_BUILD_DIR)/%.elf,$(CLIENT_CPP_SRCS))
 COMMON   = $(patsubst %.c,$(CLIENT_DIR)/%.c,$(COMMON_SRCS))
 
 $(CLIENT_BUILD_DIR)/%.elf: $(CLIENT_DIR)/%.c | $(CLIENT_BUILD_DIR)
-	gcc $< $(COMMON) -o $@
+	@gcc $< $(COMMON) -o $@
 
 $(CLIENT_BUILD_DIR)/%.elf: $(CLIENT_DIR)/%.cpp | $(CLIENT_BUILD_DIR)
-	g++ $< $(COMMON) -o $@
+	@g++ $< $(COMMON) -o $@
 
 $(CLIENT_BUILD_DIR):
-	mkdir -p $(CLIENT_BUILD_DIR)
+	@mkdir -p $(CLIENT_BUILD_DIR)

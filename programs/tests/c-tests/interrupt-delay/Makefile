@@ -11,3 +11,6 @@ CLIENT = $(FLEXPRET_ROOT_DIR)/emulator/clients/build/interrupter.elf
 CLIENT_CMD = ./$(CLIENT) -a -n $(NUMBER_OF_INTERRUPTS) -d 1000
 
 include $(FLEXPRET_ROOT_DIR)/Makefrag
+
+EMULATOR_DIR := $(FLEXPRET_ROOT_DIR)/emulator
+include $(FLEXPRET_ROOT_DIR)/emulator/clients/clients.mk
