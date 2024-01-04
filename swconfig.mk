@@ -4,7 +4,7 @@
 
 include ${FLEXPRET_ROOT_DIR}/hwconfig.mk
 
-STACKSIZE ?= 2048
+STACKSIZE ?= 4096
 
 # A cumbersome way to calculate log2(STACKSIZE)
 STACKSIZE_BITS = $(shell echo ${STACKSIZE} | awk '{print log($$1)/log(2)}')
