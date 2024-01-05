@@ -35,6 +35,10 @@ ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
 endif
 
+ifeq ($(TRACE), true)
+EMUARGS += --trace
+endif 
+
 .PHONY: compile riscv dump mem run clean recompile
 
 # Default target; generates the riscv, dump, and mem files
@@ -63,7 +67,7 @@ mem: $(NAME).mem
 
 # runs the program (generated .mem file) using fp-emu 
 run: $(NAME).mem
-	@$(EMU) +ispm=$^;
+	@$(EMU) +ispm=$^ $(EMUARGS);
 
 # Clean and recompile
 recompile: clean compile
