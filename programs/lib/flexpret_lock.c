@@ -17,18 +17,22 @@ void fp_hwlock_release(void) {
 }
 
 static int do_acquire(fp_lock_t* lock) {
-    // TODO: Poll on lock->locked instead of hwlock
-    fp_hwlock_acquire();
+    // Do recursive lock
     if (lock->owner == read_hartid()) {
         lock->count++;
-        fp_hwlock_release();
         return 0;
-    } else if (lock->locked) {
-        //printf("warn: attempt acquire locked lock\n");
+    }
+    // Spin polling the software lock, without trying to acquire the hwlock
+    while (lock->owner >= 0) {}
+    
+    // At this point, we can grab the hwlock
+    fp_hwlock_acquire();
+    
+    // Check if someone else got it before us.
+    if (lock->owner >= 0) {
         fp_hwlock_release();
         return 1;
     } else {
-        lock->locked = true;
         lock->owner  = read_hartid();
         lock->count = 1;
         fp_hwlock_release();
@@ -42,15 +46,14 @@ void fp_lock_acquire(fp_lock_t* lock) {
 }
 
 void fp_lock_release(fp_lock_t* lock) {
-    fp_hwlock_acquire();
     fp_assert(read_hartid() == lock->owner, 
         "Attempt to release lock not owned by thread. thread id: %i, lock->owner: %i\n", 
         read_hartid(), lock->owner);
     fp_assert(lock->count > 0, 
         "Attempt to relase lock with count <= 0: count: %i\n", lock->count);
+    fp_hwlock_acquire();
     if (--lock->count == 0) {
-        lock->locked = false;
-        lock->owner  = UINT32_MAX;
+        lock->owner  = -1;
     }
     fp_hwlock_release();
 }

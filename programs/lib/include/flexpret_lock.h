@@ -4,10 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FP_LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX, .count = 0 }
+#define FP_LOCK_INITIALIZER {.owner = -1, .count = 0 }
 typedef struct {
-    bool locked;
-    uint32_t owner;
+    int owner; // -1 means it is unlocked.
     uint32_t count;
 } fp_lock_t;
 
