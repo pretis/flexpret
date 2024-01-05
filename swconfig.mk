@@ -13,12 +13,12 @@ STACKSIZE_BITS = $(shell echo ${STACKSIZE} | awk '{print log($$1)/log(2)}')
 TEST_ENVIRONMENT ?= false
 
 # Setting this variable to false will replace all calls to assert with nothing
-WANT_DEBUG ?= true
+WANT_DEBUG ?= false
 
 # printf can easily be disabled by setting this variable to false. In that case,
 # the printf functions will be replaced with stub versions, taking significantly
 # less space.
-PRINTF_ENABLED ?= $(WANT_DEBUG)
+PRINTF_ENABLED ?= true
 
 PRINTF_DEFINES := -D PRINTF_SUPPORT_DECIMAL_SPECIFIERS=1 \
 				  -D PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS=1 \

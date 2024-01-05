@@ -52,7 +52,7 @@ ISPM_KBYTES ?= 256
 DSPM_KBYTES ?= 256
 
 # MUL=[true/false]: multiplier
-MUL ?= false
+MUL ?= true
 
 # SUFFIX=[min,ex,ti,all]:
 # 	min: base RV32I

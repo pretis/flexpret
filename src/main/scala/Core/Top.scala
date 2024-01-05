@@ -31,6 +31,7 @@ class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
     val to_host = Output(Vec(cfg.threads, UInt(32.W)))
     val int_exts = Input(Vec(cfg.threads, Bool()))
     val gpi = MixedVec(cfg.gpiPortSizes.map(i => Input(UInt(i.W))).toSeq)
+    val gpo = MixedVec(cfg.gpoPortSizes.map(i => Output(UInt(i.W))).toSeq)
     val imem_store = Output(Bool())
 }
 
@@ -39,6 +40,7 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     val regPrintNext = RegInit(VecInit(Seq.fill(cfg.threads) {false.B} ))
 
     core.io.gpio.in <> io.gpi
+    core.io.gpio.out <> io.gpo
     core.io.int_exts <> io.int_exts
 
     // Drive bus input to 0
