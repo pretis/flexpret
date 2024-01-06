@@ -43,7 +43,7 @@ static enum state next_state[NUM_THREADS];
 
 static int fd[NUM_THREADS];
 static int nbytes_received[NUM_THREADS];
-static char buffer[NUM_THREADS][128];
+static char buffer[NUM_THREADS][0x2000];
 
 void printf_init(void) {
     for (int i = 0; i < NUM_THREADS; i++) {

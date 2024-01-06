@@ -50,7 +50,7 @@ autogen: $(LIB_AUTOGEN)
 riscv: $(NAME).riscv
 
 %.riscv: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
-	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
+	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^ -lm
 
 # Generates a dump file for debugging
 dump: $(NAME).dump
