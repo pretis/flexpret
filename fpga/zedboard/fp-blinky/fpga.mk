@@ -3,4 +3,4 @@ FPGA_PROGRAM_PATH := $(FLEXPRET_ROOT_DIR)/programs/tests/c-tests/$(FPGA_PROGRAM_
 
 $(FPGA_PROGRAM_NAME): 
 	make -C programs/tests/c-tests/$(FPGA_PROGRAM_NAME) clean all
-	cp $(FPGA_PROGRAM_PATH) fpga/$(FPGA_BOARD)/flexpret/ispm.mem
+	cp $(FPGA_PROGRAM_PATH) fpga/$(FPGA_BOARD)/fp-blinky/ispm.mem

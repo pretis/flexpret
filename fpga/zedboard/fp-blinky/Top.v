@@ -38,6 +38,4 @@ module Top(
     //.io_gpio_in_2(BTNS)
   );
 
-  assign LEDS[7:6] = 2'b11;
-  
 endmodule
