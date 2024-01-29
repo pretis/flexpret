@@ -45,11 +45,9 @@ always @(posedge clk) begin
     end
 end
 
-// Load its content from the file which is passed from the CLI
+// Load its content from the file `ispm.mem`
 initial begin
-  string mem_file_name;
-  $value$plusargs("ispm=%s", mem_file_name);
-  $readmemh(mem_file_name, mem);
+  $readmemh("ispm.mem", mem);
 end
 
 endmodule

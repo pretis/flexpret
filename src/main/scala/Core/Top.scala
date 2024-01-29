@@ -54,16 +54,23 @@ class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     io.imem_store := core.io.imem_store
 }
 
-class FpgaTopIO extends Bundle {
-  
+class FpgaTopIO(cfg: FlexpretConfiguration) extends Bundle {
+  val gpio = new GPIO()(cfg) // FIXME: Do this properly
+  val uart = new Bundle {
+    val rx = Input(Bool())
+    val tx = Output(Bool())
+  }
 }
 
 class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
 
-    val io = IO(new FpgaTopIO)
+    val io = IO(new FpgaTopIO(cfg))
     
-    // Drive gpio input of each core to 0 by default
-    core.io.gpio.in.map(_ := 0.U)
+    io.gpio.in <> core.io.gpio.in
+    io.gpio.out <> core.io.gpio.out
+
+    //io.uart.rx := 0.U
+    io.uart.tx := 0.U
 
     // Drive bus input to 0
     core.io.bus.driveDefaults()

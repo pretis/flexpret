@@ -19,6 +19,7 @@
 SRC_DIR = src/main/scala
 
 # Directories
+FLEXPRET_ROOT_DIR = .
 FPGA_DIR = fpga
 EMULATOR_DIR = emulator
 SCRIPTS_DIR = scripts
@@ -28,6 +29,8 @@ RESOURCE_DIR = src/main/resources
 
 VERILOG_VERILATOR = $(BUILD_DIR)/VerilatorTop.v
 VERILOG_FPGA = $(BUILD_DIR)/FpgaTop.v
+
+FPGA_BOARD ?= zedboard
 
 # Test directory
 TEST_DIR = programs/tests
@@ -40,16 +43,16 @@ TEST_DIR = programs/tests
 # Override by modifying or pass variable assignment as argument.
 
 # THREADS=[1-8]: Specify number of hardware threads
-THREADS ?= 4
+THREADS ?= 1
 
 # FLEXPRET=[true/false]: Use flexible thread scheduling
 FLEXPRET ?= false
 
 # ISPM_KBYTES=[]: Size of instruction scratchpad memory (32 bit words)
-ISPM_KBYTES ?= 256
+ISPM_KBYTES ?= 64
 
 # DSPM_KBYTES=[]: Size of data scratchpad memory (32 bit words)
-DSPM_KBYTES ?= 256
+DSPM_KBYTES ?= 64
 
 # MUL=[true/false]: multiplier
 MUL ?= false
@@ -80,7 +83,7 @@ PROG_CONFIG ?= $(TARGET)
 CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d$(if $(findstring true, $(MUL)),-mul)-$(SUFFIX)
 
 
-all: emulator
+all: $(TARGET)
 # -----------------------------------------------------------------------------
 #  Verilator Emulator
 # -----------------------------------------------------------------------------
@@ -102,7 +105,11 @@ emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN) $(CLIENTS)
 $(VERILOG_FPGA):
 	sbt 'run fpga "$(CORE_CONFIG)" --no-dedup --target-dir $(BUILD_DIR)'
 
-fpga: $(VERILOG_FPGA)
+include $(FPGA_DIR)/$(FPGA_BOARD)/flexpret/fpga.mk
+
+fpga: $(VERILOG_FPGA) $(FPGA_PROGRAM_NAME)
+	cp build/FpgaTop.v fpga/$(FPGA_BOARD)/flexpret/flexpret.v
+	cp $(RESOURCE_DIR)/DualPortBramFPGA.v $(FLEXPRET_ROOT_DIR)/fpga/$(FPGA_BOARD)/flexpret/DualPortBram.v
 
 # -----------------------------------------------------------------------------
 #  Tests
@@ -125,6 +132,7 @@ remulator: clean emulator
 clean:
 	rm -rf $(FPGA_DIR)/generated-src
 	rm -rf $(FPGA_DIR)/build
+	rm -f $(FPGA_DIR)/*/flexpret/DualPortBram.v $(FPGA_DIR)/*/flexpret/flexpret.v $(FPGA_DIR)/*/flexpret/ispm.mem
 	rm -f $(EMULATOR_BIN)
 	rm -rf ./build
 	rm -rf emulator/obj_dir
@@ -144,6 +152,7 @@ clean:
 cleanall:
 	rm -rf $(FPGA_DIR)/generated-src
 	rm -rf $(FPGA_DIR)/build
+	rm -f $(FPGA_DIR)/DualPortBram.v $(FPGA_DIR)/*/flexpret/flexpret.v $(FPGA_DIR)/*/flexpret/ispm.mem
 	rm -f $(EMULATOR_BIN)
 	rm -rf ./build
 	rm -rf emulator/obj_dir
