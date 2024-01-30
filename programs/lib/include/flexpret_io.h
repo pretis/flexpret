@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 #include "flexpret_csrs.h"
+
+#ifndef NDEBUG
 #include <printf/printf.h>
+#endif // NDEBUG
 
 #define CSR_TOHOST_PRINTF (0xffffffff)
 #define CSR_TOHOST_FINISH (0xdeaddead)
@@ -20,16 +23,24 @@ static inline void write_tohost(uint32_t val) {
   write_tohost_tid(tid, val);
 }
 
-#define _fp_abort(fmt, ...) do { \
-  printf("%s: %s: %i: " PRINTF_COLOR_RED "Abort:" PRINTF_COLOR_NONE, __FILE__, __func__, __LINE__); \
-  printf(fmt, ##__VA_ARGS__); \
-  write_tohost(CSR_TOHOST_ABORT); \
-} while(0)
+#ifndef NDEBUG
+  #define _fp_abort(fmt, ...) do { \
+    printf("%s: %s: %i: " PRINTF_COLOR_RED "Abort:" PRINTF_COLOR_NONE, __FILE__, __func__, __LINE__); \
+    printf(fmt, ##__VA_ARGS__); \
+    write_tohost(CSR_TOHOST_ABORT); \
+  } while(0)
+#else 
+  #define _fp_abort(fmt, ...)
+#endif // NDEBUG
 
-#define _fp_finish() do { \
-  printf("%s: %i: " PRINTF_COLOR_GREEN "Finish\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
-  write_tohost(CSR_TOHOST_FINISH); \
-} while(0)
+#ifndef NDEBUG
+  #define _fp_finish() do { \
+    printf("%s: %i: " PRINTF_COLOR_GREEN "Finish\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
+    write_tohost(CSR_TOHOST_FINISH); \
+  } while(0)
+#else
+  #define _fp_finish() 
+#endif // NDEBUG
 
 // Write a generic value to the tohost CSR
 static inline void write_tohost_tid(uint32_t tid, uint32_t val) {

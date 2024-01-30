@@ -2,10 +2,10 @@
 
 /* Linker */
 extern uint32_t __etext;
-extern uint32_t __data_start__;
-extern uint32_t __data_end__;
-extern uint32_t __bss_start__;
-extern uint32_t __bss_end__;
+extern uint32_t __sdata;
+extern uint32_t __edata;
+extern uint32_t __sbss;
+extern uint32_t __ebss;
 extern uint32_t end;
 
 //prototype of main
@@ -18,17 +18,17 @@ void Reset_Handler() {
     // the other threads busy wait until ready.
     if (hartid == 0) {
         // Copy .data section into the RAM
-        uint32_t size   = &__data_end__ - &__data_start__;
-        uint32_t *pDst  = (uint32_t*)&__data_start__;       // RAM
-        uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
+        uint32_t size   = &__edata - &__sdata;
+        uint32_t *pDst  = (uint32_t*)&__sdata; // RAM
+        uint32_t *pSrc  = (uint32_t*)&__etext; // ROM
 
         for (uint32_t i = 0; i < size; i++) {
             *pDst++ = *pSrc++;
         }
 
         // Init. the .bss section to zero in RAM
-        size = (uint32_t)&__bss_end__ - (uint32_t)&__bss_start__;
-        pDst = (uint32_t*)&__bss_start__;
+        size = (uint32_t)&__ebss - (uint32_t)&__sbss;
+        pDst = (uint32_t*)&__sbss;
         for(uint32_t i = 0; i < size; i++) {
             *pDst++ = 0;
         }
@@ -38,7 +38,8 @@ void Reset_Handler() {
     main();
 
     // Exit the program.
-    _exit(0);
+    write_tohost(CSR_TOHOST_FINISH);
+    //_fp_finish();
     
     // Infinite loop
     while (1);

@@ -1,0 +1,52 @@
+# Compiling the bootloader is quite different from compiling any other application
+# because we want to reduce the code size
+
+FLEXPRET_ROOT_DIR = ../../../../..
+FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
+
+NAME = bootloader
+BOOTLOADER_SOURCES := $(FP_LIB_DIR)/start.S $(FP_LIB_DIR)/startup_bootloader.c $(NAME).c
+
+RISCV_PREFIX = riscv32-unknown-elf-
+CC = $(RISCV_PREFIX)gcc
+OBJDUMP := $(RISCV_PREFIX)objdump
+OBJCOPY := $(RISCV_PREFIX)objcopy
+
+# Beware: This code is heavily duplicated from the top-level makefiles
+CFLAGS := -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs
+INCS := -I $(FP_LIB_DIR)/include -I $(FP_LIB_DIR)/printf/src
+LDSCRIPT := $(FP_LIB_DIR)/linker/flexpret.ld -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map
+
+# We do not want printf in our bootloader; it should be as minimal as possible
+WANT_DEBUG := false
+
+# The same goes for stack size
+STACKSIZE := 256
+
+# This needs a default value so we can compile the bootloader the first time
+# to check its size
+START_ADDR ?= 0
+
+include $(FLEXPRET_ROOT_DIR)/swconfig.mk
+include $(FP_LIB_DIR)/Makefrag-lib
+
+.DEFAULT_GOAL: all
+
+all: bootloader.mem bootloader.dump
+
+$(NAME).riscv: $(BOOTLOADER_SOURCES) $(LIB_AUTOGEN)
+	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -o $(NAME).riscv $(BOOTLOADER_SOURCES) $(DEFINES) -D APP_LOCATION=$(START_ADDR)
+
+mem: $(NAME).mem
+$(NAME).mem: $(NAME).riscv
+	@$(OBJCOPY) -O binary $(NAME).riscv $(NAME).binary.txt
+	@xxd -c 4 -e $(NAME).binary.txt | cut -c11-18 > $(NAME).mem
+	@xxd -c 4 -e $(NAME).binary.txt > $(NAME).mem.orig
+	@rm $(NAME).binary.txt # Delete the temporary binary file
+
+dump: $(NAME).dump app/$(APP_NAME).dump
+%.dump: %.riscv
+	@$(OBJDUMP) -S -d $^ > $@
+
+clean:
+	@rm -f *.dump *.map *.mem *.mem.orig *.riscv
