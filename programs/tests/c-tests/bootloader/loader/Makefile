@@ -4,7 +4,7 @@
 FLEXPRET_ROOT_DIR = ../../../../..
 FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
 
-NAME = bootloader
+NAME = loader
 BOOTLOADER_SOURCES := $(FP_LIB_DIR)/start.S $(FP_LIB_DIR)/startup_bootloader.c $(NAME).c
 
 RISCV_PREFIX = riscv32-unknown-elf-
@@ -32,7 +32,7 @@ include $(FP_LIB_DIR)/Makefrag-lib
 
 .DEFAULT_GOAL: all
 
-all: bootloader.mem bootloader.dump
+all: $(NAME).mem $(NAME).dump
 
 $(NAME).riscv: $(BOOTLOADER_SOURCES) $(LIB_AUTOGEN)
 	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -o $(NAME).riscv $(BOOTLOADER_SOURCES) $(DEFINES) -D APP_LOCATION=$(START_ADDR)

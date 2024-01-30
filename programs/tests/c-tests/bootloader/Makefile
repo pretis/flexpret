@@ -3,7 +3,10 @@ FLEXPRET_ROOT_DIR := ../../../..
 FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-BOOTLOADER := bootloader/bootloader.mem
+PROJECT_NAME := bootloader
+
+BOOTLOADER_NAME := loader
+BOOTLOADER := $(BOOTLOADER_NAME)/$(BOOTLOADER_NAME).mem
 
 # Set this to any application
 APP_NAME := add
@@ -16,37 +19,37 @@ DEPENDENCIES := $(BOOTLOADER) $(APP)
 # 1st time to know its size and 2nd time to pass its own size to it at compile time.
 
 # Get the number of lines in the bootloader.mem file
-APP_START_ADDR_PART := $(shell make -C bootloader clean all > /dev/null && wc -l $(BOOTLOADER) | awk '{print $$1}' && make -C bootloader clean > /dev/null)
+APP_START_ADDR_PART := $(shell make -C $(BOOTLOADER_NAME) clean all > /dev/null && wc -l $(BOOTLOADER) | awk '{print $$1}' && make -C $(BOOTLOADER_NAME) clean > /dev/null)
 
 # Add 1 to this number and multiply by four to get the address of where the application
 # will be placed
 APP_START_ADDR := $(shell echo $$((($(APP_START_ADDR_PART) + 1) * 4)))
 
-all: final.mem app/$(APP_NAME).dump
+all: $(PROJECT_NAME).mem app/$(APP_NAME).dump
 
 # Make the bootloader with the specified start address and the app with 
 # a specific linker script
 # Move the compiled program out of the app's folder to avoid confusion; these
 # will not run without a bootloader
 $(DEPENDENCIES): $(FP_LIB_DIR)/linker/flexpret_bootloader_config.ld
-	@make -C bootloader all START_ADDR=$(APP_START_ADDR)
+	@make -C $(BOOTLOADER_NAME) all START_ADDR=$(APP_START_ADDR)
 	@make -C ../$(APP_NAME)/ all LINKER_SCRIPT=$(FP_LIB_DIR)/linker/flexpret_app.ld
 	@mkdir -p app
 	@mv ../$(APP_NAME)/$(APP_NAME).dump ../$(APP_NAME)/$(APP_NAME).map ../$(APP_NAME)/$(APP_NAME).mem ../$(APP_NAME)/$(APP_NAME).mem.orig ../$(APP_NAME)/$(APP_NAME).riscv app
 
 # Combine bootloader with application
-final.mem: $(DEPENDENCIES)
-	@cat $(DEPENDENCIES) > final.mem
+$(PROJECT_NAME).mem: $(DEPENDENCIES)
+	@cat $(DEPENDENCIES) > $(PROJECT_NAME).mem
 
 clean:
-	@make -C bootloader clean
+	@make -C $(BOOTLOADER_NAME) clean
 	@make -C ../$(APP_NAME)/ clean
 	@rm -rf app
-	@rm -f final.mem
+	@rm -f $(PROJECT_NAME).mem
 	@rm -f $(FP_LIB_DIR)/linker/flexpret_bootloader_config.ld
 
-run: final.mem
-	@$(EMU) +ispm=final.mem
+run: $(PROJECT_NAME).mem
+	@$(EMU) +ispm=$(PROJECT_NAME).mem
 
 # Generate a file which contains the bootloader configuation. This is necessary
 # so the app may use the START_ADDR in its linker script.
