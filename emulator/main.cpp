@@ -101,6 +101,8 @@ int main(int argc, char* argv[]) {
     eventlist_accept_clients();
   }
 
+  top->io_uart_rx = 1;
+
   int ncycles = 0;
   
   // Check for abort signals from FlexPRET and propagate the exit code

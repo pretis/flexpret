@@ -27,7 +27,7 @@
 
 #define NUM_GPI (4)
 #define MAX_NUM_THREADS (8)
-#define NUM_PINS (MAX_NUM_THREADS + (NUM_GPI * 32))
+#define NUM_PINS (MAX_NUM_THREADS + (NUM_GPI * 32) + 2)
 
 typedef struct {
     uint64_t ncycles;
@@ -100,6 +100,8 @@ static inline void set_pin(uint32_t which_pin, VVerilatorTop *top, uint8_t val)
 #if NUM_THREADS >= 8
     case PIN_IO_INT_EXTS_7: top->io_int_exts_7 = val; break;
 #endif
+
+    case PIN_IO_UART_RX: top->io_uart_rx = val; break;
     default:
         break;
     }

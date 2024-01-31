@@ -32,7 +32,8 @@ object FlexpretConfiguration {
       false,
       false,
       "all",
-      0
+      0,
+      100000000
     )
   }
 }
@@ -54,7 +55,8 @@ case class FlexpretConfiguration(
   mul: Boolean,   // FIXME: Unused, to be removed.
   priv: Boolean,
   features: String,
-  coreId: Int = 0
+  coreId: Int = 0,
+  clkFreq: Int = 100000000
 ) {
   println("features: " + features)
   val mt = threads > 1

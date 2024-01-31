@@ -57,6 +57,9 @@ typedef struct {
 #define PIN_IO_GPI_2(pin) (pin + 72)
 #define PIN_IO_GPI_3(pin) (pin + 104)
 
+#define PIN_IO_UART_RX (136)
+#define PIN_IO_UART_TX (137)
+
 
 // Add more here...
 

@@ -9,7 +9,7 @@ BOOTLOADER_NAME := loader
 BOOTLOADER := $(BOOTLOADER_NAME)/$(BOOTLOADER_NAME).mem
 
 # Set this to any application
-APP_NAME := add
+APP_NAME ?= add
 APP := app/$(APP_NAME).mem
 
 DEPENDENCIES := $(BOOTLOADER) $(APP)
