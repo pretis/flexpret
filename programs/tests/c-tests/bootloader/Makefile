@@ -37,8 +37,11 @@ $(DEPENDENCIES): $(FP_LIB_DIR)/linker/flexpret_bootloader_config.ld
 	@mkdir -p app
 	@mv ../$(APP_NAME)/$(APP_NAME).dump ../$(APP_NAME)/$(APP_NAME).map ../$(APP_NAME)/$(APP_NAME).mem ../$(APP_NAME)/$(APP_NAME).mem.orig ../$(APP_NAME)/$(APP_NAME).riscv app
 
+$(APP).serialized: $(APP)
+	@python3 $(FLEXPRET_ROOT_DIR)/scripts/serialize_app.py $(APP) $(APP).serialized
+
 # Combine bootloader with application
-$(PROJECT_NAME).mem: $(DEPENDENCIES)
+$(PROJECT_NAME).mem: $(DEPENDENCIES) $(APP).serialized
 	@cat $(DEPENDENCIES) > $(PROJECT_NAME).mem
 
 clean:

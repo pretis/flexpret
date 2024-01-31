@@ -8,9 +8,10 @@
 #include <printf/printf.h>
 #endif // NDEBUG
 
-#define CSR_TOHOST_PRINTF (0xffffffff)
-#define CSR_TOHOST_FINISH (0xdeaddead)
-#define CSR_TOHOST_ABORT  (0xdeadbeef)
+#define CSR_TOHOST_PRINTF    (0xffffffff)
+#define CSR_TOHOST_PRINT_INT (0xbaaabaaa)
+#define CSR_TOHOST_FINISH    (0xdeaddead)
+#define CSR_TOHOST_ABORT     (0xdeadbeef)
 
 #define PRINTF_COLOR_RED   "\x1B[31m"
 #define PRINTF_COLOR_GREEN "\x1B[32m"
@@ -30,7 +31,9 @@ static inline void write_tohost(uint32_t val) {
     write_tohost(CSR_TOHOST_ABORT); \
   } while(0)
 #else 
-  #define _fp_abort(fmt, ...)
+  #define _fp_abort(fmt, ...) do { \
+    write_tohost(CSR_TOHOST_ABORT); \
+  } while(0)
 #endif // NDEBUG
 
 #ifndef NDEBUG
@@ -39,8 +42,22 @@ static inline void write_tohost(uint32_t val) {
     write_tohost(CSR_TOHOST_FINISH); \
   } while(0)
 #else
-  #define _fp_finish() 
+  #define _fp_finish() do { \
+    write_tohost(CSR_TOHOST_FINISH); \
+  } while(0)
 #endif // NDEBUG
+
+/**
+ * @brief Print just a single number to emulator
+ * 
+ * @param val The number to print. Note that the number cannot be CSR_TOHOST_PRINT_INT.
+ */
+static inline void fp_print_int(uint32_t val) {
+  while(swap_csr(CSR_HWLOCK, 1) == 0);
+  write_tohost(CSR_TOHOST_PRINT_INT);
+  write_tohost(val);
+  swap_csr(CSR_HWLOCK, 0);
+}
 
 // Write a generic value to the tohost CSR
 static inline void write_tohost_tid(uint32_t tid, uint32_t val) {

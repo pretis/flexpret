@@ -25,7 +25,11 @@ STACKSIZE := 256
 
 # This needs a default value so we can compile the bootloader the first time
 # to check its size
-START_ADDR ?= 0
+# Note: It should not be zero when the bootloader is compiled to know its size.
+#		This is because when it is zero, variables that use it to initialize will
+#		go into .bss, shrinking the size of the executable and giving an incorrect
+#		offset.
+START_ADDR ?= 0x1000
 
 include $(FLEXPRET_ROOT_DIR)/swconfig.mk
 include $(FP_LIB_DIR)/Makefrag-lib

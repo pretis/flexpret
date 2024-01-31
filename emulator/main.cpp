@@ -16,6 +16,7 @@
 
 void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);
+void print_int_fsm(const int tid, const uint32_t reg);
 
 uint64_t timestamp = 0;
 
@@ -122,12 +123,15 @@ int main(int argc, char* argv[]) {
     top->eval();
     timestamp++;
 
+#if 1
+    // Does not work when emulating bootloader
     if (top->io_imem_store) {
       printf("warn: IMEM store\n");
       should_exit = true;
       unknown_reason = false;
       exit_in_n_cycles = 10;
     }
+#endif
 
     if (trace_enabled) {
       trace->dump(10*timestamp);
@@ -167,6 +171,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < NUM_THREADS; i++) {
       printf_fsm(i, get_to_host(i, top));
+      print_int_fsm(i, get_to_host(i, top));
     }
   }
 

@@ -39,7 +39,7 @@ void Reset_Handler() {
 
     // Exit the program.
     write_tohost(CSR_TOHOST_FINISH);
-    //_fp_finish();
+    _fp_finish();
     
     // Infinite loop
     while (1);
