@@ -70,6 +70,9 @@ clean:
 run: $(PROJECT_NAME).mem
 	@$(EMU) +ispm=$(PROJECT_NAME).mem
 
+flash:
+	@echo "The bootloader cannot be flashed to an FPGA; it must be uploaded within an FPGA image. This is the piece of software that enables other software to be flashed."
+
 # Generate a file which contains the bootloader configuation. This is necessary
 # so the app may use the START_ADDR in its linker script.
 define BOOTLOADER_LDSCRIPT
