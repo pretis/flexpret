@@ -96,6 +96,9 @@ flash: $(NAME).mem
 	@python3 $(FLEXPRET_ROOT_DIR)/scripts/serialize_app.py $< $<.serialized
 	@python3 $(FLEXPRET_ROOT_DIR)/scripts/send_uart.py $(USB_PATH) $(FPGA_FLASH_BAUDRATE) $<.serialized
 
+pico:
+	picocom -b $(FPGA_FLASH_BAUDRATE) $(USB_PATH) --imap lfcrlf
+
 # Clean and recompile
 recompile: clean compile
 
