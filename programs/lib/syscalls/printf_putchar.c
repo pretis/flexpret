@@ -66,16 +66,16 @@ void _write_emulation(int fd, char character) {
     }
 }
 
-int _write_fpga(int fd, char character) {
-    // TODO: Implement UART comm here
-    errno = ENOSYS;
-    return -1;
+#include "flexpret_uart.h"
+void _write_fpga(int fd, char character) {
+    uart_send(character);
 }
 
 void putchar_(char character) {
 #ifdef __EMULATOR__
     _write_emulation(1, character); // TODO: Use real file descriptors?
-#else
+#endif // __EMULATOR__
+#ifdef __FPGA__
     _write_fpga(1, character);
-#endif
+#endif // __FPGA__
 }

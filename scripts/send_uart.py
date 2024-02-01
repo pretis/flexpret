@@ -30,7 +30,3 @@ except Exception as e:
     pass
 
 print('Write done')
-
-while True:
-    byte = com.read()
-    sys.stdout.write(byte.decode("ascii"))
