@@ -22,7 +22,7 @@ with open(args.input, "r") as fr:
     lines = fr.readlines()
     DBG_PRINT(f"Got {len(lines)} lines")
     length = len(lines) * 4
-    lengthField = length.to_bytes(2, "little")
+    lengthField = length.to_bytes(4, "little")
     DBG_PRINT(f"lengthField={lengthField}")
 
     with open(args.output, "wb") as fw:

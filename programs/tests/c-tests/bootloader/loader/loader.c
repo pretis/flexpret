@@ -3,7 +3,7 @@
 #include <flexpret.h>
 
 #define SYNC_ID_LEN 2
-#define LEN_FIELD_LEN 2
+#define LEN_FIELD_LEN 4
 
 // Warning: Do not use this macro, as it will change the size of the bootloader
 //          between the 1st and 2nd compilation.
@@ -105,7 +105,10 @@ int bootloader(void) {
                 DBG_PRINT(recv);
                 recv_buffer[idx++] = recv;
                 if (idx == LEN_FIELD_LEN) {
-                    len = recv_buffer[1] << 8 | recv_buffer[0];        
+                    len = (recv_buffer[3] << 24)
+                        | (recv_buffer[2] << 16)
+                        | (recv_buffer[1] << 8) 
+                        | (recv_buffer[0] << 0);        
                     app_recv_state = RECV_DATA;
                     idx = 0;
                     gpo_clear(0, 2);
