@@ -25,6 +25,7 @@ firrtl.jar
 **/*.dump
 **/*.a
 **/*.elf
+**/callgraph
 
 **/fp-emu
 

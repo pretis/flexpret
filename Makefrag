@@ -41,9 +41,13 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-CFLAGS += -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
+CFLAGS += -g -static -Os -ffunction-sections -fdata-sections -Wl,--gc-sections -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
 INCS += $(LIB_INCS) $(APP_INCS)
 LFLAGS += -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
+
+ALL_SOURCES := $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+ALL_OBJECTS := $(patsubst %.c,%.o,$(ALL_SOURCES))
+$(info $(ALL_OBJECTS))
 
 ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
@@ -60,8 +64,11 @@ autogen: $(LIB_AUTOGEN)
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
 
-%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
-	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
+%.o: %.c
+	@$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -c $< -o $@
+
+%.riscv: $(ALL_OBJECTS)
+	@$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
 
 # Generates a dump file for debugging
 dump: $(NAME).dump
@@ -99,6 +106,16 @@ flash: $(NAME).mem
 pico:
 	picocom -b $(FPGA_FLASH_BAUDRATE) $(USB_PATH) --imap lfcrlf
 
+CALLGRAPH_TOP_FUNCTION ?= main
+
+callgraph: autogen callgraph.svg
+callgraph.svg: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+	@$(CC) -fdump-rtl-expand $(LFLAGS) $(CFLAGS) $(INCS) -o $(NAME).riscv $^
+	@mkdir -p callgraph && mv *.expand callgraph
+	@egypt callgraph/*.expand > callgraph/expands.txt 
+	@python3 $(FLEXPRET_ROOT_DIR)/scripts/callgraph.py $(CALLGRAPH_TOP_FUNCTION)
+	@cat callgraph/expands.txt.modified | dot -Tsvg -o callgraph/callgraph.svg
+
 # Clean and recompile
 recompile: clean compile
 
@@ -106,4 +123,5 @@ recompile: clean compile
 # Double colon makes it possible to extend the target
 clean::
 	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
+	rm -rf callgraph
 	rm -f $(LIB_AUTOGEN)
