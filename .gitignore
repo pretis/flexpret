@@ -15,6 +15,7 @@ firrtl.jar
 
 # Generated files
 **/*.mem
+**/*.mem.serialized
 **/*.out
 **/*.dump
 **/*.vcd
