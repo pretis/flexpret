@@ -33,7 +33,7 @@ object FlexpretConfiguration {
       false,
       "all",
       0,
-      100000000
+      50000000
     )
   }
 }
@@ -56,7 +56,7 @@ case class FlexpretConfiguration(
   priv: Boolean,
   features: String,
   coreId: Int = 0,
-  clkFreq: Int = 100000000
+  clkFreq: Int = 50000000
 ) {
   println("features: " + features)
   val mt = threads > 1

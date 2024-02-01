@@ -8,6 +8,9 @@ PROJECT_NAME := bootloader
 BOOTLOADER_NAME := loader
 BOOTLOADER := $(BOOTLOADER_NAME)/$(BOOTLOADER_NAME).mem
 
+# fpga or emulator
+TARGET ?= fpga
+
 # Set this to any application
 APP_NAME ?= add
 APP := app/$(APP_NAME).mem
@@ -19,21 +22,21 @@ DEPENDENCIES := $(BOOTLOADER) $(APP)
 # 1st time to know its size and 2nd time to pass its own size to it at compile time.
 
 # Get the number of lines in the bootloader.mem file
-APP_START_ADDR_PART := $(shell make -C $(BOOTLOADER_NAME) clean all > /dev/null && wc -l $(BOOTLOADER) | awk '{print $$1}' && make -C $(BOOTLOADER_NAME) clean > /dev/null)
+APP_START_ADDR_PART := $(shell make -C $(BOOTLOADER_NAME) TARGET=$(TARGET) clean all > /dev/null && wc -l $(BOOTLOADER) | awk '{print $$1}' && make -C $(BOOTLOADER_NAME) clean > /dev/null)
 
 # Add 1 to this number and multiply by four to get the address of where the application
 # will be placed
-APP_START_ADDR := $(shell echo $$((($(APP_START_ADDR_PART) + 1) * 4)))
+APP_START_ADDR := $(shell echo $$(($(APP_START_ADDR_PART) * 4)))
 
-all: $(PROJECT_NAME).mem app/$(APP_NAME).dump
+all: $(PROJECT_NAME).mem app/$(APP_NAME).dump check
 
 # Make the bootloader with the specified start address and the app with 
 # a specific linker script
 # Move the compiled program out of the app's folder to avoid confusion; these
 # will not run without a bootloader
 $(DEPENDENCIES): $(FP_LIB_DIR)/linker/flexpret_bootloader_config.ld
-	@make -C $(BOOTLOADER_NAME) all START_ADDR=$(APP_START_ADDR)
-	@make -C ../$(APP_NAME)/ all LINKER_SCRIPT=$(FP_LIB_DIR)/linker/flexpret_app.ld
+	@make -C $(BOOTLOADER_NAME) all START_ADDR=$(APP_START_ADDR) TARGET=$(TARGET)
+	@make -C ../$(APP_NAME)/ all LINKER_SCRIPT=$(FP_LIB_DIR)/linker/flexpret_app.ld TARGET=$(TARGET)
 	@mkdir -p app
 	@mv ../$(APP_NAME)/$(APP_NAME).dump ../$(APP_NAME)/$(APP_NAME).map ../$(APP_NAME)/$(APP_NAME).mem ../$(APP_NAME)/$(APP_NAME).mem.orig ../$(APP_NAME)/$(APP_NAME).riscv app
 
@@ -43,6 +46,19 @@ $(APP).serialized: $(APP)
 # Combine bootloader with application
 $(PROJECT_NAME).mem: $(DEPENDENCIES) $(APP).serialized
 	@cat $(DEPENDENCIES) > $(PROJECT_NAME).mem
+
+# FIXME: Find a way to compare the bash variable with the make variable.
+# I cannot seem to find a way to do so at the moment...
+# The makefile needs to exit if they are different
+.ONESHELL:
+check: $(BOOTLOADER)
+	@len=$$(wc -l $(BOOTLOADER) | awk '{print $$1}')
+	@start_addr=$$(($$len * 4))
+	@echo ""
+	@echo "1st time got size: $(APP_START_ADDR)"
+	@echo "2nd time got size: $$start_addr"
+	@echo "If these two are not equal you must stop immediately"
+	@echo ""
 
 clean:
 	@make -C $(BOOTLOADER_NAME) clean

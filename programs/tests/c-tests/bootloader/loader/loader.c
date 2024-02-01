@@ -5,6 +5,8 @@
 #define SYNC_ID_LEN 2
 #define LEN_FIELD_LEN 2
 
+// Warning: Do not use this macro, as it will change the size of the bootloader
+//          between the 1st and 2nd compilation.
 #ifndef APP_LOCATION
 #define APP_LOCATION 0x1000
 #endif // APP_LOCATION
@@ -42,6 +44,7 @@ void main(void) {
     if ((gpi_read_0() & 0b1) == 0b1) {
         set_ledmask(0xFF);
         bootloader();
+        set_ledmask(0x00);
     }
 
     // Jump to start.S
@@ -53,7 +56,7 @@ int bootloader(void) {
     app_recv_states_t app_recv_state = RECV_SYNC_ID;
     unsigned int idx=0;
     unsigned int byte_idx=0;
-    unsigned int *app_ptr = (unsigned int *) APP_LOCATION;
+    unsigned int *app_ptr = (unsigned int *) application;
     unsigned char recv_buffer[2];
     unsigned char recv;
     unsigned int len;
@@ -62,12 +65,18 @@ int bootloader(void) {
     while (1) {
 
 // Useful if emulating and you want to see the progress
-#if 0
-        uint32_t nbytes_written = (int)app_ptr - APP_LOCATION;
+#ifdef __EMULATOR__
+        uint32_t nbytes_written = (int)app_ptr - (int)application;
         if ((nbytes_written % 100) == 0) {
             fp_print_int(nbytes_written);
         }
-#endif
+#endif // __EMULATOR__
+#ifdef __FPGA__
+        uint32_t nbytes_written = (int)app_ptr - (int)application;
+        if ((nbytes_written % 1000) == 0) {
+            set_ledmask(nbytes_written / 1000);
+        }
+#endif // __FPGA__
 
         switch (app_recv_state) {
 

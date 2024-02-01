@@ -105,11 +105,14 @@ emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN) $(CLIENTS)
 $(VERILOG_FPGA):
 	sbt 'run fpga "$(CORE_CONFIG)" --no-dedup --target-dir $(BUILD_DIR)'
 
-include $(FPGA_DIR)/$(FPGA_BOARD)/fp-blinky/fpga.mk
+# FIXME: Find a way to set this from the project itself
+FPGA_PROJECT := fp-bootloader
+
+include $(FPGA_DIR)/$(FPGA_BOARD)/$(FPGA_PROJECT)/fpga.mk
 
 fpga: $(VERILOG_FPGA) $(FPGA_PROGRAM_NAME)
-	cp build/FpgaTop.v fpga/$(FPGA_BOARD)/fp-blinky/flexpret.v
-	cp $(RESOURCE_DIR)/DualPortBramFPGA.v $(FLEXPRET_ROOT_DIR)/fpga/$(FPGA_BOARD)/fp-blinky/DualPortBram.v
+	cp build/FpgaTop.v fpga/$(FPGA_BOARD)/$(FPGA_PROJECT)/flexpret.v
+	cp $(RESOURCE_DIR)/DualPortBramFPGA.v $(FLEXPRET_ROOT_DIR)/fpga/$(FPGA_BOARD)/$(FPGA_PROJECT)/DualPortBram.v
 
 # -----------------------------------------------------------------------------
 #  Tests
