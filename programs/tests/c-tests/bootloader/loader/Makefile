@@ -2,7 +2,7 @@
 # because we want to reduce the code size
 
 FLEXPRET_ROOT_DIR := ../../../../..
-FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/lib
+FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
 
 NAME = loader
 
