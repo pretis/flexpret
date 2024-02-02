@@ -105,6 +105,16 @@ flash: $(NAME).mem
 pico:
 	picocom -b $(FPGA_FLASH_BAUDRATE) $(USB_PATH) --imap lfcrlf
 
+CALLGRAPH_TOP_FUNCTION ?= main
+
+callgraph: autogen callgraph.svg
+callgraph.svg: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+	@$(CC) -fdump-rtl-expand $(LFLAGS) $(CFLAGS) $(INCS) -o $(NAME).riscv $^
+	@mkdir -p callgraph && mv *.expand callgraph
+	@egypt callgraph/*.expand > callgraph/expands.txt 
+	@python3 $(FLEXPRET_ROOT_DIR)/scripts/callgraph.py $(CALLGRAPH_TOP_FUNCTION)
+	@cat callgraph/expands.txt.modified | dot -Tsvg -o callgraph/callgraph.svg
+
 # Clean and recompile
 recompile: clean compile
 
@@ -112,4 +122,5 @@ recompile: clean compile
 # Double colon makes it possible to extend the target
 clean::
 	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
+	rm -rf callgraph
 	rm -f $(LIB_AUTOGEN)

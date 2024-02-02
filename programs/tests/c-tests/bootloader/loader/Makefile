@@ -1,8 +1,8 @@
 # Compiling the bootloader is quite different from compiling any other application
 # because we want to reduce the code size
 
-FLEXPRET_ROOT_DIR = ../../../../..
-FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
+FLEXPRET_ROOT_DIR := ../../../../..
+FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/lib
 
 NAME = loader
 
