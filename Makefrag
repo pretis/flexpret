@@ -41,9 +41,12 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-CFLAGS += -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
+CFLAGS += -g -static -Os -ffunction-sections -fdata-sections -Wl,--gc-sections -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
 INCS += $(LIB_INCS) $(APP_INCS)
 LFLAGS += -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
+
+ALL_SOURCES := $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+ALL_OBJECTS := $(patsubst %.c,%.o,$(ALL_SOURCES))
 
 ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
@@ -60,8 +63,11 @@ autogen: $(LIB_AUTOGEN)
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
 
-%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
-	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
+%.o: %.c
+	@$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -c $< -o $@
+
+%.riscv: $(ALL_OBJECTS)
+	@$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
 
 # Generates a dump file for debugging
 dump: $(NAME).dump

@@ -5,7 +5,9 @@ FLEXPRET_ROOT_DIR = ../../../../..
 FP_LIB_DIR := $(FLEXPRET_ROOT_DIR)/programs/lib
 
 NAME = loader
-BOOTLOADER_SOURCES := $(FP_LIB_DIR)/start.S $(FP_LIB_DIR)/startup_bootloader.c $(NAME).c
+ASM_START := $(FP_LIB_DIR)/start.S
+BOOTLOADER_SOURCES := $(FP_LIB_DIR)/startup_bootloader.c $(NAME).c
+BOOTLOADER_OBJECTS := $(patsubst %.c,%.o,$(BOOTLOADER_SOURCES))
 
 RISCV_PREFIX = riscv32-unknown-elf-
 CC = $(RISCV_PREFIX)gcc
@@ -13,7 +15,7 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 
 # Beware: This code is heavily duplicated from the top-level makefiles
-CFLAGS := -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs
+CFLAGS := -g -static -Os -ffunction-sections -fdata-sections -Wl,--gc-sections -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs
 INCS := -I $(FP_LIB_DIR)/include -I $(FP_LIB_DIR)/printf/src
 LDSCRIPT := $(FP_LIB_DIR)/linker/flexpret.ld -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map
 
@@ -29,7 +31,8 @@ STACKSIZE := 256
 #		This is because when it is zero, variables that use it to initialize will
 #		go into .bss, shrinking the size of the executable and giving an incorrect
 #		offset.
-START_ADDR ?= 0x1000
+# Another note: Having the value set to > 0x800 seems to trigger an optimization.
+START_ADDR ?= 0x800
 
 include $(FLEXPRET_ROOT_DIR)/swconfig.mk
 include $(FP_LIB_DIR)/Makefrag-lib
@@ -38,8 +41,13 @@ include $(FP_LIB_DIR)/Makefrag-lib
 
 all: $(NAME).mem $(NAME).dump
 
-$(NAME).riscv: $(BOOTLOADER_SOURCES) $(LIB_AUTOGEN)
-	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -o $(NAME).riscv $(BOOTLOADER_SOURCES) $(DEFINES) -D APP_LOCATION=$(START_ADDR)
+%.o: %.c $(LIB_AUTOGEN)
+	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -c $< -o $@ $(DEFINES) -D APP_LOCATION=$(START_ADDR)
+	mkdir -p build
+	mv $@ build
+
+$(NAME).riscv: $(BOOTLOADER_OBJECTS)
+	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -o $(NAME).riscv $(ASM_START) build/* $(DEFINES) -D APP_LOCATION=$(START_ADDR)
 
 mem: $(NAME).mem
 $(NAME).mem: $(NAME).riscv
@@ -54,3 +62,4 @@ dump: $(NAME).dump app/$(APP_NAME).dump
 
 clean:
 	@rm -f *.dump *.map *.mem *.mem.orig *.riscv
+	@rm -rf build
