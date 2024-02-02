@@ -1,6 +1,6 @@
 
-#ifndef FLEXPRET_NOC_H
-#define FLEXPRET_NOC_H
+#ifndef FLEXPRET_UART_H
+#define FLEXPRET_UART_H
 
 #include <stdint.h>
 #include "flexpret_wb.h"
@@ -19,23 +19,25 @@
 #define UART_TX_FULL(val) (val & 0x02)
 #define UART_FAULT(val) (val & 0x04)
 
-// Blocking send word
-static void uart_send(uint8_t data) {
-    while (UART_TX_FULL(wb_read(UART_CSR)));
-    wb_write(UART_TXD, data);
-}
+/**
+ * @brief Write data over UART using with the wishbone interface
+ * 
+ * @param data 
+ */
+void uart_send(uint8_t data);
 
-static void uart_check_connection(void) {
-    fp_assert(wb_read(UART_CONST_ADDR) == UART_CONST_VALUE, "uart test failed\n");
-}
+/**
+ * @brief Check that there is a connection to the wishbone UART interface
+ *        by reading a magic number from it. Will crash on failure due to assert.
+ * 
+ */
+void uart_check_connection(void);
 
-// Blocking read word
-static uint8_t uart_receive() {
-    //printf("uart_receive\n");
-    //printf("UART_CSR: 0x%.2x\n", wb_read(UART_CSR));
-    while(!UART_DATA_READY(wb_read(UART_CSR))) {
-    }
-    return wb_read(UART_RXD);
-}
+/**
+ * @brief Receive a byte over UART using the wishbone interface
+ * 
+ * @return uint8_t 
+ */
+uint8_t uart_receive(void);
 
-#endif
+#endif // FLEXPRET_UART_H
