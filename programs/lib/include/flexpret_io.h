@@ -42,7 +42,7 @@ static inline void write_tohost_tid(uint32_t tid, uint32_t val) {
     case 5: write_csr(CSR_TOHOST(5), val); break;
     case 6: write_csr(CSR_TOHOST(6), val); break;
     case 7: write_csr(CSR_TOHOST(7), val); break;
-    default: _fp_abort("Invalid thread id: ", tid);
+    default: _fp_abort("Invalid thread id: %i\n", tid);
   }
 }
 
