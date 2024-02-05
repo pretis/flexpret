@@ -12,8 +12,6 @@
 #define fp_assert(cond, fmt, ...) do { \
     if(((cond) == false)) { \
         _fp_abort(fmt, ## __VA_ARGS__); \
-        gpo_write(0,0xFF); \
-        while(true) {} \
     } \
 } while(0)
 #endif // NDEBUG
