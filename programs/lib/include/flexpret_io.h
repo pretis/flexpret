@@ -86,7 +86,7 @@ static inline void gpo_clear(uint32_t port, uint32_t mask) {
     case 1: clear_csr(CSR_UARCH5, mask); break;
     case 2: clear_csr(CSR_UARCH6, mask); break;
     case 3: clear_csr(CSR_UARCH7, mask); break;
-    default: _fp_abort("Invalid port: ", port);
+    default: _fp_abort("Invalid port: %i\n", port);
   }
 }
 
