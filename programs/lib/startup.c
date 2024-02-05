@@ -9,8 +9,6 @@
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <flexpret.h>
 
-#define TA_MAX_HEAP_BLOCK   1000
-#define TA_ALIGNMENT        4
 
 /* Linker */
 extern uint32_t __stext;
