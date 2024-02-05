@@ -55,7 +55,7 @@ static inline void gpo_write(uint32_t port, uint32_t val) {
     case 1: write_csr(CSR_UARCH5, val); break;
     case 2: write_csr(CSR_UARCH6, val); break;
     case 3: write_csr(CSR_UARCH7, val); break;
-    default: _fp_abort("Invalid port: ", port);
+    default: _fp_abort("Invalid port: %i\n", port);
   }
 }
 
