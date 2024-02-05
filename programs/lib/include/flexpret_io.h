@@ -101,7 +101,7 @@ static inline uint32_t gpo_read(uint32_t port) {
     case 1: return read_csr(CSR_UARCH5); break;
     case 2: return read_csr(CSR_UARCH6); break;
     case 3: return read_csr(CSR_UARCH7); break;
-    default: _fp_abort("Invalid port: ", port);
+    default: _fp_abort("Invalid port: %i\n", port);
   }
 }
 
