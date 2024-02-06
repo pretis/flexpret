@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
   // by returning it from the emulator
   bool should_exit = false;
   bool unknown_reason = true;
-  int exit_in_n_cycles = 0;
+  int exit_in_n_cycles = 10;
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
     if (timestamp <= 2) {
@@ -129,7 +129,6 @@ int main(int argc, char* argv[]) {
       printf("warn: IMEM store\n");
       should_exit = true;
       unknown_reason = false;
-      exit_in_n_cycles = 10;
     }
 #endif
 
