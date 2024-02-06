@@ -32,7 +32,8 @@ APP_START_ADDR_PART_2nd := $(shell make -C $(BOOTLOADER_NAME) TARGET=$(TARGET) S
 
 APP_START_ADDR_2nd := $(shell echo $$(($(APP_START_ADDR_PART_2nd) * 4)))
 
-all: $(PROJECT_NAME).mem app/$(APP_NAME).dump check
+all: compile
+compile: $(PROJECT_NAME).mem app/$(APP_NAME).dump check
 
 # Make the bootloader with the specified start address and the app with 
 # a specific linker script

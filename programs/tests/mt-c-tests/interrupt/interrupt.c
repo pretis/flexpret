@@ -3,8 +3,8 @@
 #define EXTERNAL_INTERRUPT_TEST (0)
 #define USED_THREADS 4
 
-static int flags[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static int ext_int_flag = 0;
+static volatile int flags[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int ext_int_flag = 0;
 static fp_lock_t interrupt_lock = FP_LOCK_INITIALIZER;
 
 void ie_isr0(void) {

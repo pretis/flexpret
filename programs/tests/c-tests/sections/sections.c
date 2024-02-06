@@ -63,19 +63,21 @@ int main() {
     _print_addr_val(&rodata);
     _print_addr_val(&srodata);
 
-    fp_assert(c_textdata == TEXTDATA_INIT_VAL, "Const value not properly set");
-    fp_assert(c_rodata   == RODATA_INIT_VAL, "Const value not properly set");
-    fp_assert(c_srodata  == SRODATA_INIT_VAL, "Const value not properly set");
+    fp_assert(c_textdata == TEXTDATA_INIT_VAL, "Const value not properly set\n");
+    fp_assert(c_rodata   == RODATA_INIT_VAL, "Const value not properly set\n");
+    fp_assert(c_srodata  == SRODATA_INIT_VAL, "Const value not properly set\n");
 
-    fp_assert(d_textdata == TEXTDATA_INIT_VAL, "Static value not properly set");
-    fp_assert(d_rodata   == RODATA_INIT_VAL, "Static value not properly set");
-    fp_assert(d_srodata  == SRODATA_INIT_VAL, "Static value not properly set");
+    fp_assert(d_textdata == TEXTDATA_INIT_VAL, "Static value not properly set\n");
+    fp_assert(d_rodata   == RODATA_INIT_VAL, "Static value not properly set\n");
+    fp_assert(d_srodata  == SRODATA_INIT_VAL, "Static value not properly set\n");
 
-    fp_assert(textdata == TEXTDATA_INIT_VAL, "Value not properly set");
-    fp_assert(rodata   == RODATA_INIT_VAL, "Value not properly set");
-    fp_assert(srodata  == SRODATA_INIT_VAL, "Value not properly set");
+    fp_assert(textdata == TEXTDATA_INIT_VAL, "Value not properly set\n");
+    fp_assert(rodata   == RODATA_INIT_VAL, "Value not properly set\n");
+    fp_assert(srodata  == SRODATA_INIT_VAL, "Value not properly set\n");
 
-    const uint8_t array[4] = ARRAY_INIT_VAL;
+    // Need to add volatile here, otherwise compiler will resolve the checks at
+    // compile time since all values are available
+    const volatile uint8_t array[4] = ARRAY_INIT_VAL;
 
     for (int i = 0; i < sizeof(arraytext); i++) {
         // Expect the array to have the same value for all indicies; see earlier
@@ -86,16 +88,16 @@ int main() {
                 (array[1] <<  8) |
                 (array[2] << 16) |
                 (array[3] << 24)
-            ), "Array in .text not word indexed as expected"
+            ), "Array in .text not word indexed as expected\n"
         );
     }
 
     for (int i = 0; i < sizeof(arrayrodata); i++) {
-        fp_assert(arrayrodata[i] == array[i], "Array in .rodata incorrect");
+        fp_assert(arrayrodata[i] == array[i], "Array in .rodata incorrect\n");
     }
 
     for (int i = 0; i < sizeof(arraysrodata); i++) {
-        fp_assert(arraysrodata[i] == array[i], "Array in .srodata incorrect");
+        fp_assert(arraysrodata[i] == array[i], "Array in .srodata incorrect\n");
     }
     
     return 0;

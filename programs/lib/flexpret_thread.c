@@ -188,31 +188,37 @@ int tmode_sleep(uint32_t hartid) {
     return 0;
 }
 
-/* Variables that keep track of the status of threads */
+/**
+ * @brief Variables to keep track of tread states. They all need to be marked
+ *        volatile - otherwise the compiler will optimize away checking them
+ *        for changes.
+ */
 
 // An array of function pointers
-static void*   (*routines[NUM_THREADS])(void *);
-static void**  args[NUM_THREADS];
-static void**  exit_code[NUM_THREADS];
+static volatile void*   (*routines[NUM_THREADS])(void *);
+static volatile void**  args[NUM_THREADS];
+static volatile void**  exit_code[NUM_THREADS];
+
 // Whether a thread is currently executing a routine.
-static bool    in_use[NUM_THREADS];
-static jmp_buf envs[NUM_THREADS];
-static bool    cancel_requested[NUM_THREADS];
+static volatile bool    in_use[NUM_THREADS];
+static volatile jmp_buf envs[NUM_THREADS];
+static volatile bool    cancel_requested[NUM_THREADS];
+
 // Accessed in startup.c
-bool           exit_requested[NUM_THREADS];
+bool volatile           exit_requested[NUM_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
 // If this is 0, the main thread can
 // safely terminate the execution.
-uint32_t num_threads_busy = 0;
+volatile uint32_t num_threads_busy = 0;
 
 // Keep track of the number of threads
 // currently marked as EXITED.
 // FIXME: Once a worker thread exits,
 // it should have completed executing
 // some pre-registered clean-up handlers.
-uint32_t num_threads_exited = 0;
+volatile uint32_t num_threads_exited = 0;
 
 
 /* Pthreads-like threading library functions */
@@ -236,7 +242,7 @@ static int assign_hartid(
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
-    routines[hartid] = start_routine;
+    routines[hartid] = (volatile void *(*)(void *))(start_routine);
     args[hartid] = arg;
     num_threads_busy += 1;
 
@@ -348,7 +354,7 @@ void fp_thread_testcancel() {
     fp_hwlock_acquire();
     if (cancel_requested[hartid]) {
         fp_hwlock_release();
-        longjmp(envs[hartid], 1);
+        longjmp((long long int *) envs[hartid], 1);
     }
     fp_hwlock_release();
 }
@@ -363,7 +369,7 @@ void worker_main() {
     // for potential fp_thread_cancel calls.
     // The execution will jump here
     // if a cancellation request is handled.
-    int val = setjmp(envs[hartid]);
+    int val = setjmp((long long int *) envs[hartid]);
     // Check if the thread returns from longjmp.
     // If so, mark the thread as not in use.
     if (val == 1) {

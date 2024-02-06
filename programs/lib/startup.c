@@ -35,10 +35,10 @@ extern uint32_t __sstack;
 
 
 /* Threading */
-static bool     __ready__;
-extern bool     exit_requested[NUM_THREADS];
-extern uint32_t num_threads_busy;
-extern uint32_t num_threads_exited;
+static volatile bool     __ready__;
+extern volatile bool     exit_requested[NUM_THREADS];
+extern volatile uint32_t num_threads_busy;
+extern volatile uint32_t num_threads_exited;
 
 //prototype of main
 int main(void);

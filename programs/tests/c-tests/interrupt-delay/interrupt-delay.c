@@ -39,7 +39,7 @@
 
 
 static uint64_t *timestamps;
-static bool got_int = false;
+static volatile bool got_int = false;
 
 void isr_timestamp(void)
 {

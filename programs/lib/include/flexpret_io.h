@@ -24,14 +24,12 @@
         printf(fmt, ##__VA_ARGS__); \
         gpo_set_ledmask(__LINE__ % 255); \
         write_tohost(CSR_TOHOST_ABORT); \
-        while (1); \
     } while(0)
     
     #define _fp_finish() do { \
         printf("%s: %i: " PRINTF_COLOR_GREEN "Finish\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
-        write_tohost(CSR_TOHOST_FINISH); \
         gpo_set_ledmask((1 << 7)); \
-        while (1); \
+        write_tohost(CSR_TOHOST_FINISH); \
     } while(0)
 
 #else
@@ -39,12 +37,10 @@
     #define _fp_abort(fmt, ...) do { \
         gpo_set_ledmask(__LINE__ % 255); \
         write_tohost(CSR_TOHOST_ABORT); \
-        while (1); \
     } while (0)
 
     #define _fp_finish() do { \
         write_tohost(CSR_TOHOST_FINISH); \
-        while (1); \
     } while(0)
 
 #endif // HAVE_PRINTF
