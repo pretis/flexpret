@@ -1,7 +1,11 @@
 #include <flexpret.h>
 #include <errno.h>
 
-#define EXPIRE_DELAY_NS (uint32_t)(1e4)
+// An interrupt will take time proportional to the number of threads
+// because more threads -> more wasted cycles in the pipeline
+// (At least when the hw threads are not sleeping, which is the case
+//  at the time of writing this test.)
+#define EXPIRE_DELAY_NS (((uint32_t)(1e4)) * (NUM_THREADS))
 
 static volatile int flag0 = 0;
 static volatile int flag1 = 0;
@@ -48,7 +52,7 @@ void test_two_interrupts(void) {
     while (flag0 == 0);
 
     now = rdtime();
-    fp_assert(now > expire, "Time is not as expected");
+    fp_assert(now > expire, "Time is not as expected\n");
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
     
@@ -59,7 +63,7 @@ void test_two_interrupts(void) {
     while (flag1 == 0);
 
     now = rdtime();
-    fp_assert(now > expire, "Time is not as expected");
+    fp_assert(now > expire, "Time is not as expected\n");
 
     // If context switch is not properly implemented, expect crash when returning
     // from this function because the return address (ra) register has not been
@@ -79,7 +83,7 @@ void test_disabled_interrupts(const uint32_t timeout_init) {
     timeout = timeout_init;
     while (flag0 == 0 && timeout--);
 
-    fp_assert(flag0 == 0, "Interrupt occurred when disabled");
+    fp_assert(flag0 == 0, "Interrupt occurred when disabled\n");
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
     
@@ -90,7 +94,7 @@ void test_disabled_interrupts(const uint32_t timeout_init) {
     timeout = timeout_init;
     while (flag1 == 0 && timeout--);
 
-    fp_assert(flag1 == 0, "Interrupt occurred when disabled");
+    fp_assert(flag1 == 0, "Interrupt occurred when disabled\n");
 }
 
 void test_low_timeout(void) {
@@ -140,9 +144,9 @@ void test_fp_delay_until(void) {
 
     now = rdtime();
 
-    fp_assert(isr_time != 0, "Interrupt did not occur");
-    fp_assert(now > delay, "Delay until did not delay full duration");
-    fp_assert(expire < isr_time && isr_time < delay, "Interrupt did not occur during delay until");
+    fp_assert(isr_time != 0, "Interrupt did not occur\n");
+    fp_assert(now > delay, "Delay until did not delay full duration\n");
+    fp_assert(expire < isr_time && isr_time < delay, "Interrupt did not occur during delay until\n");
 }
 
 void test_fp_wait_until(void) {
@@ -164,21 +168,25 @@ void test_fp_wait_until(void) {
 
     now = rdtime();
 
-    fp_assert(isr_time != 0, "Interrupt did not occur");
-    fp_assert(expire < now && now < delay, "Time not as expected");
+    fp_assert(isr_time != 0, "Interrupt did not occur\n");
+    fp_assert(expire < now && now < delay, "Time not as expected\n",
+        expire, now, delay);
     fp_assert(before < isr_time && 
               expire < isr_time && 
               isr_time < now && 
               isr_time < delay, 
-              "Interrupt did not occur when expected"
+              "Interrupt did not occur when expected\n"
     );
 }
 
 int main(void) {
-    ENABLE_INTERRUPTS();
+    // Will enable and disable interrupts before and after each test to avoid
+    // getting weird errors with printing
 
     // Test that interrupts work
+    ENABLE_INTERRUPTS();
     test_two_interrupts();
+    DISABLE_INTERRUPTS();
     printf("1st run: interrupts ran sucessfully with two different ISRs\n");
 
     flag0 = 0;
@@ -186,7 +194,9 @@ int main(void) {
 
     // Test that they work again; i.e., there are no side effects of the first
     // test
+    ENABLE_INTERRUPTS();
     test_two_interrupts();
+    DISABLE_INTERRUPTS();
     printf("2nd run: interrupts ran sucessfully with two different ISRs\n");
 
     flag0 = 0;
@@ -195,30 +205,36 @@ int main(void) {
     // Try to disable interrupts and check that no interrupts were called
     DISABLE_INTERRUPTS();
     test_disabled_interrupts(10000);
-    printf("3rd run: interrupts were disabled and none were triggered\n");
     ENABLE_INTERRUPTS();
+    printf("3rd run: interrupts were disabled and none were triggered\n");
 
     // No need to reset flags if the interrupts were not run
 
+    ENABLE_INTERRUPTS();
     test_low_timeout();
+    DISABLE_INTERRUPTS();
     printf("4th run: interrupts ran sucessfully with low timeout\n");
 
     flag0 = 0;
     flag1 = 0;
 
+    ENABLE_INTERRUPTS();
     test_fp_delay_until();
-
+    DISABLE_INTERRUPTS();
     printf("5th run: delay until ran sucessfully\n");
 
     flag0 = 0;
     flag1 = 0;
 
+    ENABLE_INTERRUPTS();
     test_fp_wait_until();
-
+    DISABLE_INTERRUPTS();
     printf("6th run: wait until ran sucessfully\n");
 
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
+    ENABLE_INTERRUPTS();
     while (ext_int_flag == 0);
+    DISABLE_INTERRUPTS();
     printf("7th run: got external interrupt\n");
 
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_du_response);
@@ -227,7 +243,9 @@ int main(void) {
     before = rdtime64();
     delay = (int) 10000000;
     
+    ENABLE_INTERRUPTS();
     fp_delay_for(delay);
+    DISABLE_INTERRUPTS();
     after = rdtime64();
 
     if (du_int_triggered) {
@@ -241,15 +259,18 @@ int main(void) {
     before = rdtime64();
     delay = (int) 10000000;
     
+    ENABLE_INTERRUPTS();
     fp_wait_for(delay);
+    DISABLE_INTERRUPTS();
     after = rdtime64();
 
     if (wu_int_triggered) {
-        fp_assert(before + delay > after, "User was unable to stop wait until instruction before timer had run out");
+        fp_assert(before + delay > after, "User was unable to stop wait until instruction before timer had run out\n");
         printf("9th run: wait for stopped early\n");
     } else {
         printf("Warning: User should provide interrupt to test this feature\n");
     }
+
 
     return 0;
 }
