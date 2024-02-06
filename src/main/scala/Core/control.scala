@@ -441,7 +441,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   // Exception, flush, and stall logic
 
   // If branch taken, kill any instructions from same thread in pipeline
-  when(exe_brjmp) {
+  when(exe_brjmp || exe_xret) {
     exe_flush := true.B
     if(conf.regBrJmp) { stall_count(io.exe_tid) := 1.U }
   }

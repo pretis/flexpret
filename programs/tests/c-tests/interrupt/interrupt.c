@@ -3,11 +3,11 @@
 
 #define EXPIRE_DELAY_NS (uint32_t)(1e4)
 
-static int flag0 = 0;
-static int flag1 = 0;
-static int ext_int_flag = 0;
-static int du_int_triggered = 0;
-static int wu_int_triggered = 0;
+static volatile int flag0 = 0;
+static volatile int flag1 = 0;
+static volatile int ext_int_flag = 0;
+static volatile int du_int_triggered = 0;
+static volatile int wu_int_triggered = 0;
 
 static uint64_t isr_time = 0;
 
