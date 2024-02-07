@@ -50,7 +50,6 @@ class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
     }
     val to_host = Output(Vec(cfg.threads, UInt(32.W)))
     val int_exts = Input(Vec(cfg.threads, Bool()))
-    val gpi = MixedVec(cfg.gpiPortSizes.map(i => Input(UInt(i.W))).toSeq)
     val imem_store = Output(Bool())
 }
 

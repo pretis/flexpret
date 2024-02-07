@@ -72,6 +72,7 @@ int main(int argc, char* argv[]) {
 
   bool trace_enabled = false;
   bool pin_client_enabled = false;
+  bool allow_imem_store = false;
 
   for (int i = 1; i< argc; i++) {
     if (!strcmp(argv[i], "--trace")) {
@@ -83,6 +84,11 @@ int main(int argc, char* argv[]) {
     if (!strcmp(argv[i], "--client")) {
       std::cout << "Pin client enabled" << std::endl;
       pin_client_enabled = true;
+    }
+
+    if (!strcmp(argv[i], "--allow-imem-store")) {
+      std::cout << "IMEM store allowed" << std::endl;
+      allow_imem_store = true;
     }
   }
 
@@ -110,7 +116,7 @@ int main(int argc, char* argv[]) {
   // by returning it from the emulator
   bool should_exit = false;
   bool unknown_reason = true;
-  int exit_in_n_cycles = 0;
+  int exit_in_n_cycles = 10;
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
     if (timestamp <= 2) {
@@ -125,11 +131,10 @@ int main(int argc, char* argv[]) {
 
 #if 1
     // Does not work when emulating bootloader
-    if (top->io_imem_store) {
-      printf("warn: IMEM store\n");
+    if (top->io_imem_store && !allow_imem_store) {
+      printf("IMEM store when not allowed\n");
       should_exit = true;
       unknown_reason = false;
-      exit_in_n_cycles = 10;
     }
 #endif
 

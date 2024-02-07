@@ -1,22 +1,42 @@
 #include "flexpret_wb.h"
+#include "flexpret_time.h"
 
 #define WB_BASE 0x40000000UL
-#define WB_READ_ADDR (*( (volatile uint32_t *) (WB_BASE + 0x0UL)))
-#define WB_WRITE_ADDR (*( (volatile uint32_t *) (WB_BASE + 0x4UL)))
-#define WB_WRITE_DATA (*( (volatile uint32_t *) (WB_BASE + 0x8UL)))
-#define WB_READ_DATA (*( (volatile uint32_t *) (WB_BASE + 0xCUL)))
-#define WB_STATUS (*( (volatile uint32_t *) (WB_BASE + 0x10UL)))
+
+struct WishboneBus {
+    volatile uint32_t read_addr;
+    volatile uint32_t write_addr;
+    volatile uint32_t write_data;
+    volatile uint32_t read_data;
+    volatile uint32_t status;
+};
+
+#define WISHBONE_BUS ((struct WishboneBus *) (WB_BASE))
 
 // Write and block until it was successful
 // FIXME: Instead we could block until ready, then write?
 void wb_write(uint32_t addr, uint32_t data) {
-    WB_WRITE_DATA = data;
-    WB_WRITE_ADDR = addr;
-    while(!WB_STATUS);
+    WISHBONE_BUS->write_data = data;
+    WISHBONE_BUS->write_addr = addr;
+    while(!WISHBONE_BUS->status);
 }
 
-uint32_t wb_read(uint32_t addr) {
-    WB_READ_ADDR = addr;
-    while(!WB_STATUS);
-    return WB_READ_DATA;
+volatile uint32_t wb_read(uint32_t addr) {
+    WISHBONE_BUS->read_addr = addr;
+    
+    /**
+     * @brief When the compiler is passed the -Os flag to optimize the program,
+     *        it will compile to a store immediately followed by a load instruction
+     *        on the bus. However, the wishbone bus needs two instructions between
+     *        a load and store. This is the reason these NOP instructions are 
+     *        inserted.
+     * 
+     *        When the -O0 flag is passed the code will work without the NOP
+     *        instructions because non-optimal instructions are present between
+     *        the load and store.
+     */
+    fp_nop;
+    fp_nop;
+    while(!WISHBONE_BUS->status);
+    return WISHBONE_BUS->read_data;
 }

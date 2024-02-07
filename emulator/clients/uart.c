@@ -34,7 +34,7 @@
 
 #include "common.h"
 
-#define CLOCK_FREQUENCY ((uint32_t)(100e6))  // MHz
+#define CLOCK_FREQUENCY ((uint32_t)(50e6))  // MHz
 #define UART_BAUDRATE   (115200)             //  Hz
 #define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / UART_BAUDRATE)
 

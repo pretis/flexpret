@@ -17,28 +17,33 @@
 #define PRINTF_COLOR_GREEN "\x1B[32m"
 #define PRINTF_COLOR_NONE  "\x1B[0m"
 
-#ifndef NDEBUG
-  #define _fp_abort(fmt, ...) do { \
-    printf("%s: %s: %i: " PRINTF_COLOR_RED "Abort:" PRINTF_COLOR_NONE, __FILE__, __func__, __LINE__); \
-    printf(fmt, ##__VA_ARGS__); \
-    write_tohost(CSR_TOHOST_ABORT); \
-  } while(0)
-#else 
-  #define _fp_abort(fmt, ...) do { \
-    write_tohost(CSR_TOHOST_ABORT); \
-  } while(0)
-#endif // NDEBUG
+#if HAVE_PRINTF
 
-#ifndef NDEBUG
-  #define _fp_finish() do { \
-    printf("%s: %i: " PRINTF_COLOR_GREEN "Finish\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
-    write_tohost(CSR_TOHOST_FINISH); \
-  } while(0)
+    #define _fp_abort(fmt, ...) do { \
+        printf("%s: %s: %i: " PRINTF_COLOR_RED "Abort:" PRINTF_COLOR_NONE, __FILE__, __func__, __LINE__); \
+        printf(fmt, ##__VA_ARGS__); \
+        gpo_set_ledmask(__LINE__ % 255); \
+        write_tohost(CSR_TOHOST_ABORT); \
+    } while(0)
+    
+    #define _fp_finish() do { \
+        printf("%s: %i: " PRINTF_COLOR_GREEN "Finish\n" PRINTF_COLOR_NONE, __FILE__, __LINE__); \
+        gpo_set_ledmask((1 << 7)); \
+        write_tohost(CSR_TOHOST_FINISH); \
+    } while(0)
+
 #else
-  #define _fp_finish() do { \
-    write_tohost(CSR_TOHOST_FINISH); \
-  } while(0)
-#endif // NDEBUG
+
+    #define _fp_abort(fmt, ...) do { \
+        gpo_set_ledmask(__LINE__ % 255); \
+        write_tohost(CSR_TOHOST_ABORT); \
+    } while (0)
+
+    #define _fp_finish() do { \
+        write_tohost(CSR_TOHOST_FINISH); \
+    } while(0)
+
+#endif // HAVE_PRINTF
 
 /**
  * @brief Write a generic value to the tohost CSR
@@ -46,7 +51,6 @@
  * @param tid Thread ID
  */
 void write_tohost_tid(uint32_t tid, uint32_t val);
-
 
 /**
  * @brief Write a generic value to the tohost CSR, but fetch the thread ID automatically
@@ -73,6 +77,15 @@ void gpo_write_0(uint32_t val);
 void gpo_write_1(uint32_t val);
 void gpo_write_2(uint32_t val);
 void gpo_write_3(uint32_t val);
+
+/**
+ * @brief Set all the eight LEDs on the Zedboard FPGA to the byte
+ * 
+ * @param byte 
+ * 
+ * FIXME: Generalize to all FPGAs or remove
+ */
+void gpo_set_ledmask(const uint8_t byte);
 
 /**
  * @brief Set pins of general purpose output - do not overwrite other values

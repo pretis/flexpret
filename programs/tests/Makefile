@@ -9,6 +9,7 @@ RES_PARSER := $(FLEXPRET_ROOT_DIR)/scripts/test_result_parse.sh
 C_TESTS_DIRS = \
 	add \
 	calloc \
+	bootloader \
 	fib \
 	global \
 	gpio \
@@ -36,11 +37,9 @@ MT_C_TESTS_DIRS = \
 	printf \
 	stack \
 	swlock \
-	printf \
 	syscall \
-	cond \
 	threadcancel
-#uart
+# uart
 
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)

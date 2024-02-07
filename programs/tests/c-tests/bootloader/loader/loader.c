@@ -11,8 +11,8 @@
 #define APP_LOCATION 0x1000
 #endif // APP_LOCATION
 
-#ifndef NDEBUG
-#define DBG_PRINT(x) do { _fp_print(x); } while(0)
+#if 0
+#define DBG_PRINT(x) do { fp_print_int(x); } while(0)
 #else
 #define DBG_PRINT(x) do {  } while(0)
 #endif // NDEBUG
@@ -28,23 +28,15 @@ typedef enum {
     FAULT
 } app_recv_states_t;
 
-void set_ledmask(const uint8_t byte)
-{
-    gpo_write_0((byte >> 0) & 0b11);
-    gpo_write_1((byte >> 2) & 0b11);
-    gpo_write_2((byte >> 4) & 0b11);
-    gpo_write_3((byte >> 6) & 0b11);
-}
-
 // Global flag indicating that bootloading is done
 // hart0 will set it to true. Other harts wait on it
 static bool boot_done = false;
 
 void main(void) {
     if ((gpi_read_0() & 0b1) == 0b1) {
-        set_ledmask(0xFF);
+        gpo_set_ledmask(0xFF);
         bootloader();
-        set_ledmask(0x00);
+        gpo_set_ledmask(0x00);
     }
 
     // Jump to start.S
@@ -74,13 +66,14 @@ int bootloader(void) {
 #ifdef __FPGA__
         uint32_t nbytes_written = (int)app_ptr - (int)application;
         if ((nbytes_written % 1000) == 0) {
-            set_ledmask(nbytes_written / 1000);
+            gpo_set_ledmask(nbytes_written / 1000);
         }
 #endif // __FPGA__
 
         switch (app_recv_state) {
 
             case RECV_SYNC_ID: {
+                
                 DBG_PRINT(1);
                 gpo_set(0, 2);
                 recv=uart_receive();

@@ -22,7 +22,7 @@
 
 extern uint32_t __stack_chk_guard;
 
-static bool stack_fail_fnc_called[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+static volatile bool stack_fail_fnc_called[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 
 // The function is weakly linked. Its default implementation would exit and fail
 // the test. In this test, we want the function to be called but not fail the test.
@@ -73,16 +73,16 @@ void *test_break_and_safe(void *args) {
 
     break_stack_guard_direct();
     fp_assert(stack_fail_fnc_called[hartid] == true, 
-        "Fail function not called after guard broken");
+        "Fail function not called after guard broken\n");
     stack_fail_fnc_called[hartid] = false;
 
     safe_function();
     fp_assert(stack_fail_fnc_called[hartid] == false, 
-        "Fail function called when not supposed to");
+        "Fail function called when not supposed to\n");
 
     break_stack_guard_direct();
     fp_assert(stack_fail_fnc_called[hartid] == true, 
-        "Fail function not called after guard broken");
+        "Fail function not called after guard broken\n");
     stack_fail_fnc_called[hartid] = false;
 }
 
@@ -94,13 +94,14 @@ int main() {
     fp_thread_t tid[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
         fp_assert(fp_thread_create(HRTT, &tid[i], test_break_and_safe, NULL) == 0, 
-            "Could not create thread");
+            "Could not create thread\n");
     }
+
 
     void *exit_codes[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
         fp_thread_join(tid[i], &exit_codes[i]);
-        fp_assert(exit_codes[i] == 0, "Thread's exit code was non-zero");
+        fp_assert(exit_codes[i] == 0, "Thread's exit code was non-zero\n");
     }
 
     printf("Test success in multi-threaded environment\n");

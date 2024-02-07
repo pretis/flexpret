@@ -49,14 +49,7 @@ static enum state next_state[NUM_THREADS];
 static int fd[NUM_THREADS];
 static int nbytes_received[NUM_THREADS];
 
-#if NUM_THREADS > 1
 static char buffer[NUM_THREADS][128];
-#define ACCESS_BUFFER(buf, tid, idx) buf[tid][idx]
-#else
-static char buffer[128];
-#define ACCESS_BUFFER(buf, tid, idx) buf[idx]
-#endif // NUM_THREADS > 1
-
 
 void printf_init(void) {
     for (int i = 0; i < NUM_THREADS; i++) {
@@ -64,11 +57,7 @@ void printf_init(void) {
         next_state[i] = EXPECT_FD;
         fd[i] = 0;
         nbytes_received[i] = 0;
-#if NUM_THREADS > 1
         memset(buffer[i], 0, sizeof(buffer[i]));
-#else
-        memset(buffer, 0, sizeof(buffer));
-#endif // NUM_THREADS > 1
     }
 }
 
@@ -106,7 +95,7 @@ void printf_fsm(const int tid, const uint32_t reg) {
             int terminator_idx = _contains_terminator(reg);
             if (terminator_idx != -1) {
                 memcpy(
-                    &ACCESS_BUFFER(buffer, tid, nbytes_received[tid]),
+                    &buffer[tid][nbytes_received[tid]],
                     &reg,
                     sizeof(uint32_t)
                 );
@@ -120,7 +109,7 @@ void printf_fsm(const int tid, const uint32_t reg) {
 #endif // NUM_THREADS > 1
             } else {
                 memcpy(
-                    &ACCESS_BUFFER(buffer, tid, nbytes_received[tid]),
+                    &buffer[tid][nbytes_received[tid]],
                     &reg,
                     sizeof(uint32_t)
                 );

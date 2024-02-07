@@ -52,6 +52,10 @@
     fp_wait_until(now_ns + ns); \
 } while(0)
 
+#define fp_nop do { \
+  __asm__ volatile(".word 0x00000013;"); \
+} while(0)
+
 /**
  * @brief Read out a 64 bit timestamp. Since it is done with two read operations
  * we must handle a potential wrapping event where we read the lower bits BEFORE the wrap

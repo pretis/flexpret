@@ -1,5 +1,7 @@
 #include "flexpret_io.h"
 #include "flexpret_csrs.h"
+#include <stdlib.h> // itoa
+#include <string.h> // strlen
 
 void write_tohost_tid(uint32_t tid, uint32_t val) {
     switch(tid) {
@@ -20,11 +22,22 @@ void write_tohost(uint32_t val) {
     write_tohost_tid(tid, val);
 }
 
+#include "flexpret_uart.h"
 void fp_print_int(uint32_t val) {
-    while(swap_csr(CSR_HWLOCK, 1) == 0);
+#ifdef __EMULATOR__
     write_tohost(CSR_TOHOST_PRINT_INT);
     write_tohost(val);
-    swap_csr(CSR_HWLOCK, 0);
+#endif // __EMULATOR__
+#ifdef __FPGA__
+    // Max uint32_t is 4,294,967,295 -> 10 digits + \0
+    char num[11];
+    itoa(val, num, 10);
+    for (int i = 0; i < strlen(num); i++) {
+        uart_send(num[i]);
+    }
+    uart_send('\n');
+    uart_send('\0');
+#endif // __FPGA__
 }
 
 void gpo_write(uint32_t port, uint32_t val) {
@@ -41,6 +54,13 @@ void gpo_write_0(uint32_t val) { write_csr(CSR_UARCH4, val); }
 void gpo_write_1(uint32_t val) { write_csr(CSR_UARCH5, val); }
 void gpo_write_2(uint32_t val) { write_csr(CSR_UARCH6, val); }
 void gpo_write_3(uint32_t val) { write_csr(CSR_UARCH7, val); }
+
+void gpo_set_ledmask(const uint8_t byte) {
+    gpo_write_0((byte >> 0) & 0b11);
+    gpo_write_1((byte >> 2) & 0b11);
+    gpo_write_2((byte >> 4) & 0b11);
+    gpo_write_3((byte >> 6) & 0b11);
+}
 
 void gpo_set(uint32_t port, uint32_t mask) {
     switch(port) {

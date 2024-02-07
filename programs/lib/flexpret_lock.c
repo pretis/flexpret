@@ -13,7 +13,7 @@ void fp_hwlock_acquire(void) {
 void fp_hwlock_release(void) {
     if (swap_csr(CSR_HWLOCK, 0) != 1) {
         fp_assert(false, "Attempt to unlock hwlock but it was not locked");
-    };
+    }
 }
 
 static int do_acquire(fp_lock_t* lock) {

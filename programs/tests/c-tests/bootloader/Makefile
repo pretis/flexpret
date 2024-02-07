@@ -32,7 +32,8 @@ APP_START_ADDR_PART_2nd := $(shell make -C $(BOOTLOADER_NAME) TARGET=$(TARGET) S
 
 APP_START_ADDR_2nd := $(shell echo $$(($(APP_START_ADDR_PART_2nd) * 4)))
 
-all: $(PROJECT_NAME).mem app/$(APP_NAME).dump check
+all: compile
+compile: $(PROJECT_NAME).mem app/$(APP_NAME).dump check
 
 # Make the bootloader with the specified start address and the app with 
 # a specific linker script
@@ -73,7 +74,7 @@ clean:
 	@rm -f $(FP_LIB_DIR)/linker/flexpret_bootloader_config.ld
 
 run: $(PROJECT_NAME).mem
-	@$(EMU) +ispm=$(PROJECT_NAME).mem
+	@$(EMU) +ispm=$(PROJECT_NAME).mem --allow-imem-store
 
 flash:
 	@echo "The bootloader cannot be flashed to an FPGA; it must be uploaded within an FPGA image. This is the piece of software that enables other software to be flashed."
