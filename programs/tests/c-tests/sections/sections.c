@@ -75,7 +75,7 @@ int main() {
     fp_assert(rodata   == RODATA_INIT_VAL, "Value not properly set");
     fp_assert(srodata  == SRODATA_INIT_VAL, "Value not properly set");
 
-    const uint8_t array[4] = ARRAY_INIT_VAL;
+    const volatile uint8_t array[4] = ARRAY_INIT_VAL;
 
     for (int i = 0; i < sizeof(arraytext); i++) {
         // Expect the array to have the same value for all indicies; see earlier

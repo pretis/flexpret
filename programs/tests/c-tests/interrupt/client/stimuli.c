@@ -30,11 +30,11 @@ int main(int argc, char *const* argv)
     int client_fd = setup_socket();
     
     sleep(3);
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 50; i++) {
         if (send(client_fd, interrupt, sizeof(interrupt), 0) < 0) {
             break;
         }
-        usleep((int) 3e5);
+        usleep((int) (5e4 * NUM_THREADS));
     }
 
     close(client_fd);

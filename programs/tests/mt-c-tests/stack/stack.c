@@ -24,8 +24,9 @@ extern uint32_t __stack_chk_guard;
 
 static bool stack_fail_fnc_called[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 
-// The function is weakly linked, so we override its implementation so it does
-// not exit and fail the test
+// The function is weakly linked. Its default implementation would exit and fail
+// the test. In this test, we want the function to be called but not fail the test.
+// The solution is to override it with something that does not exit. 
 void __stack_chk_fail(void) {
     int hartid = read_hartid();
     stack_fail_fnc_called[hartid] = true;

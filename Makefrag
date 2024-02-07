@@ -50,6 +50,8 @@ ALL_OBJECTS := $(patsubst %.c,%.o,$(ALL_SOURCES))
 
 ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
+else
+CFLAGS += -fstack-protector
 endif
 
 .PHONY: compile riscv dump mem run clean recompile

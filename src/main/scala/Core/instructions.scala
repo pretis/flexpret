@@ -252,7 +252,6 @@ object CSRs {
   val ptbr      = 0x504
   val asid      = 0x505   // iMemProtection
   val count     = 0x506
-  //val compare   = 0x507
   val evec      = 0x508
   val cause     = 0x509
   val status    = 0x50a
@@ -324,7 +323,6 @@ object CSRs {
     res += ptbr
     res += asid
     res += count
-    //res += compare
     res += evec
     res += cause
     res += status

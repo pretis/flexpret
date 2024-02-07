@@ -116,7 +116,7 @@ void printf_fsm(const int tid, const uint32_t reg) {
                 printf("[%i]: %s", tid, buffer[tid]);
 #else
                 // Thread id just becomes noise in this case
-                printf("%s", buffer);
+                printf("%s", buffer[tid]);
 #endif // NUM_THREADS > 1
             } else {
                 memcpy(

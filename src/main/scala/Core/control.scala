@@ -69,7 +69,11 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
   val exe_br_cond = Input(Bool())
   val exe_tid     = Input(UInt(conf.threadBits.W))
   val exe_rd_addr = Input(UInt(REG_ADDR_BITS.W))
-  val exe_expire  = Input(Bool()) // DU, WU
+  
+  val exe_expire_du  = Input(Bool())
+  val exe_expire_wu  = Input(Bool())
+  val exe_expire_ie_ee  = Input(Bool())
+  
   val csr_slots   = Input(Vec(8, UInt(SLOT_WI.W)))
   val csr_tmodes  = Input(Vec(conf.threads, UInt(TMODE_WI.W)))
   val mem_tid     = Input(UInt(conf.threadBits.W))
@@ -238,6 +242,20 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     stall_count(tid) := Mux(stall_count(tid) =/= 0.U, stall_count(tid) - 1.U, 0.U)
   }
 
+  val await_exit_du = RegInit(false.B)
+  val await_exit_du_tid = RegInit(3.U)
+  when(io.exe_expire_du) {
+    // Remember that we should exit so we can do when the thread fetches the next
+    // instruction
+    await_exit_du := true.B
+    await_exit_du_tid := io.exe_tid
+  }
+
+  // When this is true, two things happen:
+  // 1. We mark the incoming instruction as invalid, since it will be another DU
+  // 2. We set the next PC selection to be PC+4
+  val exit_du_next_cycle = await_exit_du && await_exit_du_tid === io.if_tid
+
   // 1 cycle instruction: -
   // 2 cycle instruction: dec_stall = true
   // 3 cycle instruction: dec_stall = true; stall_count(tid) = 1
@@ -253,7 +271,8 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   val if_reg_valid  = RegNext(next_valid, init = false.B)
   val if_pre_valid  = if_reg_valid &&
                       !(dec_stall && (io.if_tid === io.dec_tid)) &&
-                      stall_count(io.if_tid) === 0.U
+                      stall_count(io.if_tid) === 0.U &&
+                      !exit_du_next_cycle
   val if_valid      = if_pre_valid &&
                       !(exe_flush && (io.if_tid === io.exe_tid))
   val dec_reg_valid = RegNext(if_valid,   init = false.B)
@@ -333,13 +352,16 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   //val exe_brjmp = exe_valid && (exe_reg_jump || (exe_reg_branch && io.exe_br_cond))
 
   // Keep track of delay_until instruction.
+  val exe_expire_du_wu = io.exe_expire_du || io.exe_expire_wu
+  val exe_expire = exe_expire_du_wu || io.exe_expire_ie_ee
+
   val exe_du: Bool = if (conf.delayUntil) {
     val exe_reg_du = RegNext(dec_du.asBool)
     // If instruction is valid and compare time value has not expired, set PC:
     // DU: address of DU (branch to self)
     // WU: adress of WU+4 (branch to next instruction)
     // Assumes exception has higher PC priority than DU/WU
-    exe_reg_valid && exe_reg_du && !io.exe_expire
+    exe_reg_valid && exe_reg_du && !exe_expire
     // Otherwise just keep executing.
   } else {
     false.B
@@ -352,7 +374,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     // DU: address of DU (branch to self)
     // WU: adress of WU+4 (branch to next instruction)
     // Assumes exception has higher PC priority than DU/WU
-    exe_reg_valid && exe_reg_wu && !io.exe_expire
+    exe_reg_valid && exe_reg_wu && !exe_expire
     // Otherwise just keep executing.
   } else {
     false.B
@@ -404,11 +426,15 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     dec_rs1_sel := RS1_DEC
     dec_rs2_sel := RS2_DEC
   }
-
+  
   // Determine how to update PC for each thread.
   val next_pc_sel = Wire(Vec(conf.threads, UInt(2.W)))
   for(tid <- 0 until conf.threads) { next_pc_sel(tid) := NPC_PCREG }
-  when(if_pre_valid)            { next_pc_sel(io.if_tid)  := NPC_PLUS4 }
+  when(if_pre_valid)               { next_pc_sel(io.if_tid) := NPC_PLUS4 }
+  when(exit_du_next_cycle) {
+    next_pc_sel(io.if_tid) := NPC_PLUS4 
+    await_exit_du := false.B
+  }
   if(!conf.regBrJmp) {
     when(exe_brjmp || exe_du_wu)   { next_pc_sel(io.exe_tid) := NPC_BRJMP }
     } else {
@@ -441,7 +467,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   // Exception, flush, and stall logic
 
   // If branch taken, kill any instructions from same thread in pipeline
-  when(exe_brjmp) {
+  when(exe_brjmp || exe_xret) {
     exe_flush := true.B
     if(conf.regBrJmp) { stall_count(io.exe_tid) := 1.U }
   }

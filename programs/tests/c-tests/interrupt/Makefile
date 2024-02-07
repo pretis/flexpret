@@ -1,6 +1,6 @@
 FLEXPRET_ROOT_DIR = ../../../../
 NAME = interrupt
-APP_SOURCES = interrupt.c
+APP_SOURCES = main.c interrupt.c
 CLIENT = client/stimuli.elf
 CLIENT_CMD = ./$(CLIENT)
 
