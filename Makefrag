@@ -33,6 +33,8 @@ LFLAGS += -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map
 
 ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
+else
+CFLAGS += -fstack-protector
 endif
 
 .PHONY: compile riscv dump mem run clean recompile

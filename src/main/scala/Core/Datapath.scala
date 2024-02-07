@@ -359,7 +359,9 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
 
   csr.io.ie := io.control.exe_ie
   csr.io.ee := io.control.exe_ee
-  io.control.exe_expire := csr.io.expire
+  io.control.exe_expire_du := csr.io.expire_du
+  io.control.exe_expire_wu := csr.io.expire_wu
+  io.control.exe_expire_ie_ee := csr.io.expire_ie_ee
   csr.io.dec_tid := dec_reg_tid
 
   // privileged

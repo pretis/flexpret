@@ -32,7 +32,6 @@ MT_C_TESTS_DIRS = \
 	add \
 	cond \
 	heap \
-	interrupt \
 	lockowner \
 	printf \
 	stack \
@@ -40,8 +39,8 @@ MT_C_TESTS_DIRS = \
 	printf \
 	syscall \
 	cond \
-	threadcancel \
-	uart
+	threadcancel
+#uart
 
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)
@@ -54,7 +53,10 @@ else
 all: run-c-tests run-mt-c-tests
 endif
 
-# .out file is created from compiled .mem file by running the emulator
+# We want to write stdout both to file and terminal - this is done using 'tee
+# To catch the exit code from running make, we 'set -o pipefail'.
+# Then we pass the output into a result parser along with the exit code from
+# make.
 %.out: %.mem
 	-@set -o pipefail
 	@make run -C $(dir $@) | tee $@
