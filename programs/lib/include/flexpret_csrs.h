@@ -3,7 +3,6 @@
 
 #define CSR_EPC         0x502
 #define CSR_SLOTS       0x503
-//#define CSR_COMPARE     0x507
 #define CSR_EVEC        0x508 
 #define CSR_CAUSE       0x509 
 #define CSR_STATUS      0x50a
