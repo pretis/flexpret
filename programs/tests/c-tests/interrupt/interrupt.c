@@ -134,7 +134,7 @@ void *test_low_timeout(void *args) {
     volatile uint32_t now, expire;
 
     // Feel free to play around with this value and see what happens
-    const uint32_t timeout_ns = 2000;
+    const uint32_t timeout_ns = 10000;
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
     

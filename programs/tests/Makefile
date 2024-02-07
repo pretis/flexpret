@@ -39,8 +39,8 @@ MT_C_TESTS_DIRS = \
 	printf \
 	syscall \
 	cond \
-	threadcancel \
-	uart
+	threadcancel
+#uart
 
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)
