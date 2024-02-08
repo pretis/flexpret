@@ -5,8 +5,20 @@
 #define SYNC_ID_LEN 2
 #define LEN_FIELD_LEN 4
 
-// Warning: Do not use this macro, as it will change the size of the bootloader
-//          between the 1st and 2nd compilation.
+/**
+ * The app will be placed right after the bootloader. However, the size of the
+ * bootloader depends on the bootloader itself. Therefore, the bootloader is
+ * compiled once to determine its size. The size is then passed to it through
+ * this variable. 
+ * 
+ * Usage of this macro should be avoided, because when its value changes between
+ * the 1st and 2nd compilation, it may trigger some unexpected effects.
+ * 
+ * E.g., if it is used to initialize a variable, the variable will
+ * be placed in .bss if the macro is 0 but .data otherwise.
+ * It can also cause some unexpected optimization.
+ * 
+ */
 #ifndef APP_LOCATION
 #define APP_LOCATION 0x1000
 #endif // APP_LOCATION
@@ -17,7 +29,7 @@
 #define DBG_PRINT(x) do {  } while(0)
 #endif // NDEBUG
 
-static void (*application)(void) = (void (*)())(APP_LOCATION);
+void (*application)(void) = (void (*)(void))(APP_LOCATION);
 int bootloader(void);
 
 typedef enum {
@@ -30,7 +42,7 @@ typedef enum {
 
 // Global flag indicating that bootloading is done
 // hart0 will set it to true. Other harts wait on it
-static bool boot_done = false;
+bool boot_done = false;
 
 void main(void) {
     if ((gpi_read_0() & 0b1) == 0b1) {
@@ -38,6 +50,8 @@ void main(void) {
         bootloader();
         gpo_set_ledmask(0x00);
     }
+
+    boot_done = true;
 
     // Jump to start.S
     application();
@@ -53,6 +67,9 @@ int bootloader(void) {
     unsigned char recv;
     unsigned int len;
     unsigned int instr;
+
+    // Disable instruction memory protection
+    write_csr(CSR_IMEM_PROT, 0x88888888);
 
     while (1) {
 
@@ -159,4 +176,7 @@ int bootloader(void) {
             }
         }
     }
+
+    // Enable memory protection on entire instruction memory
+    write_csr(CSR_IMEM_PROT, 0xCCCCCCCC);
 }

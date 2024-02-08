@@ -8,10 +8,10 @@ NAME = loader
 
 ASM_START := $(FP_LIB_DIR)/start.S
 BOOTLOADER_SOURCES := \
-	$(FP_LIB_DIR)/startup_bootloader.c \
 	$(FP_LIB_DIR)/flexpret_io.c \
 	$(FP_LIB_DIR)/flexpret_wb.c \
 	$(FP_LIB_DIR)/flexpret_uart.c \
+	startup.c \
 	$(NAME).c
 
 BOOTLOADER_OBJECTS := $(patsubst %.c,%.o,$(BOOTLOADER_SOURCES))

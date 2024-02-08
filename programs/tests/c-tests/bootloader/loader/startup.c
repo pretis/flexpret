@@ -11,6 +11,9 @@ extern uint32_t end;
 //prototype of main
 int main(void);
 
+extern void (*application)(void);
+extern volatile bool boot_done;
+
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
@@ -32,10 +35,23 @@ void Reset_Handler() {
         for(uint32_t i = 0; i < size; i++) {
             *pDst++ = 0;
         }
-        
+
+        // Jump to main (which should be the bootloader)
+        main();        
+    } else {
+        while (!boot_done);
+
+        /**
+         * In the case where there is no bootloader, all threads directly
+         * boot into the application. That should be the case here too.
+         * This really only works because the application has its own 
+         * Reset_Handler function (see startup.c in lib) which deals with these
+         * threads.
+         * 
+         */
+        application();
     }
-    // Jump to main (which should be the bootloader)
-    main();
+
 
     // Exit the program.
     write_tohost(CSR_TOHOST_FINISH);
