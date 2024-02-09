@@ -10,7 +10,7 @@
 #include <flexpret_assert.h>
 #include <flexpret_uart.h>
 
-void* printer(void* arg) {
+void* pumper(void* arg) {
     struct PrintBuffer *printbuf = arg;
     
     char writebuf[128];
@@ -25,13 +25,13 @@ int main(void) {
     
     // One more than strictly necessary
     struct PrintBuffer bufs[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(
-        get_default_printbuffer()
+        get_new_printbuffer()
     );
 
     int ret = 0;
     fp_thread_t tid[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
-        ret = fp_thread_create(HRTT, &tid[i], printer, &bufs[i]);
+        ret = fp_thread_create(HRTT, &tid[i], pumper, &bufs[i]);
         fp_assert(ret == 0, "Could not create thread");
     }
 

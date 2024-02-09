@@ -1,7 +1,7 @@
 #include <flexpret_pbuf.h>
 #include <string.h>
 
-struct PrintBuffer get_default_printbuffer(void) {
+struct PrintBuffer get_new_printbuffer(void) {
     return (struct PrintBuffer) {
         .rdpos = 0,
         .wrpos = 0,

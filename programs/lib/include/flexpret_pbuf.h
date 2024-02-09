@@ -27,7 +27,7 @@ struct PrintBuffer {
     fp_lock_t lock;
 };
 
-struct PrintBuffer get_default_printbuffer(void);
+struct PrintBuffer get_new_printbuffer(void);
 void printbuffer_pump(struct PrintBuffer *pbuf, char *pump, const uint32_t pump_len);
 const uint32_t printbuffer_drain(struct PrintBuffer *pbuf, char *drain);
 
