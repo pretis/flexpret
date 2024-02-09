@@ -16,7 +16,7 @@ object Constants {
 
   val DATA_RDY_BIT=0
   val TX_FIFO_FULL_BIT=1
-  val FAULT_BIT=2
+  val FAULT_BAD_ADDR_BIT=2
 
   val CONST_VALUE=0x55
 }
@@ -47,11 +47,14 @@ class WishboneUart(implicit cfg: FlexpretConfiguration) extends WishboneDevice(4
   txFifo.enq.bits := 0.U
   rxFifo.deq.ready := false.B
 
-  // Status register 1. DataRdy, 2. TxFifoFull 3. Fault
+  val fault_bad_addr = RegInit(false.B)
+
+  // Status register 1. DataRdy, 2. TxFifoFull 3. Bad address
   val regCSR = RegInit(0.U(3.W))
   val wCSR = WireInit(VecInit(Seq.fill(3)(false.B)))
   wCSR(DATA_RDY_BIT) := rxFifo.deq.valid
   wCSR(TX_FIFO_FULL_BIT) := !txFifo.enq.ready
+  wCSR(FAULT_BAD_ADDR_BIT) := fault_bad_addr
   regCSR := wCSR.asUInt
 
   // Read register
@@ -75,7 +78,7 @@ class WishboneUart(implicit cfg: FlexpretConfiguration) extends WishboneDevice(4
             txFifo.enq.bits := port.wrData
             assert(txFifo.enq.fire)
           }.otherwise {
-            assert(false.B)
+            fault_bad_addr := true.B
           }
           regState := sWrite
         }.otherwise {
@@ -85,10 +88,11 @@ class WishboneUart(implicit cfg: FlexpretConfiguration) extends WishboneDevice(4
             assert(rxFifo.deq.fire)
           }.elsewhen(port.addr === CSR_ADDR.U) {
             regReadData := regCSR
+            fault_bad_addr := false.B
           }.elsewhen(port.addr === CONST_ADDR.U) {
             regReadData := CONST_VALUE.U
           }.otherwise {
-            assert(false.B)
+            fault_bad_addr := true.B
           }
           regState := sRead
         }

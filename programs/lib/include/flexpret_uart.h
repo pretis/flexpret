@@ -17,7 +17,7 @@
 // Macros for parsing the CSR register value
 #define UART_DATA_READY(val) (val & 0x01)
 #define UART_TX_FULL(val) (val & 0x02)
-#define UART_FAULT(val) (val & 0x04)
+#define UART_FAULT_BAD_ADDR(val) (val & 0x04)
 
 /**
  * @brief Write data over UART using with the wishbone interface

@@ -35,11 +35,41 @@ class WishboneUartTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "receive write" in {
     test(wb) { c =>
       wbWrite(c, Constants.TX_ADDR, 8)
+
+      c.clock.step(1)
+
+      // Check for errors
+      wbExpectRead(c, Constants.CSR_ADDR, 0)
     }
   }
 
   it should "do a read" in {
     test(wb) { c =>
+      // Read the magic register
+      wbExpectRead(c, Constants.CONST_ADDR, Constants.CONST_VALUE)
+      
+      c.clock.step(1)
+      
+      // Check for errors in CSR
+      wbExpectRead(c, Constants.CSR_ADDR, 0)
+    }
+  }
+
+  it should "write a bad address, get an error and clear it" in {
+    test(wb) { c => 
+      // Should initially be zero
+      wbExpectRead(c, Constants.CSR_ADDR, 0)
+      c.clock.step(1)
+
+      // Write to a bad address
+      wbWrite(c, 2, 0)
+      c.clock.step(1)
+
+      // Expect bad addr bit set
+      wbExpectRead(c, Constants.CSR_ADDR, (1 << Constants.FAULT_BAD_ADDR_BIT))
+      c.clock.step(1)
+
+      // Bad addr bit is automatically cleared on reading the CSR, which we just did
       wbExpectRead(c, Constants.CSR_ADDR, 0)
     }
   }
