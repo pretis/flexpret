@@ -49,12 +49,12 @@ include $(FP_LIB_DIR)/Makefrag-lib
 all: $(NAME).mem $(NAME).dump
 
 %.o: %.c $(LIB_AUTOGEN)
-	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -c $< -o $@ $(DEFINES) -D APP_LOCATION=$(START_ADDR)
-	mkdir -p build
-	mv $@ build
+	@$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -c $< -o $@ $(DEFINES) -D APP_LOCATION=$(START_ADDR)
+	@mkdir -p build
+	@mv $@ build
 
 $(NAME).riscv: $(BOOTLOADER_OBJECTS)
-	$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -o $(NAME).riscv $(ASM_START) build/* $(DEFINES) -D APP_LOCATION=$(START_ADDR)
+	@$(CC) $(CFLAGS) -T$(LDSCRIPT) $(INCS) -o $(NAME).riscv $(ASM_START) build/* $(DEFINES) -D APP_LOCATION=$(START_ADDR)
 
 mem: $(NAME).mem
 $(NAME).mem: $(NAME).riscv
