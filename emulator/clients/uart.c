@@ -33,8 +33,9 @@
 #include <stdlib.h>
 
 #include "common.h"
+#include "../../programs/lib/include/flexpret_hwconfig.h"
 
-#define CLOCK_FREQUENCY ((uint32_t)(50e6))  // MHz
+#define CLOCK_FREQUENCY ((uint32_t)(CLOCK_FREQ_MHZ * 1e6))  // MHz
 #define UART_BAUDRATE   (115200)             //  Hz
 #define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / UART_BAUDRATE)
 

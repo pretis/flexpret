@@ -12,28 +12,29 @@ object FlexpretConfiguration {
    * Parse a given configuration string into a FlexpretConfiguration.
    */
   def parseString(confString: String, coreId:Int=0): FlexpretConfiguration = {
-    val parsed = """(\d+)t(.*)-(\d+)i-(\d+)d.*-(.*)""".r.findFirstMatchIn(confString)
+    val parsed = """(\d+)t(.*)@(\d+)MHz-(\d+)i-(\d+)d.*-(.*)""".r.findFirstMatchIn(confString)
     new FlexpretConfiguration(
       parsed.get.group(1).toInt,
       !parsed.get.group(2).isEmpty,
-      InstMemConfiguration(bypass=false, parsed.get.group(3).toInt),
-      parsed.get.group(4).toInt,
+      parsed.get.group(3).toInt * 1000000,
+      InstMemConfiguration(bypass=false, parsed.get.group(4).toInt),
+      parsed.get.group(5).toInt,
       confString contains "mul",
       false,
-      parsed.get.group(5),
+      parsed.get.group(6),
       coreId
     )
   }
   def defaultCfg(): FlexpretConfiguration = {
     new FlexpretConfiguration(
       1,true,
+      50000000,
       InstMemConfiguration(bypass=false, 256),
       24,
       false,
       false,
       "all",
       0,
-      50000000
     )
   }
 }
@@ -50,13 +51,13 @@ case class InstMemConfiguration(
 case class FlexpretConfiguration(
   threads: Int,
   flex: Boolean,
+  clkFreq: Int,
   imemConfig: InstMemConfiguration,
   dMemKB: Int,
   mul: Boolean,   // FIXME: Unused, to be removed.
   priv: Boolean,
   features: String,
-  coreId: Int = 0,
-  clkFreq: Int = 50000000
+  coreId: Int = 0
 ) {
   println("features: " + features)
   val mt = threads > 1
@@ -141,8 +142,10 @@ case class FlexpretConfiguration(
   val iMemBtlSize = 0x1000
 
   // functionality
+  val clkFreqMHz    = clkFreq / 1000000
   val timeBits      = 32
-  val timeInc       = 10
+  val nsPerS        = 1000000000
+  val timeInc       = nsPerS / clkFreq
   require(timeBits <= 32)
   val getTime       = delayUntil || interruptExpire
   val hwLock        = true
@@ -188,6 +191,7 @@ case class FlexpretConfiguration(
 
 /* Timing */
 #define CLOCK_PERIOD_NS ${timeInc}
+#define CLOCK_FREQ_MHZ  ${clkFreqMHz}
 #define TIME_BITS       ${timeBits}
 
 /* IO */
@@ -215,6 +219,7 @@ case class FlexpretConfiguration(
 
 THREADS := ${threads}
 FLEXPRET := ${flex}
+CLK_FREQ_MHZ := ${clkFreqMHz}
 ISPM_KBYTES := ${imemConfig.sizeKB}
 DSPM_KBYTES := ${dMemKB}
 MUL := ${mul}

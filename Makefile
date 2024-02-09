@@ -64,6 +64,9 @@ MUL ?= false
 # 	all: ti+ all exception causes and stats
 SUFFIX ?= all
 
+# In MHz
+CLK_FREQ ?= 50
+
 # Target
 # TARGET=[emulator/fpga]: Select target
 TARGET ?= emulator
@@ -80,7 +83,7 @@ PROG_CONFIG ?= $(TARGET)
 
 # Construct core configuration string (used for directory naming).
 # Note: '?=' not used so string is only constructed once.
-CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d$(if $(findstring true, $(MUL)),-mul)-$(SUFFIX)
+CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)@$(CLK_FREQ)MHz-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d$(if $(findstring true, $(MUL)),-mul)-$(SUFFIX)
 
 
 all: $(TARGET)
