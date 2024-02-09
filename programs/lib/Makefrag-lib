@@ -14,6 +14,7 @@ LIB_SOURCES += \
 	$(FP_LIB_DIR)/flexpret_exceptions.c \
 	$(FP_LIB_DIR)/flexpret_wb.c \
 	$(FP_LIB_DIR)/flexpret_uart.c \
+	$(FP_LIB_DIR)/flexpret_pbuf.c \
 	$(FP_LIB_DIR)/flexpret_io.c \
 	$(FP_LIB_DIR)/ctx_switch.S
 
