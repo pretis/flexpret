@@ -28,5 +28,4 @@ $(PROJECT_DIR)/bitstream.bit: $(PROJECT_GENERATED_DIR)/bitstream_runnable.tcl
 clean::
 	rm -f $(PROJECT_DIR)/bitstream.bit
 
-
 include $(FLEXPRET_ROOT_DIR)/fpga/generate.mk
