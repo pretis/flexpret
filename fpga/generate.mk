@@ -9,8 +9,8 @@ CLK_HALF_PERIOD_NS := $(shell echo $$(($(CLK_PERIOD_NS) / 2)))
 $(TCL_GENERATE_FOLDER)/flash_runnable.tcl: generate
 	cat $(TCL_GENERATE_FOLDER)/variables.tcl $(PROJECT_TCL_DIR)/flash.tcl > $@
 
-$(TCL_GENERATE_FOLDER)/bitstream_runnable.tcl: $(TCL_GENERATE_FOLDER)/setup_runnable.tcl
-	cat $^ $(PROJECT_TCL_DIR)/bitstream.tcl > $@
+$(TCL_GENERATE_FOLDER)/bitstream_runnable.tcl: generate
+	cat $(TCL_GENERATE_FOLDER)/variables.tcl $(PROJECT_TCL_DIR)/setup.tcl $(PROJECT_TCL_DIR)/bitstream.tcl > $@
 
 $(TCL_GENERATE_FOLDER):
 	mkdir -p $@
