@@ -1,4 +1,3 @@
-
 NCORES ?= $(shell nproc --all)
 PROJECT_DIR := $(FLEXPRET_ROOT_DIR)/fpga/$(BOARD_NAME)/$(PROJECT_NAME)
 PROJECT_TCL_DIR := $(PROJECT_DIR)/tcl
@@ -11,7 +10,7 @@ VERILOG_SOURCES ?= \
 IMEM_FILE ?= \
 	$(FLEXPRET_ROOT_DIR)/programs/tests/c-tests/bootloader/bootloader.mem
 
-VIVADO_ARGS ?= -mode batch
+VIVADO_ARGS ?= -mode batch -journal $(PROJECT_DIR)/vivado/vivado.jou -log $(PROJECT_DIR)/vivado/vivado.log
 
 all: flash
 
