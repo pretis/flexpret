@@ -29,6 +29,8 @@ RESOURCE_DIR = src/main/resources
 
 VERILOG_VERILATOR = $(BUILD_DIR)/VerilatorTop.v
 VERILOG_FPGA = $(BUILD_DIR)/FpgaTop.v
+FPGA_BOOTLOADER_LOCATION := programs/tests/c-tests/bootloader
+FPGA_BOOTLOADER := $(FPGA_BOOTLOADER_LOCATION)/bootloader.mem
 
 FPGA_BOARD ?= zedboard
 
@@ -108,14 +110,10 @@ emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN) $(CLIENTS)
 $(VERILOG_FPGA):
 	sbt 'run fpga "$(CORE_CONFIG)" --no-dedup --target-dir $(BUILD_DIR)'
 
-# FIXME: Find a way to set this from the project itself
-FPGA_PROJECT := fp-bootloader
+$(FPGA_BOOTLOADER):
+	make -C $(FPGA_BOOTLOADER_LOCATION)
 
-include $(FPGA_DIR)/$(FPGA_BOARD)/$(FPGA_PROJECT)/fpga.mk
-
-fpga: $(VERILOG_FPGA) $(FPGA_PROGRAM_NAME)
-	cp build/FpgaTop.v fpga/$(FPGA_BOARD)/$(FPGA_PROJECT)/flexpret.v
-	cp $(RESOURCE_DIR)/DualPortBramFPGA.v $(FLEXPRET_ROOT_DIR)/fpga/$(FPGA_BOARD)/$(FPGA_PROJECT)/DualPortBram.v
+fpga: $(VERILOG_FPGA) $(FPGA_BOOTLOADER)
 
 # -----------------------------------------------------------------------------
 #  Tests
