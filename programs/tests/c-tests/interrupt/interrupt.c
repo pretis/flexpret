@@ -8,7 +8,7 @@
 // because more threads -> more wasted cycles in the pipeline
 // (At least when the hw threads are not sleeping, which is the case
 //  at the time of writing this test.)
-#define EXPIRE_DELAY_NS (((uint32_t)(1e4)) * (NUM_THREADS))
+#define EXPIRE_DELAY_NS (((uint32_t)(1e6)) * (NUM_THREADS))
 #define TIMEOUT_INIT (10000)
 
 static volatile int flag0[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
@@ -67,9 +67,11 @@ void *test_two_interrupts(void *args) {
     
     before = rdtime();
     expire = before + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_jumpto0);
 
     ENABLE_INTERRUPTS();
+// Jumps here after interrupt
+ie_jumpto0:
     while (flag0[hartid] == 0);
     DISABLE_INTERRUPTS();
 
@@ -81,9 +83,11 @@ void *test_two_interrupts(void *args) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_jumpto1);
 
     ENABLE_INTERRUPTS();
+// Jumps here after interrupt
+ie_jumpto1:
     while (flag1[hartid] == 0);
     DISABLE_INTERRUPTS();
 
@@ -106,7 +110,7 @@ void *test_disabled_interrupts(void *args) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_occurred);
 
     timeout = TIMEOUT_INIT;
     // Do not enable interrupts
@@ -118,13 +122,18 @@ void *test_disabled_interrupts(void *args) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_occurred);
 
     timeout = TIMEOUT_INIT;
     // Do not enable interrupts
     while (flag1[hartid] == 0 && timeout--);
 
     fp_assert(flag1[hartid] == 0, "Interrupt occurred when disabled\n");
+
+    return NULL;
+
+ie_occurred:
+    fp_assert(0, "Interrupt on expire expired\n");
 }
 
 void *test_low_timeout(void *args) {
@@ -155,10 +164,57 @@ void *test_low_timeout(void *args) {
      * is broken and a crash is likely to occur.
      * 
      */
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_jumpto);
     ENABLE_INTERRUPTS();
+ie_jumpto:
     while (flag0[hartid] == 0);
     DISABLE_INTERRUPTS();
+}
+
+void *test_interrupt_expire_with_expire(void *args) {
+    (void)(args);
+    int hartid = read_hartid();
+
+    uint32_t timeout;
+    volatile uint32_t now, expire, while_until;
+
+    register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
+    
+    now = rdtime();
+    expire = now + EXPIRE_DELAY_NS;
+    while_until = expire + EXPIRE_DELAY_NS;
+    INTERRUPT_ON_EXPIRE(expire, cleanup);
+    ENABLE_INTERRUPTS();
+
+    // Busy poll longer than interrupt on expire
+    while (rdtime() < while_until);
+    fp_assert(0, "Interrupt on expire did not run cleanup when expired\n");
+
+cleanup:
+    return NULL;
+}
+
+void *test_exception_expire_with_expire(void *args) {
+    (void)(args);
+    int hartid = read_hartid();
+
+    uint32_t timeout;
+    volatile uint32_t now, expire, while_until;
+
+    register_isr(EXC_CAUSE_EXCEPTION_EXPIRE, ie_isr0);
+    
+    now = rdtime();
+    expire = now + EXPIRE_DELAY_NS;
+    while_until = expire + EXPIRE_DELAY_NS;
+    EXCEPTION_ON_EXPIRE(expire, cleanup);
+    ENABLE_INTERRUPTS();
+
+    // Busy poll longer than exception on expire
+    while (rdtime() < while_until);
+    fp_assert(0, "Exception on expire did not run cleanup when expired\n");
+
+cleanup:
+    return NULL;
 }
 
 void *test_fp_delay_until(void *args) {
@@ -177,8 +233,9 @@ void *test_fp_delay_until(void *args) {
     expire = now + timeout_ns;
     delay = expire + timeout_ns;
 
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_jumpto);
     ENABLE_INTERRUPTS();
+ie_jumpto:
     fp_delay_until(delay);
     DISABLE_INTERRUPTS();
 
@@ -206,15 +263,16 @@ void *test_fp_wait_until(void *args) {
     expire = before + timeout_ns;
     delay = expire + timeout_ns;
 
-    INTERRUPT_ON_EXPIRE(expire);
+    INTERRUPT_ON_EXPIRE(expire, ie_jumpto);
     ENABLE_INTERRUPTS();
     fp_wait_until(delay);
+ie_jumpto:
     DISABLE_INTERRUPTS();
 
     now = rdtime();
 
     fp_assert(isr_time[hartid] != 0, "Interrupt did not occur\n");
-    fp_assert(expire < now && now < delay, "Time not as expected\n",
+    fp_assert(expire < now && now < delay, "Time not as expected: expire: %i, now: %i, delay: %i\n",
         expire, now, delay);
     fp_assert(before < isr_time[hartid] && 
               expire < isr_time[hartid] && 

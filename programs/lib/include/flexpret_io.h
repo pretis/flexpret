@@ -65,6 +65,8 @@ void write_tohost(uint32_t val);
  */
 void fp_print_int(uint32_t val);
 
+void fp_print_string(char *str);
+
 /**
  * @brief Write to general purpose output, if port width < 32, then upper bits ignored
  * 

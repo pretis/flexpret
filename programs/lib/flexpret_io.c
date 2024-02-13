@@ -40,6 +40,12 @@ void fp_print_int(uint32_t val) {
 #endif // __FPGA__
 }
 
+void fp_print_string(char *str) {
+    do {
+        uart_send((uint8_t) *str);
+    } while (*str++ != '\0');
+}
+
 void gpo_write(uint32_t port, uint32_t val) {
     switch(port) {
         case 0: write_csr(CSR_UARCH4, val); break;

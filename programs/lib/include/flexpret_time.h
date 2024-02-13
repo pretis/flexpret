@@ -15,7 +15,7 @@
  * 
  */
 #define fp_delay_until(ns) do { \
-    write_csr(CSR_COMPARE_DU_WU, ns); \
+    write_csr(CSR_COMPARE_DU_WU, (ns)); \
     __asm__ volatile(".word 0x700B;"); \
 } while(0)
 
@@ -26,7 +26,7 @@
  */
 #define fp_delay_for(ns) do { \
     uint32_t now_ns = rdtime(); \
-    fp_delay_until(now_ns + ns); \
+    fp_delay_until(now_ns + (ns)); \
 } while(0)
 
 /**
@@ -39,7 +39,7 @@
  * 
  */
 #define fp_wait_until(ns) do { \
-    write_csr(CSR_COMPARE_DU_WU, ns); \
+    write_csr(CSR_COMPARE_DU_WU, (ns)); \
     __asm__ volatile(".word 0x702B;"); \
 } while(0)
 
@@ -49,7 +49,7 @@
  */
 #define fp_wait_for(ns) do { \
     uint32_t now_ns = rdtime(); \
-    fp_wait_until(now_ns + ns); \
+    fp_wait_until(now_ns + (ns)); \
 } while(0)
 
 #define fp_nop do { \

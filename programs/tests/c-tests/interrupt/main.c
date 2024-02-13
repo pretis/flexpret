@@ -26,29 +26,39 @@ int main(void) {
 
     reset_flags();
 
+    test_interrupt_expire_with_expire(NULL);
+    printf("5th run: interrupt on expire successfully jumped to cleanup\n");
+
+    reset_flags();
+
+    test_exception_expire_with_expire(NULL);
+    printf("6th run: exception on expire successfully jumped to cleanup\n");
+
+    reset_flags();
+
     test_fp_delay_until(NULL);
-    printf("5th run: delay until ran sucessfully\n");
+    printf("7th run: delay until ran sucessfully\n");
 
     reset_flags();
 
     test_fp_wait_until(NULL);
-    printf("6th run: wait until ran sucessfully\n");
+    printf("8th run: wait until ran sucessfully\n");
 
     reset_flags();
 
     test_external_interrupt(NULL);
-    printf("7th run: got external interrupt\n");
+    printf("9th run: got external interrupt\n");
 
     reset_flags();
 
     if (!test_du_not_stopped_by_int(NULL)) {
-        printf("8th run: delay for not stopped early\n");
+        printf("10th run: delay for not stopped early\n");
     }
 
     reset_flags();
 
     if (!test_wu_stopped_by_int(NULL)) {
-        printf("9th run: wait for stopped early\n");
+        printf("11th run: wait for stopped early\n");
     }
 
     return 0;

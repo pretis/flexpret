@@ -1,6 +1,8 @@
 #ifndef FLEXPRET_EXCEPTIONS_H
 #define FLEXPRET_EXCEPTIONS_H
 
+#include <setjmp.h>
+
 /**
  * @brief All exception and interrupt causes
  * 
@@ -56,9 +58,27 @@ typedef void (*isr_t)(void);
  * @brief Execute the interrupt on expire instruction
  * @param timeout_ns 
  */
-#define INTERRUPT_ON_EXPIRE(ns) do { \
+#define INTERRUPT_ON_EXPIRE(ns, cleanup) do { \
+    extern jmp_buf __ie_jmp_buf[NUM_THREADS]; \
+    extern bool    __ie_jmp_buf_active[NUM_THREADS]; \
+\
+    uint32_t hartid = read_hartid(); \
+    int ret = setjmp(__ie_jmp_buf[hartid]); \
+    if (ret) { \
+        __ie_jmp_buf_active[hartid] = false; \
+        goto cleanup; \
+    } else { \
+        __ie_jmp_buf_active[hartid] = true; \
+    } \
     write_csr(CSR_COMPARE_IE_EE, ns); \
     __asm__ volatile(".word 0x0200705B;"); \
+} while(0)
+
+#define interrupt_on_expire_cancel() do { \
+    extern bool __ie_jmp_buf_active[NUM_THREADS]; \
+\
+    uint32_t hartid = read_hartid(); \
+    __ie_jmp_buf_active[hartid] = false; \
 } while(0)
 
 /**
@@ -66,9 +86,27 @@ typedef void (*isr_t)(void);
  * 
  * @param timeout_ns 
  */
-#define EXCEPTION_ON_EXPIRE(ns) do { \
+#define EXCEPTION_ON_EXPIRE(ns, cleanup) do { \
+    extern jmp_buf __ee_jmp_buf[NUM_THREADS]; \
+    extern bool    __ee_jmp_buf_active[NUM_THREADS]; \
+\
+    uint32_t hartid = read_hartid(); \
+    int ret = setjmp(__ee_jmp_buf[hartid]); \
+    if (ret) { \
+        __ee_jmp_buf_active[hartid] = false; \
+        goto cleanup; \
+    } else { \
+        __ee_jmp_buf_active[hartid] = true; \
+    } \
     write_csr(CSR_COMPARE_IE_EE, ns); \
-    __asm__ volatile(".word 0x0000705B;"); \
+    __asm__ volatile(".word 0x0200705B;"); \
+} while(0)
+
+#define exception_on_expire_cancel() do { \
+    extern bool __ee_jmp_buf_active[NUM_THREADS]; \
+\
+    uint32_t hartid = read_hartid(); \
+    __ee_jmp_buf_active[hartid] = false; \
 } while(0)
 
 /**

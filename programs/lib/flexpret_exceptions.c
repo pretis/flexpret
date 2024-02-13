@@ -5,6 +5,7 @@
 
 #include <flexpret.h>
 #include <errno.h>
+#include <setjmp.h>
 
 typedef void (*isr_t)(void);
 
@@ -13,6 +14,12 @@ static isr_t ie_int_handler;
 static isr_t ee_int_handler;
 
 struct thread_ctx_t contexts[NUM_THREADS];
+
+jmp_buf __ie_jmp_buf[NUM_THREADS];
+jmp_buf __ee_jmp_buf[NUM_THREADS];
+
+bool    __ie_jmp_buf_active[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+bool    __ee_jmp_buf_active[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 
 #ifndef NDEBUG
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
@@ -70,13 +77,20 @@ void fp_exception_handler(void) {
         fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
 
-    // Call the function to load the thread's context
-    // We mark it with attribute noretun because the function will not return
-    // to fp_exception_handler, but instead to where the exception occurred.
-    void thread_ctx_switch_load(void) __attribute__((noreturn));
+    uint32_t hartid = read_hartid();
     
-    // In ctx_switch.S
-    thread_ctx_switch_load();
+    if (__ie_jmp_buf_active[hartid]) {
+        longjmp(__ie_jmp_buf[hartid], 1);
+    } else if (__ee_jmp_buf_active[hartid]) {
+        longjmp(__ee_jmp_buf[hartid], 1);
+    } else {
+        // Call the function to load the thread's context
+        // We mark it with attribute noretun because the function will not return
+        // to fp_exception_handler, but instead to where the exception occurred.
+        void thread_ctx_switch_load(void) __attribute__((noreturn));    
+        // In ctx_switch.S
+        thread_ctx_switch_load();
+    }
 }
 
 void setup_exceptions() {
