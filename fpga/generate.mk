@@ -23,6 +23,7 @@ generate: $(TCL_GENERATE_FOLDER)
 
 clean::
 	rm -rf $(TCL_GENERATE_FOLDER)
+	rm -f $(PROJECT_TCL_DIR)/xdc/clock.xdc
 
 HASHTAG := \#
 define COMMON_WARNING

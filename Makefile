@@ -151,15 +151,8 @@ clean:
 	echo "" >> ./hwconfig.mk
 	make -C programs/tests clean
 
-
 # Clean for all configurations, targets, and test outputs.
-cleanall:
-	rm -rf $(FPGA_DIR)/generated-src
-	rm -rf $(FPGA_DIR)/build
-	rm -f $(FPGA_DIR)/DualPortBram.v $(FPGA_DIR)/*/flexpret/flexpret.v $(FPGA_DIR)/*/flexpret/ispm.mem
-	rm -f $(EMULATOR_BIN)
-	rm -rf ./build
-	rm -rf emulator/obj_dir
+cleanall: clean
 	rm -f emulator/$(MODULE).sim.v
 	rm -rf out
 	rm -f firrtl.jar
@@ -168,5 +161,7 @@ cleanall:
 	rm -rf $(CLIENT_BUILD_DIR)
 	rm -rf test_run_dir
 	cd $(TEST_DIR) && $(MAKE) clean
+	
+	make -C fpga clean
 
 .PHONY: run fpga emulator remulator firrtl_raw verilog_raw clean cleanall test unit-test integration-test
