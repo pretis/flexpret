@@ -201,7 +201,7 @@ static volatile void**  exit_code[NUM_THREADS];
 
 // Whether a thread is currently executing a routine.
 static volatile bool    in_use[NUM_THREADS];
-static volatile jmp_buf envs[NUM_THREADS];
+static          jmp_buf envs[NUM_THREADS];
 static volatile bool    cancel_requested[NUM_THREADS];
 
 // Accessed in startup.c

@@ -9,9 +9,9 @@
 
 typedef void (*isr_t)(void);
 
-static isr_t ext_int_handler;
-static isr_t ie_int_handler;
-static isr_t ee_int_handler;
+static isr_t ext_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ie_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ee_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
 
 struct thread_ctx_t contexts[NUM_THREADS];
 
@@ -68,19 +68,18 @@ static const char *exception_to_str(const uint32_t cause) {
 
 void fp_exception_handler(void) {
     int cause = read_csr(CSR_CAUSE);
-    
+    uint32_t hartid = read_hartid();
+
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  
-        if(ext_int_handler) ext_int_handler();
+        if(ext_int_handler[hartid]) ext_int_handler[hartid]();
     } else if (cause == EXC_CAUSE_INTERRUPT_EXPIRE) {
-        if(ie_int_handler) ie_int_handler();
+        if(ie_int_handler[hartid]) ie_int_handler[hartid]();
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
-        if(ee_int_handler) ee_int_handler();
+        if(ee_int_handler[hartid]) ee_int_handler[hartid]();
     } else {
         fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
 
-    uint32_t hartid = read_hartid();
-    
     if (__ie_jmp_buf_active[hartid]) {
         longjmp(__ie_jmp_buf[hartid], 1);
     } else if (__ee_jmp_buf_active[hartid]) {
@@ -96,11 +95,6 @@ void fp_exception_handler(void) {
 }
 
 void setup_exceptions() {
-    // Initialize the interrupt handlers to null pointers
-    ie_int_handler = (isr_t) 0;
-    ee_int_handler = (isr_t) 0;
-    ext_int_handler = (isr_t) 0;
-
     // Register the function to call on exceptions; this function stores the
     // thread's context and calls the fp_exception_handler function afterwards
     void thread_ctx_switch_store(void);
@@ -108,14 +102,15 @@ void setup_exceptions() {
 }
 
 void register_isr(int cause, void (*isr)(void)) {
+    uint32_t hartid = read_hartid();
     switch (cause)
     {
     case EXC_CAUSE_EXTERNAL_INT:
-        ext_int_handler = isr; break;
+        ext_int_handler[hartid] = isr; break;
     case EXC_CAUSE_INTERRUPT_EXPIRE:
-        ie_int_handler  = isr; break;
+        ie_int_handler[hartid]  = isr; break;
     case EXC_CAUSE_EXCEPTION_EXPIRE:
-        ee_int_handler  = isr; break;
+        ee_int_handler[hartid]  = isr; break;
     default: 
         fp_assert(false, "Attempt to register isr for non-supported cause: %i\n", cause);
     }

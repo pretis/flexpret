@@ -9,7 +9,7 @@
 // (At least when the hw threads are not sleeping, which is the case
 //  at the time of writing this test.)
 #define EXPIRE_DELAY_NS (((uint32_t)(1e4)) * (NUM_THREADS))
-#define TIMEOUT_INIT (10000)
+#define TIMEOUT_INIT (1000)
 
 static volatile int flag0[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 static volatile int flag1[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
@@ -272,8 +272,7 @@ ie_jumpto:
     now = rdtime();
 
     fp_assert(isr_time[hartid] != 0, "Interrupt did not occur\n");
-    fp_assert(expire < now && now < delay, "Time not as expected: expire: %i, now: %i, delay: %i\n",
-        expire, now, delay);
+    fp_assert(expire < now && now < delay, "Time not as expected\n");
     fp_assert(before < isr_time[hartid] && 
               expire < isr_time[hartid] && 
               isr_time[hartid] < now && 

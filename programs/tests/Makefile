@@ -33,6 +33,7 @@ MT_C_TESTS_DIRS = \
 	add \
 	cond \
 	heap \
+	interrupt \
 	lockowner \
 	printf \
 	stack \

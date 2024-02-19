@@ -43,7 +43,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val ee = Input(Bool()) // valid EE inst
     val expire_du = Output(Bool())
     val expire_wu = Output(Bool())
-    val expire_ie_ee = Output(Bool())
+    val expire_ie = Output(Bool())
+    val expire_ee = Output(Bool())
     val dec_tid = Input(UInt(conf.threadBits.W))
     // privileged
     val xret = Input(UInt(2.W))
@@ -58,8 +59,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val cycle = Input(Bool())
     val instret = Input(Bool())
     // interrupts/exceptions
-    val int_expire = Output(Bool()) // IE time expired
-    val exc_expire = Output(Bool()) // EE time expired
     val int_ext = Output(Bool()) // external interrupt
     val priv_fault = Output(Bool()) // CSR permission
   })
@@ -453,8 +452,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   }
 
   // Only when thread is active, so only one time comparison needed
-  val int_expire = WireInit(false.B)
-  val exc_expire = WireInit(false.B)  
+  val expired_ie = WireInit(VecInit(Seq.fill(conf.threads){ false.B }))
+  val expired_ee = WireInit(VecInit(Seq.fill(conf.threads){ false.B }))
   
   // compare value should already be set
   if (conf.delayUntil) {
@@ -469,7 +468,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
 
     if (conf.interruptExpire) {
-      when(io.int_ext || int_expire || exc_expire) {
+      when(io.int_ext || expired_ie(io.rw.thread) || expired_ee(io.rw.thread)) {
         wake(io.rw.thread) := true.B
       }
     }
@@ -490,7 +489,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     // send exception, but may not have priority
     when(reg_timer_ie_ee(io.rw.thread) === TIMER_EE && expired_ie_ee(io.rw.thread)) {
       reg_timer_ie_ee(io.rw.thread) := TIMER_OFF
-      exc_expire := true.B
+      expired_ee(io.rw.thread) := true.B
     }
     when(io.ie) {
       reg_timer_ie_ee(io.rw.thread) := TIMER_IE
@@ -504,7 +503,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
     // Only send interrupt to control if past or current cycle has timer
     // interrupt
-    int_expire := reg_ie(io.rw.thread) && (reg_mtie(io.rw.thread) || mtie)
+    expired_ie(io.rw.thread) := reg_ie(io.rw.thread) && (reg_mtie(io.rw.thread) || mtie)
   }
 
   // Input handling
@@ -553,7 +552,13 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     }
   } else {
     when (io.exception) {
-      reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
+      when (expired_ie(io.rw.thread) || expired_ee(io.rw.thread)) {
+        // Setting everything to zero will break IE/EE instructions for other
+        // threads
+        reg_ie(io.rw.thread) := false.B
+      }.otherwise {
+        reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
+      }
     }
   }
 
@@ -566,7 +571,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   }
   io.expire_du := expired_du_wu(io.rw.thread) && timer_du_or_wu(io.rw.thread) === TIMER_DU
   io.expire_wu := expired_du_wu(io.rw.thread) && timer_du_or_wu(io.rw.thread) === TIMER_WU
-  io.expire_ie_ee := expired_ie_ee(io.rw.thread)
+  io.expire_ie := expired_ie(io.rw.thread)
+  io.expire_ee := expired_ee(io.rw.thread)
 
   for (tid <- 0 until conf.threads) {
     io.host.to_host(tid) := regs_to_host(tid)
@@ -577,9 +583,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
   io.imem_protection := reg_imem_protection
   io.dmem_protection := reg_dmem_protection
-  io.exc_expire := exc_expire
-  io.int_expire := int_expire
   io.int_ext := int_ext
   io.priv_fault := priv_fault
-
 }
