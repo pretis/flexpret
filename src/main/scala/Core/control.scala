@@ -72,7 +72,8 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
   
   val exe_expire_du  = Input(Bool())
   val exe_expire_wu  = Input(Bool())
-  val exe_expire_ie_ee  = Input(Bool())
+  val exe_expire_ie  = Input(Bool())
+  val exe_expire_ee  = Input(Bool())
   
   val csr_slots   = Input(Vec(8, UInt(SLOT_WI.W)))
   val csr_tmodes  = Input(Vec(conf.threads, UInt(TMODE_WI.W)))
@@ -89,8 +90,6 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
   val exe_exc_load_fault       = Input(Bool())
   val exe_exc_store_misaligned = Input(Bool())
   val exe_exc_store_fault      = Input(Bool())
-  val exe_exc_expire           = Input(Bool())
-  val exe_int_expire           = Input(Bool())
   val exe_int_ext              = Input(Bool())
 }
 
@@ -353,7 +352,8 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
 
   // Keep track of delay_until instruction.
   val exe_expire_du_wu = io.exe_expire_du || io.exe_expire_wu
-  val exe_expire = exe_expire_du_wu || io.exe_expire_ie_ee
+  val exe_expire_ie_ee = io.exe_expire_ie || io.exe_expire_ee
+  val exe_expire = exe_expire_du_wu || exe_expire_ie_ee
 
   val exe_du: Bool = if (conf.delayUntil) {
     val exe_reg_du = RegNext(dec_du.asBool)
@@ -555,8 +555,8 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     ))
   // Caused by unknown instruction in execute stage, prevent all commits
   val (exe_any_exc, exe_any_cause) = check_exceptions(List(
-      (io.exe_exc_expire, Causes.ee),
-      (io.exe_int_expire, Causes.ie),
+      (io.exe_expire_ee, Causes.ee),
+      (io.exe_expire_ie, Causes.ie),
       (io.exe_int_ext, Causes.external_int)
     ))
 

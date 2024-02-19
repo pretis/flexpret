@@ -191,28 +191,28 @@ int tmode_sleep(uint32_t hartid) {
 /* Variables that keep track of the status of threads */
 
 // An array of function pointers
-static void*   (*routines[NUM_THREADS])(void *);
-static void**  args[NUM_THREADS];
-static void**  exit_code[NUM_THREADS];
+volatile static void*   (*routines[NUM_THREADS])(void *);
+volatile static void**  args[NUM_THREADS];
+volatile static void**  exit_code[NUM_THREADS];
 // Whether a thread is currently executing a routine.
-static bool    in_use[NUM_THREADS];
+volatile static bool    in_use[NUM_THREADS];
 static jmp_buf envs[NUM_THREADS];
-static bool    cancel_requested[NUM_THREADS];
+volatile static bool    cancel_requested[NUM_THREADS];
 // Accessed in startup.c
-bool           exit_requested[NUM_THREADS];
+volatile bool           exit_requested[NUM_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
 // If this is 0, the main thread can
 // safely terminate the execution.
-uint32_t num_threads_busy = 0;
+volatile uint32_t num_threads_busy = 0;
 
 // Keep track of the number of threads
 // currently marked as EXITED.
 // FIXME: Once a worker thread exits,
 // it should have completed executing
 // some pre-registered clean-up handlers.
-uint32_t num_threads_exited = 0;
+volatile uint32_t num_threads_exited = 0;
 
 
 /* Pthreads-like threading library functions */
@@ -236,7 +236,7 @@ static int assign_hartid(
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
-    routines[hartid] = start_routine;
+    routines[hartid] = (volatile void *(*)(void *))(start_routine);
     args[hartid] = arg;
     num_threads_busy += 1;
 

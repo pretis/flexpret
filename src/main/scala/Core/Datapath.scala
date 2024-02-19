@@ -361,7 +361,8 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   csr.io.ee := io.control.exe_ee
   io.control.exe_expire_du := csr.io.expire_du
   io.control.exe_expire_wu := csr.io.expire_wu
-  io.control.exe_expire_ie_ee := csr.io.expire_ie_ee
+  io.control.exe_expire_ie := csr.io.expire_ie
+  io.control.exe_expire_ee := csr.io.expire_ee
   csr.io.dec_tid := dec_reg_tid
 
   // privileged
@@ -394,8 +395,6 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   io.control.exe_rd_addr := exe_reg_rd_addr
 
   // exceptions from execute stage to control
-  io.control.exe_int_expire := csr.io.int_expire
-  io.control.exe_exc_expire := csr.io.exc_expire
   io.control.exe_int_ext := csr.io.int_ext
   io.control.exe_exc_priv_inst := csr.io.priv_fault
   io.control.exe_exc_load_misaligned := loadstore.io.load_misaligned
