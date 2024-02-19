@@ -17,7 +17,16 @@
 #define fp_delay_until(ns) do { \
     write_csr(CSR_COMPARE_DU_WU, (ns)); \
     __asm__ volatile(".word 0x700B;"); \
+    fp_nop; \
 } while(0)
+
+/**
+ * FIXME: fp_delay_until and fp_wait_until have a bug:
+ * 
+ * If they are called with a time that is less than or equal to the current time,
+ * they will squash the next instruction. The fp_nop is added so this has no effect,
+ * but the better solution is to fix the bug itself.
+ */
 
 /**
  * @brief Delay execution for a time duration. First read the current time
@@ -41,6 +50,7 @@
 #define fp_wait_until(ns) do { \
     write_csr(CSR_COMPARE_DU_WU, (ns)); \
     __asm__ volatile(".word 0x702B;"); \
+    fp_nop; \
 } while(0)
 
 /**

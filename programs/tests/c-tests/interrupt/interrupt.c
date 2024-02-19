@@ -8,7 +8,7 @@
 // because more threads -> more wasted cycles in the pipeline
 // (At least when the hw threads are not sleeping, which is the case
 //  at the time of writing this test.)
-#define EXPIRE_DELAY_NS (((uint32_t)(1e6)) * (NUM_THREADS))
+#define EXPIRE_DELAY_NS (((uint32_t)(1e4)) * (NUM_THREADS))
 #define TIMEOUT_INIT (10000)
 
 static volatile int flag0[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
@@ -67,13 +67,13 @@ void *test_two_interrupts(void *args) {
     
     before = rdtime();
     expire = before + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire, ie_jumpto0);
+    fp_int_on_expire(expire, ie_jumpto0);
 
-    ENABLE_INTERRUPTS();
+    fp_interrupt_enable();
 // Jumps here after interrupt
 ie_jumpto0:
     while (flag0[hartid] == 0);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
 
     now = rdtime();
     fp_assert(now > expire, "Time is not as expected (condition was %i > %i)\n",
@@ -83,13 +83,13 @@ ie_jumpto0:
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire, ie_jumpto1);
+    fp_int_on_expire(expire, ie_jumpto1);
 
-    ENABLE_INTERRUPTS();
+    fp_interrupt_enable();
 // Jumps here after interrupt
 ie_jumpto1:
     while (flag1[hartid] == 0);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
 
     now = rdtime();
     fp_assert(now > expire, "Time is not as expected\n");
@@ -110,7 +110,7 @@ void *test_disabled_interrupts(void *args) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire, ie_occurred);
+    fp_int_on_expire(expire, ie_occurred);
 
     timeout = TIMEOUT_INIT;
     // Do not enable interrupts
@@ -122,7 +122,7 @@ void *test_disabled_interrupts(void *args) {
     
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire, ie_occurred);
+    fp_int_on_expire(expire, ie_occurred);
 
     timeout = TIMEOUT_INIT;
     // Do not enable interrupts
@@ -152,7 +152,7 @@ void *test_low_timeout(void *args) {
 
     /**
      * The problem with using such a low value for expire is that it will already
-     * be expired by the time the INTERRUPT_ON_EXPIRE() function is called.
+     * be expired by the time the fp_int_on_expire() function is called.
      * I.e., the exception will trigger right after the CSR_COMPARE register has
      * been written (see the function implementation). Then the second inline
      * assembly will not be executed before the exception occurs. This also 
@@ -164,11 +164,11 @@ void *test_low_timeout(void *args) {
      * is broken and a crash is likely to occur.
      * 
      */
-    INTERRUPT_ON_EXPIRE(expire, ie_jumpto);
-    ENABLE_INTERRUPTS();
+    fp_int_on_expire(expire, ie_jumpto);
+    fp_interrupt_enable();
 ie_jumpto:
     while (flag0[hartid] == 0);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
 }
 
 void *test_interrupt_expire_with_expire(void *args) {
@@ -183,8 +183,8 @@ void *test_interrupt_expire_with_expire(void *args) {
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
     while_until = expire + EXPIRE_DELAY_NS;
-    INTERRUPT_ON_EXPIRE(expire, cleanup);
-    ENABLE_INTERRUPTS();
+    fp_int_on_expire(expire, cleanup);
+    fp_interrupt_enable();
 
     // Busy poll longer than interrupt on expire
     while (rdtime() < while_until);
@@ -206,8 +206,8 @@ void *test_exception_expire_with_expire(void *args) {
     now = rdtime();
     expire = now + EXPIRE_DELAY_NS;
     while_until = expire + EXPIRE_DELAY_NS;
-    EXCEPTION_ON_EXPIRE(expire, cleanup);
-    ENABLE_INTERRUPTS();
+    fp_exc_on_expire(expire, cleanup);
+    fp_interrupt_enable();
 
     // Busy poll longer than exception on expire
     while (rdtime() < while_until);
@@ -233,11 +233,11 @@ void *test_fp_delay_until(void *args) {
     expire = now + timeout_ns;
     delay = expire + timeout_ns;
 
-    INTERRUPT_ON_EXPIRE(expire, ie_jumpto);
-    ENABLE_INTERRUPTS();
+    fp_int_on_expire(expire, ie_jumpto);
+    fp_interrupt_enable();
 ie_jumpto:
     fp_delay_until(delay);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
 
     now = rdtime();
 
@@ -263,11 +263,11 @@ void *test_fp_wait_until(void *args) {
     expire = before + timeout_ns;
     delay = expire + timeout_ns;
 
-    INTERRUPT_ON_EXPIRE(expire, ie_jumpto);
-    ENABLE_INTERRUPTS();
+    fp_int_on_expire(expire, ie_jumpto);
+    fp_interrupt_enable();
     fp_wait_until(delay);
 ie_jumpto:
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
 
     now = rdtime();
 
@@ -287,9 +287,9 @@ void *test_external_interrupt(void *args) {
     int hartid = read_hartid();
 
     register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
-    ENABLE_INTERRUPTS();
+    fp_interrupt_enable();
     while (ext_int_flag[hartid] == 0);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
 }
 
 void *test_du_not_stopped_by_int(void *args) {
@@ -302,9 +302,9 @@ void *test_du_not_stopped_by_int(void *args) {
     before = rdtime64();
     delay = (int) 10000000;
     
-    ENABLE_INTERRUPTS();
+    fp_interrupt_enable();
     fp_delay_for(delay);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
     after = rdtime64();
 
     if (du_int_triggered[hartid]) {
@@ -326,9 +326,9 @@ void *test_wu_stopped_by_int(void *args) {
     before = rdtime64();
     delay = (int) 10000000;
     
-    ENABLE_INTERRUPTS();
+    fp_interrupt_enable();
     fp_wait_for(delay);
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
     after = rdtime64();
 
     if (wu_int_triggered[hartid]) {

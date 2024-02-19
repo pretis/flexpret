@@ -42,7 +42,7 @@ typedef void (*isr_t)(void);
  * @brief Enable interrupts for thread
  * 
  */
-#define ENABLE_INTERRUPTS() do { \
+#define fp_interrupt_enable() do { \
     set_csr(CSR_STATUS, 0x10); \
 } while(0)
 
@@ -50,7 +50,7 @@ typedef void (*isr_t)(void);
  * @brief Disable interrupts for thread
  * 
  */
-#define DISABLE_INTERRUPTS() do { \
+#define fp_interrupt_disable() do { \
     clear_csr(CSR_STATUS, 0x10); \
 } while(0)
 
@@ -58,7 +58,7 @@ typedef void (*isr_t)(void);
  * @brief Execute the interrupt on expire instruction
  * @param timeout_ns 
  */
-#define INTERRUPT_ON_EXPIRE(ns, cleanup) do { \
+#define fp_int_on_expire(ns, cleanup) do { \
     extern jmp_buf __ie_jmp_buf[NUM_THREADS]; \
     extern bool    __ie_jmp_buf_active[NUM_THREADS]; \
 \
@@ -74,7 +74,7 @@ typedef void (*isr_t)(void);
     __asm__ volatile(".word 0x0200705B;"); \
 } while(0)
 
-#define interrupt_on_expire_cancel() do { \
+#define fp_int_on_expire_cancel() do { \
     extern bool __ie_jmp_buf_active[NUM_THREADS]; \
 \
     uint32_t hartid = read_hartid(); \
@@ -82,11 +82,11 @@ typedef void (*isr_t)(void);
 } while(0)
 
 /**
- * @brief Execute `EXCEPTION_ON_EXPIRE` or EE instruction
+ * @brief Execute `fp_exc_on_expire` or EE instruction
  * 
  * @param timeout_ns 
  */
-#define EXCEPTION_ON_EXPIRE(ns, cleanup) do { \
+#define fp_exc_on_expire(ns, cleanup) do { \
     extern jmp_buf __ee_jmp_buf[NUM_THREADS]; \
     extern bool    __ee_jmp_buf_active[NUM_THREADS]; \
 \
@@ -102,7 +102,7 @@ typedef void (*isr_t)(void);
     __asm__ volatile(".word 0x0200705B;"); \
 } while(0)
 
-#define exception_on_expire_cancel() do { \
+#define fp_exc_on_expire_cancel() do { \
     extern bool __ee_jmp_buf_active[NUM_THREADS]; \
 \
     uint32_t hartid = read_hartid(); \

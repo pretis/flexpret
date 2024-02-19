@@ -56,7 +56,7 @@ int main(void)
     // Using malloc because it can hold bigger arrays for when the number of
     // interrupts becomes very large
     timestamps = malloc(TIMESTAMP_SIZE * sizeof(uint64_t));
-    ENABLE_INTERRUPTS();
+    fp_interrupt_enable();
 
     while (ntimes < NINTERRUPTS) {
         if (got_int) {
@@ -65,7 +65,7 @@ int main(void)
         }
     }
 
-    DISABLE_INTERRUPTS();
+    fp_interrupt_disable();
  
     for (int i = 0; i < NINTERRUPTS; i++) {
         printf("Iteration %i: Interrupt: %lli, {0}: %lli,\n",

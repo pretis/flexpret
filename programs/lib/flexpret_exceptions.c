@@ -26,7 +26,9 @@ uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
 FP_TEST_OVERRIDE
 void __stack_chk_fail(void) {
-    _fp_abort("Stack check failed");
+    register uint32_t linkreg = rdlinkreg();
+    register uint32_t stack_ptr = rdstackptr();
+    _fp_abort("Stack check failed: link register (%p), stack ptr (%p)\n", linkreg, stack_ptr);
 }
 #endif // NDEBUG
 
