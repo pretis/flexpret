@@ -244,6 +244,17 @@ ie_jumpto:
     fp_assert(isr_time[hartid] != 0, "Interrupt did not occur\n");
     fp_assert(now > delay, "Delay until did not delay full duration\n");
     fp_assert(expire < isr_time[hartid] && isr_time[hartid] < delay, "Interrupt did not occur during delay until\n");
+
+    now = rdtime();
+
+    // Try to delay for an absolute time less than the current time and check that
+    // we just fall through. A buggy implementation might yield an infinite loop.
+    // Assume executing these instructions take less than 1 us
+    fp_delay_until(now);
+
+    volatile uint32_t after = rdtime();
+    fp_assert(now < after && after < (now + (int) (1e3)),
+        "Delay until ran at absolute time less than current time took longer time then expected\n");
 }
 
 void *test_fp_wait_until(void *args) {
@@ -279,6 +290,17 @@ ie_jumpto:
               isr_time[hartid] < delay, 
               "Interrupt did not occur when expected\n"
     );
+
+    now = rdtime();
+
+    // Try to wait for an absolute time less than the current time and check that
+    // we just fall through. A buggy implementation might yield an infinite loop.
+    // Assume executing these instructions take less than 1 us
+    fp_wait_until(now);
+
+    volatile uint32_t after = rdtime();
+    fp_assert(now < after && after < (now + (int) (1e3)),
+        "Wait until ran at absolute time less than current time took longer time then expected\n");
 }
 
 void *test_external_interrupt(void *args) {
