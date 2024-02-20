@@ -569,8 +569,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     io.evecs := reg_evecs
     io.mepcs  := reg_mepcs
   }
-  io.expire_du := expired_du_wu(io.rw.thread) && timer_du_or_wu(io.rw.thread) === TIMER_DU
-  io.expire_wu := expired_du_wu(io.rw.thread) && timer_du_or_wu(io.rw.thread) === TIMER_WU
+  io.expire_du := expired_du_wu(io.rw.thread) && reg_timer_du_wu(io.rw.thread) === TIMER_DU
+  io.expire_wu := expired_du_wu(io.rw.thread) && reg_timer_du_wu(io.rw.thread) === TIMER_WU
   io.expire_ie := expired_ie(io.rw.thread)
   io.expire_ee := expired_ee(io.rw.thread)
 
