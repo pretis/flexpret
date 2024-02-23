@@ -26,7 +26,7 @@
  */
 #define fp_delay_for(ns) do { \
     uint32_t now_ns = rdtime(); \
-    fp_delay_until(now_ns + ns); \
+    fp_delay_until(now_ns + (ns)); \
 } while(0)
 
 /**
