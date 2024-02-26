@@ -46,8 +46,8 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val expire_ie = Output(Bool())
     val expire_ee = Output(Bool())
     val dec_tid = Input(UInt(conf.threadBits.W))
-    // privileged
-    val xret = Input(UInt(2.W))
+    // Return from exception
+    val mret = Input(Bool())
     // I/O
     val host = new HostIO()
     val gpio = new GPIO()
@@ -390,7 +390,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       }
       reg_causes(io.rw.thread) := io.cause
       reg_in_interrupt(io.rw.thread) := true.B
-    } .elsewhen (io.xret === XRET_M) {
+    } .elsewhen (io.mret) {
       // Clear pending interrupt
       reg_msip(io.rw.thread) := false.B
       reg_in_interrupt(io.rw.thread) := false.B
@@ -545,8 +545,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       // privileged mode with interrupts disabled
       reg_prv := VecInit(Seq.fill(conf.threads) { 3.U(2.W) })
       reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
-    } .elsewhen (io.xret === XRET_S) {
+    } .elsewhen (io.mret) {
       // restore
+      // Note: mret might not be corret; perhaps another priviledge level
+      //       must be implemented
       reg_prv := reg_prv1
       reg_ie := reg_ie1
     }

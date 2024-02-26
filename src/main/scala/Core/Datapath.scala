@@ -366,7 +366,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   csr.io.dec_tid := dec_reg_tid
 
   // privileged
-  csr.io.xret := io.control.exe_xret
+  csr.io.mret := io.control.exe_mret
 
   // external interrupt (per thread)
   csr.io.int_exts := io.int_exts
