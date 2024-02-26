@@ -22,7 +22,7 @@ class DatapathTest extends AnyFlatSpec with ChiselScalatestTester {
   val threads = 1
   val conf = FlexpretConfiguration(threads=threads, flex=false,
     InstMemConfiguration(bypass=false, sizeKB=512),
-    dMemKB=512, mul=false, features="all")
+    dMemKB=512, mul=false, priv=false, features="all")
   def datapath = new Datapath(debug=true)(conf=conf)
 
   it should "read from the regfile correctly" in {

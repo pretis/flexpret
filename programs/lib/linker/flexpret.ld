@@ -21,12 +21,18 @@
 /* 
  * Taken from https://github.com/apache/nuttx/blob/master/boards/risc-v/c906/smartl-c906/scripts/ld.script
  */
-INCLUDE flexpret_config.ld
+INCLUDE flexpret_hwconfig.ld
+INCLUDE flexpret_swconfig.ld
+
+
+DSPM_SIZE = DSPM_END - DSPM_START;
+TOTAL_STACKSIZES = STACKSIZE * NUM_THREADS;
 
 MEMORY
 {
     ROM (rx)  : ORIGIN = ISPM_START, LENGTH = ISPM_END - ISPM_START
-    RAM (rwx) : ORIGIN = DSPM_START, LENGTH = DSPM_END - DSPM_START
+    RAM (rwx) : ORIGIN = DSPM_START, LENGTH = DSPM_SIZE
+    STACK (rw) : ORIGIN = DSPM_END - TOTAL_STACKSIZES, LENGTH = TOTAL_STACKSIZES
 }
 
 OUTPUT_ARCH("riscv")
@@ -71,4 +77,16 @@ SECTIONS
     } > RAM
 
     __end = ABSOLUTE(.);
+
+    .heap : ALIGN(4) {
+        __sheap = ABSOLUTE(.);
+        __eheap = ABSOLUTE(DSPM_END - TOTAL_STACKSIZES);
+    } > RAM
+
+    .stack : ALIGN(4) {
+        __estack = ABSOLUTE(.);
+        __sstack =  ABSOLUTE(. + TOTAL_STACKSIZES);
+    } > STACK
+
+    PROVIDE(__stack_start$ = __sstack);
 }

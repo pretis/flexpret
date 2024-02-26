@@ -26,8 +26,12 @@ class CSRTestHelper(val c: CSR) {
    * Write a CSR. Note that this does NOT step the clock.
    */
   def writeCSR(csr: Int, value: UInt): Unit = {
+    writeCSRtype(csr, value, CSR_W)
+  }
+
+  def writeCSRtype(csr: Int, value: UInt, typ: UInt): Unit = {
     c.io.rw.addr.poke(csr.U)
-    c.io.rw.csr_type.poke(CSR_W)
+    c.io.rw.csr_type.poke(typ)
     c.io.rw.data_in.poke(value)
     c.io.rw.write.poke(true.B)
   }
@@ -51,16 +55,30 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "CSR"
 
   val threads = 4
-  val conf = FlexpretConfiguration(threads=threads, flex=false,
+  val confNoPriv = FlexpretConfiguration(threads=threads, flex=false,
     InstMemConfiguration(bypass=false, sizeKB=512),
-    dMemKB=512, mul=false, features="all")
-  def csr = new CSR()(conf=conf)
+    dMemKB=512, mul=false, priv=false, features="all")
+  
+  val confPriv = FlexpretConfiguration(threads=threads, flex=false,
+    InstMemConfiguration(bypass=false, sizeKB=512),
+    dMemKB=512, mul=false, priv=true, features="all")
+
+  def csrNoPriv = new CSR()(conf=confNoPriv)
+  def csrPriv   = new CSR()(conf=confPriv)
 
   implicit def csrToHelper(c: CSR) = new CSRTestHelper(c)
 
   it should "write a GPIO CSR" in {
-    test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(csrNoPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
       timescope {
+        /**
+         * FIXME: 
+         * Writes to GPIO CSR are not allowed without priviledge, and currently
+         * there is no way to set the priviledge mode high.
+         * 
+         * So run this test without priviledge configuration.
+        */
+
         // This assumes the default hardcoded convention of 4 GPOs
         c.writeCSR(CSRs.gpoBase, 3.U)
         c.clock.step()
@@ -79,7 +97,7 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "read a GPIO CSR" in {
-    test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
       timescope {
         // Set the inputs
         c.io.gpio.in(0).poke(1.U)
@@ -97,7 +115,7 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "write tohost" in {
-    test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
       timescope {
         val csrVal = "habcd_ef88".U
         c.writeCSR(CSRs.tohost0, csrVal)
@@ -114,7 +132,7 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "check that tohost registers do not intervene with each other" in {
-    test(csr).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
       timescope {
         val csrVals = Vector("h12345678".U, "hdeaddead".U, "hbeefbeef".U, "hdeadbeef".U)
         
@@ -131,6 +149,50 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
         c.io.host.to_host(1).expect(csrVals(1))
         c.io.host.to_host(2).expect(csrVals(2))
         c.io.host.to_host(3).expect(csrVals(3))
+      }
+    }
+  }
+
+  it should "check that fake writes to read-only CSRs are okay" in {
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      timescope {
+        // Set bits with mask = 0 should be okay
+        c.writeCSRtype(CSRs.time, "h0000_0000".U, CSR_S)
+        c.clock.step()
+        c.io.priv_fault.expect(0.U)
+
+        // Set bits with mask != 0 should not be okay
+        c.writeCSRtype(CSRs.time, "haab7_7781".U, CSR_S)
+        c.clock.step()
+        c.io.priv_fault.expect(1.U)
+
+        // Clear bits with mask = 0 should be okay
+        c.writeCSRtype(CSRs.time, "h0000_0000".U, CSR_C) 
+        c.clock.step()
+        c.io.priv_fault.expect(0.U)
+
+        // Clear bits with mask != 0 should not be okay
+        c.writeCSRtype(CSRs.time, "haab7_7781".U, CSR_S)
+        c.clock.step()
+        c.io.priv_fault.expect(1.U)
+
+        // Writes should never be okay
+        c.writeCSRtype(CSRs.time, "h0000_0000".U, CSR_W)
+        c.clock.step()
+        c.io.priv_fault.expect(1.U)
+
+        c.writeCSRtype(CSRs.time, "haab7_7781".U, CSR_W)
+        c.clock.step()
+        c.io.priv_fault.expect(1.U)
+
+        // Writes to RW CSRs should be fine
+        c.writeCSRtype(CSRs.evec, "h0000_0000".U, CSR_W)
+        c.clock.step()
+        c.io.priv_fault.expect(0.U)
+
+        c.writeCSRtype(CSRs.evec, "haab7_7781".U, CSR_W)
+        c.clock.step()
+        c.io.priv_fault.expect(0.U)
       }
     }
   }

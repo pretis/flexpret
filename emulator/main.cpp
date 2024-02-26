@@ -12,6 +12,8 @@
 
 #include "../../programs/lib/include/flexpret_hwconfig.h"
 
+#include "pin_event.h"
+
 void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);
 
@@ -24,6 +26,16 @@ double sc_time_stamp() {
 static inline uint32_t get_to_host(int tid, VVerilatorTop *top) {
   switch (tid)
   {
+/**
+ * NUM_THREADS determines how many of the to_host variables are available in the
+ * VVerilatorTop class. E.g., if NUM_THREADS = 2, then 
+ * 
+ *  top->io_to_host_0
+ *  top->io_to_host_1
+ * 
+ * are available. The other ones would yield compilation errors if not for the
+ * #if statements here.
+ */
 #if NUM_THREADS >= 1
     case 0: return top->io_to_host_0;
 #endif
@@ -58,10 +70,18 @@ int main(int argc, char* argv[]) {
   int exitcode = EXIT_SUCCESS;
 
   bool trace_enabled = false;
+  bool pin_client_enabled = false;
+
   for (int i = 1; i< argc; i++) {
     if (!strcmp(argv[i], "--trace")) {
       std::cout << "Tracing enabled" << std::endl;
       trace_enabled = true;
+    }
+
+    // Enable this to allow clients to connect; see the ./clients folder
+    if (!strcmp(argv[i], "--client")) {
+      std::cout << "Pin client enabled" << std::endl;
+      pin_client_enabled = true;
     }
   }
 
@@ -77,7 +97,17 @@ int main(int argc, char* argv[]) {
   }
 
   printf_init();
+  if (pin_client_enabled) {
+    eventlist_accept_clients();
+  }
 
+  int ncycles = 0;
+  
+  // Check for abort signals from FlexPRET and propagate the exit code
+  // by returning it from the emulator
+  bool should_exit = false;
+  bool unknown_reason = true;
+  int exit_in_n_cycles = 0;
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
     if (timestamp <= 2) {
@@ -90,17 +120,25 @@ int main(int argc, char* argv[]) {
     top->eval();
     timestamp++;
 
+    if (top->io_imem_store) {
+      printf("warn: IMEM store\n");
+      should_exit = true;
+      unknown_reason = false;
+      exit_in_n_cycles = 10;
+    }
+
     if (trace_enabled) {
       trace->dump(10*timestamp);
+    }
+
+    if (pin_client_enabled) {
+      eventlist_listen();
+      eventlist_set_pin(top);
     }
 
     top->clock = 0;
     top->eval();
 
-    // Check for abort signals from FlexPRET and propagate the exit code
-    // by returning it from the emulator
-    bool should_exit = false;
-    bool unknown_reason = true;
     for (int i = 0; i < NUM_THREADS; i++) {
       const uint32_t to_host = get_to_host(i, top);
       
@@ -116,11 +154,13 @@ int main(int argc, char* argv[]) {
     }
 
     if (should_exit) {
-      if (unknown_reason) {
-        printf("%s: Exit due to unknown reason\n", argv[0]);
-        exitcode = EXIT_FAILURE;
+      if (exit_in_n_cycles-- == 0) {
+        if (unknown_reason) {
+          printf("%s: Exit due to unknown reason\n", argv[0]);
+          exitcode = EXIT_FAILURE;
+        }
+        break;
       }
-      break;
     }
 
     for (int i = 0; i < NUM_THREADS; i++) {

@@ -22,7 +22,7 @@
 #define SLOTS_SIZE  8
 
 // Helper macros for making
-// thread_create() and thread_map()
+// fp_thread_create() and fp_thread_map()
 // more readable.
 #define HRTT        true
 #define SRTT        false
@@ -58,24 +58,36 @@ int tmode_sleep(uint32_t hartid);
 
 /* Pthreads-like threading library APIs */
 
-typedef uint32_t thread_t;
+/**
+ * This struct contains a context; i.e., the values of the registers before a
+ * context switch occurred. A context switch typically occurs due to an interrupt.
+ * 
+ * The struct is not in direct use anywhere, but is kept for reference. An
+ * implementation of a context switch can be found in ../ctx_switch.S
+ * 
+ */
+typedef struct thread_ctx_t {
+    uint32_t regs[32];
+} thread_ctx_t;
 
-int thread_create(
+typedef uint32_t fp_thread_t;
+
+int fp_thread_create(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid,
+    fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 );
-int thread_map(
+int fp_thread_map(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid,
+    fp_thread_t *restrict hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 );
-int thread_join(thread_t thread, void **retval);
-void thread_exit(void *retval);
-int thread_cancel(thread_t thread);
-void thread_testcancel();
+int fp_thread_join(fp_thread_t thread, void **retval);
+void fp_thread_exit(void *retval);
+int fp_thread_cancel(fp_thread_t thread);
+void fp_thread_testcancel();
 void worker_main();
 
 #endif

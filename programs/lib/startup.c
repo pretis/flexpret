@@ -9,10 +9,6 @@
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
 #include <flexpret.h>
 
-#include "tinyalloc/tinyalloc.h"
-
-#define TA_MAX_HEAP_BLOCK   1000
-#define TA_ALIGNMENT        4
 
 /* Linker */
 extern uint32_t __stext;
@@ -21,55 +17,41 @@ extern uint32_t __sdata;
 extern uint32_t __edata;
 extern uint32_t __sbss;
 extern uint32_t __ebss;
-extern uint32_t __end;
+
+/**
+ * The heap  starts after .text, .data, and .bss (see linker script).
+ * The stack starts at the very end of RAM.
+ * 
+ * The heap grows downwards while the stack grows upwards.
+ * Therefore, the __eheap and __estack variables should be equal.
+ * 
+ */
+extern uint32_t __sheap;
+extern uint32_t __eheap;
+extern uint32_t __estack;
+extern uint32_t __sstack;
+
 
 /* Threading */
-static bool     __ready__;
-extern bool     exit_requested[NUM_THREADS];
-extern uint32_t num_threads_busy;
-extern uint32_t num_threads_exited;
+static volatile bool     __ready__;
+extern volatile bool     exit_requested[NUM_THREADS];
+extern volatile uint32_t num_threads_busy;
+extern volatile uint32_t num_threads_exited;
 
 //prototype of main
 int main(void);
 
 void syscalls_init(void);
 
-/**
- * Allocate a requested memory and return a pointer to it.
- */
-void *malloc(size_t size) {
-    return ta_alloc(size);
-}
-
-/**
- * Allocate a requested memory, initial the memory to 0,
- * and return a pointer to it.
- */
-void *calloc(size_t nitems, size_t size) {
-    return ta_calloc(nitems, size);
-}
-
-/**
- * resize the memory block pointed to by ptr
- * that was previously allocated with a call
- * to malloc or calloc.
- */
-void *realloc(void *ptr, size_t size) {
-    return ta_realloc(ptr, size);
-}
-
-/**
- * Deallocate the memory previously allocated by a call to calloc, malloc, or realloc.
- */
-void free(void *ptr) {
-    ta_free(ptr);
+static inline bool check_bounds_inclusive(const void *val, const void *lower, const void *upper) {
+    return lower <= val && val <= upper;
 }
 
 /**
  * Initialize initialized global variables, set uninitialized global variables
  * to zero, configure tinyalloc, and jump to main.
  */
-lock_t _lock = LOCK_INITIALIZER;
+fp_lock_t _lock = FP_LOCK_INITIALIZER;
 void Reset_Handler() {
     // Get hartid
     uint32_t hartid = read_hartid();
@@ -79,30 +61,31 @@ void Reset_Handler() {
     if (hartid == 0) {
         // Copy .data section into the RAM
         uint32_t size   = &__edata - &__sdata;
-        uint32_t *pDst  = (uint32_t*)&__sdata;              // RAM
-        uint32_t *pSrc  = (uint32_t*)&__etext;              // ROM
+        uint32_t *pDst  = (uint32_t*)&__sdata; // RAM
+        uint32_t *pSrc  = (uint32_t*)&__etext; // ROM
 
         for (uint32_t i = 0; i < size; i++) {
-            *pDst++ = *pSrc++;
+            pDst[i] = pSrc[i];
         }
 
         // Init. the .bss section to zero in RAM
         size = (uint32_t)&__ebss - (uint32_t)&__sbss;
         pDst = (uint32_t*)&__sbss;
         for(uint32_t i = 0; i < size; i++) {
-            *pDst++ = 0;
+            pDst[i] = 0;
         }
-        
-        syscalls_init();
 
-        // Initialize tinyalloc.
-        ta_init( 
-            &__end, // start of the heap space
-            (void *) DSPM_END,
-            TA_MAX_HEAP_BLOCK, 
-            16, // split_thresh: 16 bytes (Only used when reusing blocks.)
-            TA_ALIGNMENT
-        );
+        // Perform some sanity checks on the stack and heap pointers
+        const uint32_t *stack_end_calculated = (uint32_t *)
+            ((uint32_t) (&__sstack) - (NUM_THREADS * STACKSIZE));
+
+        fp_assert(&__estack == stack_end_calculated, 
+            "Stack not set up correctly: End of stack: 0x%x, Calculated end of stack: 0x%x\n",
+            &__estack, stack_end_calculated);
+
+        fp_assert(&__eheap == &__estack, 
+            "Heap end and stack end are not equal: Heap end: 0x%x, Stack end: 0x%x\n",
+            &__eheap, &__estack);
 
         /**
          * Configure flexible scheduling
@@ -118,7 +101,7 @@ void Reset_Handler() {
          * and T3 are then used for SRTTs.
          * 
          * The user can set the thread modes when
-         * thread_create() or thread_map() is called. 
+         * fp_thread_create() or fp_thread_map() is called. 
          * 
          * If the user wants to change the schedule,
          * the user can call slot_set(), slot_set_hrtt(),
@@ -139,20 +122,20 @@ void Reset_Handler() {
             slots[j] = SLOT_D;
         
         // Acquire lock and allow all threads to start execute as HRTTs
-        hwlock_acquire();
+        fp_hwlock_acquire();
         for (int i = 0; i < NUM_THREADS; i++) {
             tmode_set(i, TMODE_HA);
         }
         slot_set(slots, 8);
-        hwlock_release();
+        fp_hwlock_release();
 
         // FIXME: Wait for a worker thread to signal
         // ready-to-sleep and put it to sleep.
 
         // Signal everything is ready.
-        hwlock_acquire();
+        fp_hwlock_acquire();
         __ready__ = true;
-        hwlock_release();
+        fp_hwlock_release();
     } else {
         // FIXME: Signal thread 0 to put
         // the worker thread to sleep.
@@ -160,6 +143,19 @@ void Reset_Handler() {
         // Wait for thread 0 to finish setup.
         while (!__ready__);
     }
+
+    // Check that each thread's stack pointer is within its own stack start/end
+    // addresses
+    register uint32_t *stack_pointer asm("sp");
+    
+    const uint32_t *stack_start = (uint32_t *)
+        ((uint32_t) (&__sstack) - (hartid * STACKSIZE));
+    
+    const uint32_t *stack_end   = (uint32_t *) 
+        ((uint32_t) (stack_start) - STACKSIZE);
+
+    fp_assert(check_bounds_inclusive(stack_pointer, stack_end, stack_start),
+        "Stack pointer incorrectly set: %p\n", stack_pointer);
 
     // Setup exception handling
     setup_exceptions();
@@ -180,13 +176,13 @@ void Reset_Handler() {
         while (num_threads_busy > 0);
 
         // Signal all threads besides T0 to exit.
-        hwlock_acquire();
+        fp_hwlock_acquire();
         for (int i = 1; i < NUM_THREADS; i++) {
             exit_requested[i] = true;
             // FIXME: If the thread is sleeping,
             // wake up the thread.
         }
-        hwlock_release();
+        fp_hwlock_release();
 
         // Wait for all hardware worker threads to exit.
         while (num_threads_exited < NUM_THREADS-1);

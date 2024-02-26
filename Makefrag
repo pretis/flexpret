@@ -16,6 +16,7 @@ endif
 all: compile
 
 # Include specification for how to build libflexpret
+include $(FLEXPRET_ROOT_DIR)/swconfig.mk
 include $(FLEXPRET_ROOT_DIR)/programs/lib/Makefrag-lib
 
 LINKER_SCRIPT ?= $(FP_LIB_DIR)/linker/flexpret.ld
@@ -26,17 +27,23 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-include $(FLEXPRET_ROOT_DIR)/defines.mk
+CFLAGS += -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
+INCS += $(LIB_INCS) $(APP_INCS)
+LFLAGS += -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
 
-CFLAGS = -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs $(APP_DEFS) $(DEFINES)
-INCS = $(LIB_INCS) $(APP_INCS)
-LFLAGS = -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
-
+ifeq ($(WANT_DEBUG),true)
+CFLAGS += -fstack-protector-all
+else
+CFLAGS += -fstack-protector
+endif
 
 .PHONY: compile riscv dump mem run clean recompile
 
 # Default target; generates the riscv, dump, and mem files
-compile: riscv dump mem
+# Double colon makes it possible to extend the target
+compile:: autogen riscv dump mem
+
+autogen: $(LIB_AUTOGEN)
 
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
@@ -58,12 +65,20 @@ mem: $(NAME).mem
 	@rm $*.binary.txt # Delete the temporary binary file
 
 # runs the program (generated .mem file) using fp-emu 
-run: $(NAME).mem
-	@$(EMU) +ispm=$^;
+run: $(NAME).mem $(CLIENT)
+ifeq ($(CLIENT_CMD),)
+	@$(EMU) +ispm=$^
+else
+	@$(CLIENT_CMD) &
+	@$(EMU) +ispm=$^ --client
+	@wait
+endif
 
 # Clean and recompile
 recompile: clean compile
 
-# deletes all generated artifacts
-clean:
+# Deletes all generated artifacts
+# Double colon makes it possible to extend the target
+clean::
 	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
+	rm -f $(LIB_AUTOGEN)

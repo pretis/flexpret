@@ -14,6 +14,8 @@
 // for more information on re-entry to newlib.
 #include <reent.h>
 
+#define INITIAL_HEAPSIZE (0x400)
+
 struct _reent _reents[NUM_THREADS];
 struct _reent *__getreent(void) {
     uint32_t hartid = read_hartid();
@@ -37,15 +39,6 @@ static inline const uint64_t ns_to_s(const uint64_t ns) {
 
 static inline const uint64_t ns_to_us(const uint64_t ns) {
     return ((uint64_t) (ns) / (uint64_t) (1e3));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Initialization
-////////////////////////////////////////////////////////////////////////////////
-
-void syscalls_init(void) {
-    _impure_ptr = &_reents[0];
-    environ = &__env[0];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,18 +121,26 @@ int _rename (const char *oldpath, const char *newpath) {
     return -1;
 }
 
-// FIXME: This should not be actually called because of tinyalloc.
+// Based on the implementation found here: https://sourceware.org/git/gitweb.cgi?p=newlib-cygwin.git;a=blob;f=libgloss/aarch64/syscalls.c
+// with some modifications
 void *_sbrk(int incr) {
-   extern char   __end; /* Set by linker.  */
-   static char * heap_end;
-   char *        prev_heap_end;
+    extern char __sheap; // Set by linker; start of heap space
+    extern char __eheap; // Set by linker; max size of the heap (where stack begins)
+    static char * heap_end;
+    char *        prev_heap_end;
 
-   if (heap_end == 0)
-     heap_end = &__end;
+    if (heap_end == 0) {
+        heap_end = &__sheap;
+    }
 
-   prev_heap_end = heap_end;
+    prev_heap_end = heap_end;
+
+    if ((heap_end + incr) > &__eheap) {
+        errno = ENOMEM;
+        return (void *) -1;
+    }
+
    heap_end += incr;
-
    return (void *) prev_heap_end;
 }
 
@@ -174,4 +175,22 @@ int _gettimeofday(struct timeval *tv, void *tz) {
     tv->tv_sec  = ns_to_s(ns);
     tv->tv_usec = ns_to_us(ns % (int) (1e9));
     return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Malloc required functions
+////////////////////////////////////////////////////////////////////////////////
+
+static fp_lock_t malloc_lock = FP_LOCK_INITIALIZER;
+
+FP_TEST_OVERRIDE
+void __malloc_lock(struct _reent *r)
+{
+    fp_lock_acquire(&malloc_lock);
+}
+
+FP_TEST_OVERRIDE
+void __malloc_unlock(struct _reent *r)
+{
+    fp_lock_release(&malloc_lock);
 }

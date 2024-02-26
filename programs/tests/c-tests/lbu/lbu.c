@@ -20,7 +20,7 @@ int main() {
 
     printf("Ran inline assembly that adds places x + y in y\n");
     printf("y is %i\n", y);
-    assert(y == (X_INIT + Y_INIT), "Inline assembly add got incorrect value");
+    fp_assert(y == (X_INIT + Y_INIT), "Inline assembly add got incorrect value");
 
     void *p = (void*)0x20004000;
 
@@ -35,7 +35,7 @@ int main() {
 
     printf("Ran inline assembly that stores x and loads it into z\n");
     printf("z is %i\n", z);
-    assert(z == x, "Inline assembly store and load got incorrect value");
+    fp_assert(z == x, "Inline assembly store and load got incorrect value");
 
     // Check lbu implementation.
     asm volatile (
@@ -49,7 +49,7 @@ int main() {
     printf("x = 0x%x\n", x);
     printf("z = 0x%x\n", z);
 
-    assert(z == (X_INIT & 0xFF), "Inline assembly load one byte got incorrect value");
+    fp_assert(z == (X_INIT & 0xFF), "Inline assembly load one byte got incorrect value");
 
     return 0;
 }

@@ -91,7 +91,10 @@ $(VERILOG_VERILATOR):
 # Provide rules for the emulator
 include $(EMULATOR_DIR)/emulator.mk
 
-emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN)
+# Provide rules for the emulator's clients
+include $(EMULATOR_DIR)/clients/clients.mk
+
+emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN) $(CLIENTS)
 
 # -----------------------------------------------------------------------------
 #  FPGA
@@ -126,10 +129,16 @@ clean:
 	rm -rf ./build
 	rm -rf emulator/obj_dir
 	rm -f emulator/*.v
-	rm -f $(LIB_DIR)/include/flexpret_config.h $(LIB_DIR)/linker/flexpret_config.ld
+	rm -f $(LIB_DIR)/include/flexpret_hwconfig.h $(LIB_DIR)/linker/flexpret_hwconfig.ld
 	rm -rf out
+	rm -rf $(CLIENT_BUILD_DIR)
+
+	# If the hwconfig.mk file does not exist, the clean target will fail because
+	# hwconfig.mk is included in the programs/tests makefile. Therefore, create an 
+	# empty file for it to delete.
+	echo "" >> ./hwconfig.mk
 	make -C programs/tests clean
-	
+
 
 # Clean for all configurations, targets, and test outputs.
 cleanall:
@@ -143,6 +152,7 @@ cleanall:
 	rm -f firrtl.jar
 	rm -f mill
 	rm -rf out
+	rm -rf $(CLIENT_BUILD_DIR)
 	rm -rf test_run_dir
 	cd $(TEST_DIR) && $(MAKE) clean
 

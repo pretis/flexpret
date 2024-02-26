@@ -1,10 +1,8 @@
 #ifndef FLEXPRET_CSRS_H
 #define FLEXPRET_CSRS_H
 
-#include <stdint.h>
-
+#define CSR_EPC         0x502
 #define CSR_SLOTS       0x503
-#define CSR_COMPARE     0x507
 #define CSR_EVEC        0x508 
 #define CSR_CAUSE       0x509 
 #define CSR_STATUS      0x50a
@@ -18,6 +16,8 @@
 #define CSR_TOHOST(tid) (CSR_TOHOST_BASE + tid)
 
 #define CSR_HWLOCK      0x520
+#define CSR_COMPARE_DU_WU 0x521
+#define CSR_COMPARE_IE_EE 0x522
 
 #define CSR_CYCLE       0xc00
 #define CSR_TIME        0xc01

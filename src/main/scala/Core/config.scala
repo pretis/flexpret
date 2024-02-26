@@ -19,6 +19,7 @@ object FlexpretConfiguration {
       InstMemConfiguration(bypass=false, parsed.get.group(3).toInt),
       parsed.get.group(4).toInt,
       confString contains "mul",
+      false,
       parsed.get.group(5),
       coreId
     )
@@ -28,6 +29,7 @@ object FlexpretConfiguration {
       1,true,
       InstMemConfiguration(bypass=false, 256),
       24,
+      false,
       false,
       "all",
       0
@@ -50,6 +52,7 @@ case class FlexpretConfiguration(
   imemConfig: InstMemConfiguration,
   dMemKB: Int,
   mul: Boolean,   // FIXME: Unused, to be removed.
+  priv: Boolean,
   features: String,
   coreId: Int = 0
 ) {
@@ -68,7 +71,7 @@ case class FlexpretConfiguration(
   val regSchedule       = true // delay DU, WU and schedule update 1 cycle to reduce timing path
   val dedicatedCsrData  = true // otherwise wait for pass through ALU
   val iMemCoreRW        = true // 'true' required for load/store to ISPM
-  val privilegedMode    = false // Off until updated to latest compiler..
+  val privilegedMode    = priv // Off until updated to latest compiler..
 
   // ************************************************************
 
@@ -239,6 +242,8 @@ DSPM_END      = 0x20000000 + 0x${(1 << dMemAddrBits).toHexString} ;
 DSPM_SIZE_KB  = ${dMemKB} ;
 BUS_START     = 0x40000000 ;
 BUS_END       = 0x40000000 + 0x${(1 << busAddrBits).toHexString} ;
+
+NUM_THREADS   = ${threads} ;
 
 """
   }
