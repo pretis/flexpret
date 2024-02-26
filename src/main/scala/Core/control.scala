@@ -70,10 +70,12 @@ class ControlDatapathIO(implicit val conf: FlexpretConfiguration) extends Bundle
   val exe_tid     = Input(UInt(conf.threadBits.W))
   val exe_rd_addr = Input(UInt(REG_ADDR_BITS.W))
   
-  val exe_expire_du  = Input(Bool())
-  val exe_expire_wu  = Input(Bool())
-  val exe_expire_ie  = Input(Bool())
-  val exe_expire_ee  = Input(Bool())
+  val exe_expire_du = Input(Vec(conf.threads, Bool()))
+  val exe_expire_wu = Input(Vec(conf.threads, Bool()))
+  val exe_expire_ie = Input(Vec(conf.threads, Bool()))
+  val exe_expire_ee = Input(Vec(conf.threads, Bool()))
+
+  val timer_expire_du_wu = Input(Vec(conf.threads, Bool()))
   
   val csr_slots   = Input(Vec(8, UInt(SLOT_WI.W)))
   val csr_tmodes  = Input(Vec(conf.threads, UInt(TMODE_WI.W)))
@@ -328,64 +330,18 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   //val exe_brjmp = exe_valid && (exe_reg_jump || (exe_reg_branch && io.exe_br_cond))
 
   // Keep track of delay_until instruction.
-  val exe_expire_du_wu = io.exe_expire_du || io.exe_expire_wu
-  val exe_expire_ie_ee = io.exe_expire_ie || io.exe_expire_ee
+  val exe_expire_du_wu = io.exe_expire_du(io.exe_tid) || io.exe_expire_wu(io.exe_tid)
+  val exe_expire_ie_ee = io.exe_expire_ie(io.exe_tid) || io.exe_expire_ee(io.exe_tid)
   val exe_expire = exe_expire_du_wu || exe_expire_ie_ee
   
-  // At the end of DU, another DU instruction will be fetched because DU is a
-  // branch to self. We need to make sure we do not execute this DU, otherwise we
-  // will end in a loop.
-  // We do this by capturing the thread id that fecthed a DU, and marking it
-  // invalid when it otherwise would be executed.
-  // 
-  // We do the same procedure for WU, but in this case it fixes issues related
-  // to running WU with a trigger < the current time.
-  val du_expired = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
-  val wu_expired = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
-  val kill_du = WireInit(false.B)
-  val kill_wu = WireInit(false.B)
-  
-  val exe_reg_du = RegNext(dec_du.asBool)
-  val exe_reg_wu = RegNext(dec_wu.asBool)
-  
-  // Any thread may have its DU triggered at any given time. In most cases, only
-  // a single thread will have its DU triggered, but it is not unthinkable that
-  // several threads will be set off to trigger simultaneously. When 'flex' is used,
-  // the ordering of threads is configurable at run-time, so we must handle all
-  // combinations.
-  kill_du := false.B
-  when(io.exe_expire_du) {
-    // Capture the thread ID that had an expired DU (implicitly through the
-    // location of the true bit)
-    du_expired(io.exe_tid) := true.B
-  }.elsewhen(du_expired(io.exe_tid) && exe_reg_valid) {
-    // The next time this thread ID gets a valid instruction in exe stage...
-    when (exe_reg_du) {
-      // ... squash it if it is another DU instruction ...
-      kill_du := true.B
-    }
-
-    // ... and reset.
-    du_expired(io.exe_tid) := false.B
-  }
-  
-  // We do the exact same as for DU here
-  kill_wu := false.B
-  when(io.exe_expire_wu) {
-    wu_expired(io.exe_tid) := true.B
-  }.elsewhen(wu_expired(io.exe_tid) && exe_reg_valid) {
-    when(exe_reg_wu) {
-      kill_wu := true.B
-    }
-    wu_expired(io.exe_tid) := false.B
-  }
-
   val exe_du: Bool = if (conf.delayUntil) {
     // If instruction is valid and compare time value has not expired, set PC:
     // DU: address of DU (branch to self)
     // WU: adress of WU+4 (branch to next instruction)
     // Assumes exception has higher PC priority than DU/WU
-    exe_reg_valid && exe_reg_du && !kill_du
+    
+    val exe_reg_du = RegNext(dec_du.asBool)
+    exe_reg_valid && exe_reg_du && !io.timer_expire_du_wu(io.exe_tid)
     // Otherwise just keep executing.
   } else {
     false.B
@@ -397,7 +353,8 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     // DU: address of DU (branch to self)
     // WU: adress of WU+4 (branch to next instruction)
     // Assumes exception has higher PC priority than DU/WU
-    exe_reg_valid && exe_reg_wu && !kill_wu
+    val exe_reg_wu = RegNext(dec_wu.asBool)
+    exe_reg_valid && exe_reg_wu && !io.timer_expire_du_wu(io.exe_tid)
     // Otherwise just keep executing.
   } else {
     false.B
@@ -453,7 +410,7 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
   // Determine how to update PC for each thread.
   val next_pc_sel = Wire(Vec(conf.threads, UInt(2.W)))
   for(tid <- 0 until conf.threads) { next_pc_sel(tid) := NPC_PCREG }
-  when(if_pre_valid)               { next_pc_sel(io.if_tid) := NPC_PLUS4 }
+  when(if_pre_valid || io.exe_expire_du(io.if_tid)) { next_pc_sel(io.if_tid) := NPC_PLUS4 }
   if(!conf.regBrJmp) {
     when(exe_brjmp || exe_du_wu)   { next_pc_sel(io.exe_tid) := NPC_BRJMP }
     } else {
@@ -574,8 +531,8 @@ class Control(implicit val conf: FlexpretConfiguration) extends Module
     ))
   // Caused by unknown instruction in execute stage, prevent all commits
   val (exe_any_exc, exe_any_cause) = check_exceptions(List(
-      (io.exe_expire_ee, Causes.ee),
-      (io.exe_expire_ie, Causes.ie),
+      (io.exe_expire_ee(io.exe_tid), Causes.ee),
+      (io.exe_expire_ie(io.exe_tid), Causes.ie),
       (io.exe_int_ext, Causes.external_int)
     ))
 
