@@ -99,14 +99,6 @@ object FlexpretConstants
   val MEM_RD_MUL = 2.U(2.W)
   val MEM_RD_X   = BitPat("b??")
   
-  // priviledge level of return
-  val XRET_WI = 2
-  val XRET_X = 0.U(2.W)
-  val XRET_M = 1.U(2.W)
-  val XRET_S = 2.U(2.W)
-  val XRET_U = 3.U(2.W)
-
-
   // ************************************************************
   // Determined by control
 

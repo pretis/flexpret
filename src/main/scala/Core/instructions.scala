@@ -104,10 +104,8 @@ object Instructions {
   def SBREAK             = BitPat("b00000000000100000000000001110011")
 
   // See https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf 
-  // section 3.1.7 for further information on these three instructions
+  // Used to return from exceptions
   def MRET               = BitPat("b00110000001000000000000001110011")
-  def SRET               = BitPat("b00010000001000000000000001110011")
-  def URET               = BitPat("b00000000001000000000000001110011")
   
   // CSR operations
   def CSRRW              = BitPat("b?????????????????001?????1110011")

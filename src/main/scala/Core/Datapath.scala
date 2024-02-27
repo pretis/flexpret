@@ -363,10 +363,13 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   io.control.exe_expire_wu := csr.io.expire_wu
   io.control.exe_expire_ie := csr.io.expire_ie
   io.control.exe_expire_ee := csr.io.expire_ee
+  io.control.timer_expire_du_wu := csr.io.timer_expire_du_wu
+
+  csr.io.if_tid := if_reg_tid
   csr.io.dec_tid := dec_reg_tid
 
   // privileged
-  csr.io.xret := io.control.exe_xret
+  csr.io.mret := io.control.exe_mret
 
   // external interrupt (per thread)
   csr.io.int_exts := io.int_exts

@@ -41,13 +41,17 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     val sleep_wu = Input(Bool())
     val ie = Input(Bool()) // valid IE inst
     val ee = Input(Bool()) // valid EE inst
-    val expire_du = Output(Bool())
-    val expire_wu = Output(Bool())
-    val expire_ie = Output(Bool())
-    val expire_ee = Output(Bool())
+    val expire_du = Output(Vec(conf.threads, Bool()))
+    val expire_wu = Output(Vec(conf.threads, Bool()))
+    val expire_ie = Output(Vec(conf.threads, Bool()))
+    val expire_ee = Output(Vec(conf.threads, Bool()))
+
+    val timer_expire_du_wu = Output(Vec(conf.threads, Bool()))
+
+    val if_tid = Input(UInt(conf.threadBits.W))
     val dec_tid = Input(UInt(conf.threadBits.W))
-    // privileged
-    val xret = Input(UInt(2.W))
+    // Return from exception
+    val mret = Input(Bool())
     // I/O
     val host = new HostIO()
     val gpio = new GPIO()
@@ -76,10 +80,6 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
   val reg_causes = Reg(Vec(conf.threads, UInt())) // RO
   val reg_sup0 = Reg(Vec(conf.threads, UInt()))
-  // timing instructions
-  val reg_time = RegInit(0.U(64.W)) // RO, less bits if !conf.stats
-  val reg_compare_du_wu = Reg(Vec(conf.threads, UInt(conf.timeBits.W)))
-  val reg_compare_ie_ee = Reg(Vec(conf.threads, UInt(conf.timeBits.W)))
 
   // I/O
   val regs_to_host = RegInit(VecInit(Seq.fill(conf.threads) { 0.U(32.W) }))
@@ -101,9 +101,16 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
   val reg_msip = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
   val reg_in_interrupt = RegInit(VecInit(Seq.fill(conf.threads) { false.B }))
 
-  // Invisible
-  val reg_timer_du_wu = RegInit(VecInit(Seq.fill(conf.threads) { TIMER_OFF }))
-  val reg_timer_ie_ee = RegInit(VecInit(Seq.fill(conf.threads) { TIMER_OFF }))
+  // timing instructions
+  val reg_time = RegInit(0.U(64.W)) // RO, less bits if !conf.stats
+  val reg_compare_du_wu = Reg(Vec(conf.threads, UInt(conf.timeBits.W)))
+  val reg_compare_ie_ee = Reg(Vec(conf.threads, UInt(conf.timeBits.W)))
+
+  // Denotes whether the `reg_compare_du_wu` is set for DU or WU (or off)
+  val reg_compare_du_wu_type = RegInit(VecInit(Seq.fill(conf.threads) { TIMER_OFF }))
+
+  // Denotes whether the `reg_compare_ie_ee` is set for IE or EE (or off)
+  val reg_compare_ie_ee_type = RegInit(VecInit(Seq.fill(conf.threads) { TIMER_OFF }))
 
   // for reading of status CSR
   val status = Wire(Vec(conf.threads, UInt()))
@@ -178,13 +185,13 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     if (conf.delayUntil) {
       when(compare_addr(CSRs.compare_du_wu)) {
         reg_compare_du_wu(io.rw.thread) := data_in(conf.timeBits - 1, 0)
-        reg_timer_du_wu(io.rw.thread) := TIMER_OFF
+        reg_compare_du_wu_type(io.rw.thread) := TIMER_OFF
       }
     }
     if (conf.interruptExpire) {
       when(compare_addr(CSRs.compare_ie_ee)) {
         reg_compare_ie_ee(io.rw.thread) := data_in(conf.timeBits - 1, 0)
-        reg_timer_ie_ee(io.rw.thread) := TIMER_OFF
+        reg_compare_ie_ee_type(io.rw.thread) := TIMER_OFF
       }
     }
     for (tid <- 0 until conf.threads) {
@@ -333,8 +340,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
   // Thread scheduler
   // TODO: need to sleep at end exe or wait a cycle?
-  val sleep = WireInit(false.B) // default value
-  when(sleep) {
+  when(io.sleep_du || io.sleep_wu) {
     reg_tmodes(io.rw.thread) := reg_tmodes(io.rw.thread) | TMODE_OR_Z
   }
   val wake = Wire(Vec(conf.threads, Bool()))
@@ -375,37 +381,28 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
   // exception handling
   if (conf.exceptions) {
-    // TODO: The work on exception handling with different priviledge modes
-    // needs to be handled; for now it is just mpc being used.
+    // The work on exception handling with different priviledge modes
+    // can be handled here; for now just the machine exceptions are handled
     when(io.exception) {
-      when (reg_timer_du_wu(io.rw.thread) === TIMER_WU) {
+      when (reg_compare_du_wu_type(io.rw.thread) === TIMER_WU) {
         // Wait until needs to return to the next instruction because it shall
         // be woken up when an exception occurs
         reg_mepcs(io.rw.thread) := io.epc + 4.U
 
         // It also needs to turn off its timer, because the instruction is done
-        reg_timer_du_wu(io.rw.thread) := TIMER_OFF
+        reg_compare_du_wu_type(io.rw.thread) := TIMER_OFF
       }.otherwise {
+        // If the thread is in delay until (DU) instruction, we want to return
+        // to the same PC. That goes for the normal case as well.
         reg_mepcs(io.rw.thread) := io.epc
       }
       reg_causes(io.rw.thread) := io.cause
       reg_in_interrupt(io.rw.thread) := true.B
-    } .elsewhen (io.xret === XRET_M) {
+    } .elsewhen (io.mret) {
       // Clear pending interrupt
       reg_msip(io.rw.thread) := false.B
       reg_in_interrupt(io.rw.thread) := false.B
     }
-  }
-
-  // timing instructions
-  // val expired = Reg(Vec(conf.threads, Bool())) // needs 2 cycle cmp
-  val expired_du_wu = Wire(Vec(conf.threads, Bool()))
-  val expired_ie_ee = Wire(Vec(conf.threads, Bool()))
-  
-  // default value
-  for (tid <- 0 until conf.threads) {
-    expired_du_wu(tid) := false.B
-    expired_ie_ee(tid) := false.B
   }
 
   // update time every cycle
@@ -413,91 +410,128 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     reg_time := reg_time + conf.timeInc.U
   }
 
-  val timer_du_or_wu = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
-  for (tid <- 0 until conf.threads) {
-    timer_du_or_wu(tid) := reg_timer_du_wu(io.rw.thread) === TIMER_DU ||
-                           reg_timer_du_wu(io.rw.thread) === TIMER_WU
-  }
+  /**
+   * Keep track of whether any of the timing instructions have had their timers
+   * expired. Delay until (DU) and wait until (WU) share their compare
+   * register (`reg_compare_du_wu`). Interrupt on expire (IE) and
+   * exception on expire (EE) share their compare register (`reg_compare_ie_ee`).
+   * 
+   * This means a thread cannot run DU/WU simultaneously. The same goes for IE/EE.
+   * It can, however, run a combination of DU/WU and IE/EE simultaneously.
+   * 
+   */
+  val expired_du = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val expired_wu = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val expired_ie = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  val expired_ee = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
+  
+  // Constructing `expired_ie` requires a bit more logic than the others
+  val expired_ie_part = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
 
+  /**
+   * Is high if `reg_time` >= `reg_compare_du_wu` regardsless of whether a DU/WU
+   * instruction is running.
+   * 
+   * This signal is necessary to handle the case where the user sets
+   * `reg_compare_du_wu` < `reg_time`. (I.e., a DU/WU that already has expired.)
+   * In this case, the instruction should function as a nop.
+   * 
+   */
+  val reg_compare_expired_du_wu = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
+    
   // unless conf.roundRobin, use comparator for each thread
   // otherwise wake precision limited by number of comparators
   if (conf.delayUntil) {
-    for (tid <- 0 until conf.threads) {
-      // Each value compared to current time
-      when (timer_du_or_wu(tid)) {
-        expired_du_wu(tid) := ((reg_time(conf.timeBits - 1, 0) - reg_compare_du_wu(tid)) (conf.timeBits - 1) === 0.U(1.W))
+    for (tid <- 0 until conf.threads) {      
+      reg_compare_expired_du_wu(tid) := ((reg_time(conf.timeBits - 1, 0) - reg_compare_du_wu(tid)) (conf.timeBits - 1) === 0.U(1.W))
+
+      when (reg_compare_du_wu_type(tid) === TIMER_DU) {
+        expired_du(tid) := reg_compare_expired_du_wu(tid)
+      }
+
+      when (reg_compare_du_wu_type(tid) === TIMER_WU) {
+        expired_wu(tid) := reg_compare_expired_du_wu(tid)
       }
 
       if (conf.roundRobin) {
         when(io.rw.thread =/= tid.U) {
-          expired_du_wu(tid) := false.B
+          expired_du(tid) := false.B
+          expired_wu(tid) := false.B
         }
       }
     }
   }
+
+  val reg_compare_expired_ie_ee = WireInit(VecInit(Seq.fill(conf.threads) { false.B }))
 
   if (conf.interruptExpire) {
     for (tid <- 0 until conf.threads) {
+      reg_compare_expired_ie_ee(tid) := ((reg_time(conf.timeBits - 1, 0) - reg_compare_ie_ee(tid)) (conf.timeBits - 1) === 0.U(1.W))
+      
       // Each value compared to current time
-      when (reg_timer_ie_ee(io.rw.thread) === TIMER_IE || reg_timer_ie_ee(io.rw.thread) === TIMER_EE) {
-        expired_ie_ee(tid) := ((reg_time(conf.timeBits - 1, 0) - reg_compare_ie_ee(tid)) (conf.timeBits - 1) === 0.U(1.W))
+      when (reg_compare_ie_ee_type(io.rw.thread) === TIMER_EE) {
+        expired_ee(tid) := reg_compare_expired_ie_ee(tid)
+      }
+      
+      when (reg_compare_ie_ee_type(io.rw.thread) === TIMER_IE) {
+        expired_ie_part(tid) := reg_compare_expired_ie_ee(tid)
       }
 
       if (conf.roundRobin) {
         when(io.rw.thread =/= tid.U) {
-          expired_ie_ee(tid) := false.B
+          expired_ie(tid) := false.B
+          expired_ee(tid) := false.B
         }
       }
     }
   }
 
-  // Only when thread is active, so only one time comparison needed
-  val expired_ie = WireInit(VecInit(Seq.fill(conf.threads){ false.B }))
-  val expired_ee = WireInit(VecInit(Seq.fill(conf.threads){ false.B }))
-  
   // compare value should already be set
   if (conf.delayUntil) {
     // DU/WU instruction sleeps thread and sets timer mode
-    sleep := io.sleep_du || io.sleep_wu
-    
     when (io.sleep_du) {
-      reg_timer_du_wu(io.rw.thread) := TIMER_DU
+      reg_compare_du_wu_type(io.rw.thread) := TIMER_DU
     }
     when (io.sleep_wu) {
-      reg_timer_du_wu(io.rw.thread) := TIMER_WU
+      reg_compare_du_wu_type(io.rw.thread) := TIMER_WU
     }
 
     if (conf.interruptExpire) {
-      when(io.int_ext || expired_ie(io.rw.thread) || expired_ee(io.rw.thread)) {
+      when(io.int_ext || expired_ie_part(io.rw.thread) || expired_ee(io.rw.thread)) {
         wake(io.rw.thread) := true.B
       }
     }
 
     // Check each thread for expiration and wake
     for (tid <- 0 until conf.threads) {
-      when(timer_du_or_wu(tid) && expired_du_wu(tid)) {
+      when(expired_du(tid) || expired_wu(tid)) {
         wake(tid) := true.B
-        reg_timer_du_wu(tid) := TIMER_OFF
+        
+        val thread_active = (reg_tmodes(io.if_tid) === TMODE_HA) || (reg_tmodes(io.if_tid) === TMODE_SA)
+        when (thread_active) {
+          reg_compare_du_wu_type(io.if_tid) := TIMER_OFF
+        }
       }
     }
   }
 
   if (conf.interruptExpire) {
-    when(io.ee) {
-      reg_timer_ie_ee(io.rw.thread) := TIMER_EE
-    }
-    // send exception, but may not have priority
-    when(reg_timer_ie_ee(io.rw.thread) === TIMER_EE && expired_ie_ee(io.rw.thread)) {
-      reg_timer_ie_ee(io.rw.thread) := TIMER_OFF
-      expired_ee(io.rw.thread) := true.B
-    }
+    // IE/EE instruction sets timer mode
     when(io.ie) {
-      reg_timer_ie_ee(io.rw.thread) := TIMER_IE
+      reg_compare_ie_ee_type(io.rw.thread) := TIMER_IE
+    }
+    when(io.ee) {
+      reg_compare_ie_ee_type(io.rw.thread) := TIMER_EE
+    }
+
+    // send exception, but may not have priority
+    when(reg_compare_ie_ee_type(io.rw.thread) === TIMER_EE && expired_ee(io.rw.thread)) {
+      reg_compare_ie_ee_type(io.rw.thread) := TIMER_OFF
     }
     // capture interrupt and stop comparion
     val mtie = WireInit(false.B)
-    when(reg_timer_ie_ee(io.rw.thread) === TIMER_IE && expired_ie_ee(io.rw.thread)) {
-      reg_timer_ie_ee(io.rw.thread) := TIMER_OFF
+    when(reg_compare_ie_ee_type(io.rw.thread) === TIMER_IE && expired_ie_part(io.rw.thread)) {
+      reg_compare_ie_ee_type(io.rw.thread) := TIMER_OFF
       mtie := true.B
       reg_mtie(io.rw.thread) := true.B
     }
@@ -545,8 +579,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       // privileged mode with interrupts disabled
       reg_prv := VecInit(Seq.fill(conf.threads) { 3.U(2.W) })
       reg_ie := VecInit(Seq.fill(conf.threads) { false.B })
-    } .elsewhen (io.xret === XRET_S) {
+    } .elsewhen (io.mret) {
       // restore
+      // Note: mret might not be corret; perhaps another priviledge level
+      //       must be implemented
       reg_prv := reg_prv1
       reg_ie := reg_ie1
     }
@@ -569,10 +605,12 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     io.evecs := reg_evecs
     io.mepcs  := reg_mepcs
   }
-  io.expire_du := expired_du_wu(io.rw.thread) && reg_timer_du_wu(io.rw.thread) === TIMER_DU
-  io.expire_wu := expired_du_wu(io.rw.thread) && reg_timer_du_wu(io.rw.thread) === TIMER_WU
-  io.expire_ie := expired_ie(io.rw.thread)
-  io.expire_ee := expired_ee(io.rw.thread)
+  
+  io.expire_du := expired_du
+  io.expire_wu := expired_wu
+  io.expire_ie := expired_ie
+  io.expire_ee := expired_ee
+  io.timer_expire_du_wu := reg_compare_expired_du_wu
 
   for (tid <- 0 until conf.threads) {
     io.host.to_host(tid) := regs_to_host(tid)
