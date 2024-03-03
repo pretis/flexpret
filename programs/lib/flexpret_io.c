@@ -35,8 +35,6 @@ void fp_print_int(uint32_t val) {
     for (int i = 0; i < strlen(num); i++) {
         uart_send(num[i]);
     }
-    uart_send('\n');
-    uart_send('\0');
 #endif // __FPGA__
 }
 
@@ -65,7 +63,7 @@ void gpo_set_ledmask(const uint8_t byte) {
     gpo_write_0((byte >> 0) & 0b11);
     gpo_write_1((byte >> 2) & 0b11);
     gpo_write_2((byte >> 4) & 0b11);
-    gpo_write_3((byte >> 6) & 0b11);
+    //gpo_write_3((byte >> 6) & 0b11);
 }
 
 void gpo_set(uint32_t port, uint32_t mask) {

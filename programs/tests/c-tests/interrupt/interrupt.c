@@ -17,6 +17,7 @@ static volatile int ext_int_flag[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 static volatile int du_int_triggered[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 static volatile int wu_int_triggered[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 static volatile uint64_t isr_time[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int ninterrupts[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 
 void reset_flags(void) {
     memset((void *) flag0, 0, sizeof(flag0));
@@ -24,6 +25,8 @@ void reset_flags(void) {
     memset((void *) ext_int_flag, 0, sizeof(ext_int_flag));
     memset((void *) du_int_triggered, 0, sizeof(du_int_triggered));
     memset((void *) wu_int_triggered, 0, sizeof(wu_int_triggered));
+    memset((void *) isr_time, 0, sizeof(isr_time));
+    memset((void *) ninterrupts, 0, sizeof(ninterrupts));
 }
 
 void ie_isr0(void) {
@@ -56,6 +59,34 @@ void ext_int_wu_response(void) {
 void ie_isr_get_time(void) {
     int hartid = read_hartid();
     isr_time[hartid] = rdtime64();
+}
+
+void ie_long(void) {
+    int hartid = read_hartid();
+    ninterrupts[hartid]++;
+}
+
+void *test_long_interrupt(void *args) {
+    (void)(args);
+    int hartid = read_hartid();
+
+    volatile uint32_t before, now, expire;
+    register_isr(EXC_CAUSE_EXTERNAL_INT, ie_long);
+
+    before = rdtime();
+    expire = before + 1000 * EXPIRE_DELAY_NS;
+    fp_int_on_expire(expire, ie_jumpto0);
+
+    fp_interrupt_enable();
+// Jumps here after interrupt
+ie_jumpto0:
+    while (ninterrupts[hartid] < 3);
+    fp_interrupt_disable();
+
+    now = rdtime();
+    fp_assert(now < expire, "Interrupts did not occur in time\n");
+    fp_assert(ninterrupts[hartid] >= 3, 
+        "Long interrupt did not trigger interrupt handler enough\n");
 }
 
 void *test_two_interrupts(void *args) {

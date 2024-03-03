@@ -16,12 +16,27 @@ set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports {LEDS[7]}]; 
 ## UART pins
 set_property -dict {PACKAGE_PIN Y11 IOSTANDARD LVCMOS33} [get_ports {UART_TX}];  # "JA1"
 set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports {UART_RX}];  # "JA2"
+set_property -dict {PACKAGE_PIN Y10 IOSTANDARD LVCMOS33}  [get_ports {JA3}];  # "JA3"
+set_property -dict {PACKAGE_PIN AA9 IOSTANDARD LVCMOS33}  [get_ports {JA4}];  # "JA4"
+set_property -dict {PACKAGE_PIN AB11 IOSTANDARD LVCMOS33} [get_ports {JA7}];  # "JA7"
+set_property -dict {PACKAGE_PIN AB10 IOSTANDARD LVCMOS33} [get_ports {JA8}];  # "JA8"
+set_property -dict {PACKAGE_PIN AB9 IOSTANDARD LVCMOS33}  [get_ports {JA9}];  # "JA9"
+set_property -dict {PACKAGE_PIN AA8 IOSTANDARD LVCMOS33}  [get_ports {JA10}];  # "JA10"
+
+
+## Interrupt pins
+set_property PACKAGE_PIN W12 [get_ports {INTS[0]}];  # "JB1"
+set_property PACKAGE_PIN W11 [get_ports {INTS[1]}];  # "JB2"
+
+## Sync pin
+set_property PACKAGE_PIN V10 [get_ports {SYNC}];  # "JB3"
 
 ## Buttons
 set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS33} [get_ports {RESET}];  # "BTNC"
 
 ## Switches
-set_property -dict {PACKAGE_PIN F22 IOSTANDARD LVCMOS33} [get_ports {SW}];  # "SW0"
+set_property -dict {PACKAGE_PIN F22 IOSTANDARD LVCMOS33} [get_ports {SWS[0]}];  # "SW0"
+set_property -dict {PACKAGE_PIN G22 IOSTANDARD LVCMOS33} [get_ports {SWS[1]}];  # "SW1"
 
 # ----------------------------------------------------------------------------
 # IOSTANDARD Constraints

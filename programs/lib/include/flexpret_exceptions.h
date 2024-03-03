@@ -66,6 +66,9 @@ typedef void (*isr_t)(void);
     int ret = setjmp(__ie_jmp_buf[hartid]); \
     if (ret) { \
         __ie_jmp_buf_active[hartid] = false; \
+        clear_csr(CSR_STATUS, 0x04); \
+        clear_csr(CSR_STATUS, 0x08); \
+        set_csr(CSR_STATUS, 0x10); \
         goto cleanup; \
     } else { \
         __ie_jmp_buf_active[hartid] = true; \

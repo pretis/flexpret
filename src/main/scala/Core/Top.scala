@@ -83,13 +83,14 @@ class FpgaTopIO(cfg: FlexpretConfiguration) extends Bundle {
         val rx = Input(Bool())
         val tx = Output(Bool())
     }
+    val int_exts = Input(Vec(cfg.threads, Bool()))
 }
 
 class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
-
     val io = IO(new FpgaTopIO(cfg))
     
     io.gpio <> core.io.gpio
+    core.io.int_exts <> io.int_exts
 
     // Connect rx tx signals
     io.uart.tx := wbUart.ioUart.tx
@@ -98,7 +99,4 @@ class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
     // Drive bus input to 0
     core.io.dmem.driveDefaultsFlipped()
     core.io.imem_bus.driveDefaultsFlipped()
-    core.io.int_exts.foreach(_ := false.B)
-
-    // TODO: Probably want to route out some IO or interrupts to the top-level pins
 }

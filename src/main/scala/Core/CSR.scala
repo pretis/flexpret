@@ -239,6 +239,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       if (conf.externalInterrupt) {
         reg_msip(io.rw.thread) := data_in(3).asBool
       }
+      reg_in_interrupt(io.rw.thread) := data_in(2).asBool
     }
   }
 
@@ -385,16 +386,30 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     // can be handled here; for now just the machine exceptions are handled
     when(io.exception) {
       when (reg_compare_du_wu_type(io.rw.thread) === TIMER_WU) {
-        // Wait until needs to return to the next instruction because it shall
-        // be woken up when an exception occurs
-        reg_mepcs(io.rw.thread) := io.epc + 4.U
+
+        // If we have exception and mret at the same time, it means the interrupt
+        // signal probably stayed on for the duration of the interrupt. In this
+        // case we do not update the mepcs; we just run another interrupt with the
+        // same mepcs register.
+        when (!io.mret) {
+          // Wait until needs to return to the next instruction because it shall
+          // be woken up when an exception occurs
+          reg_mepcs(io.rw.thread) := io.epc + 4.U
+        }
 
         // It also needs to turn off its timer, because the instruction is done
         reg_compare_du_wu_type(io.rw.thread) := TIMER_OFF
       }.otherwise {
-        // If the thread is in delay until (DU) instruction, we want to return
-        // to the same PC. That goes for the normal case as well.
-        reg_mepcs(io.rw.thread) := io.epc
+        
+        // If we have exception and mret at the same time, it means the interrupt
+        // signal probably stayed on for the duration of the interrupt. In this
+        // case we do not update the mepcs; we just run another interrupt with the
+        // same mepcs register.
+        when (!io.mret) {
+          // If the thread is in delay until (DU) instruction, we want to return
+          // to the same PC. That goes for the normal case as well.
+          reg_mepcs(io.rw.thread) := io.epc
+        }
       }
       reg_causes(io.rw.thread) := io.cause
       reg_in_interrupt(io.rw.thread) := true.B
@@ -551,7 +566,7 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
     for (tid <- 0 until conf.threads) {
       // set interrupt as pending, only cleared once handled, and wake thread
       when(io.int_exts(tid)) {
-        reg_msip(io.rw.thread) := true.B
+        reg_msip(tid) := true.B
         wake(tid) := true.B
       }
     }
@@ -585,10 +600,11 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
       //       must be implemented
       reg_prv := reg_prv1
       reg_ie := reg_ie1
+      reg_in_interrupt(io.rw.thread) := false.B
     }
   } else {
     when (io.exception) {
-      when (expired_ie(io.rw.thread) || expired_ee(io.rw.thread)) {
+      when (expired_ie(io.rw.thread) || expired_ee(io.rw.thread) || io.int_exts(io.rw.thread)) {
         // Setting everything to zero will break IE/EE instructions for other
         // threads
         reg_ie(io.rw.thread) := false.B

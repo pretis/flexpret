@@ -5,6 +5,7 @@
  */
 
 void reset_flags(void);
+void *test_long_interrupt(void *args);
 void *test_two_interrupts(void *args);
 void *test_disabled_interrupts(void *args);
 void *test_low_timeout(void *args);

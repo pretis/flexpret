@@ -92,7 +92,7 @@ int bootloader(void) {
             case RECV_SYNC_ID: {
                 
                 DBG_PRINT(1);
-                gpo_set(0, 2);
+                gpo_set_ledmask(0x01);
                 recv=uart_receive();
                 DBG_PRINT(recv);
                 recv_buffer[1] = recv_buffer[0];
@@ -103,14 +103,12 @@ int bootloader(void) {
                     idx=0;
                     byte_idx=3;
                     instr = 0;
-                    gpo_clear(0, 2);
                 }
                 break;
             }
 
             case RECV_LEN: {
                 DBG_PRINT(2);
-                gpo_set(0, 2);
                 recv=uart_receive();
                 DBG_PRINT(recv);
                 recv_buffer[idx++] = recv;
@@ -121,13 +119,11 @@ int bootloader(void) {
                         | (recv_buffer[0] << 0);        
                     app_recv_state = RECV_DATA;
                     idx = 0;
-                    gpo_clear(0, 2);
                 }
                 break;
             }
 
             case RECV_DATA: {
-                gpo_set(0, 4);
                 recv = uart_receive();
                 instr = instr | (((unsigned int) recv) << 8*byte_idx);
                 if (byte_idx-- == 0) {
@@ -140,7 +136,6 @@ int bootloader(void) {
                 }
 
                 if (++idx == len) {
-                    gpo_clear(0, 4);
                     app_recv_state = RECV_END_SYNC;
                     idx=0;
                 }
@@ -149,7 +144,6 @@ int bootloader(void) {
 
             case RECV_END_SYNC: {
                 DBG_PRINT(4);
-                gpo_set(0, 8);
                 recv = uart_receive();
                 recv_buffer[1] = recv_buffer[0];
                 recv_buffer[0] = recv;
@@ -157,7 +151,6 @@ int bootloader(void) {
                 if (++idx == SYNC_ID_LEN) {
                     if (recv_buffer[0] == sync_id[0] && recv_buffer[1] == sync_id[1]) {
                         // Sucessfully received the program
-                        gpo_clear(0, 8);
                         return 0;
                     }
                     else {
