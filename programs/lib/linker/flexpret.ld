@@ -21,7 +21,7 @@
 /* 
  * Taken from https://github.com/apache/nuttx/blob/master/boards/risc-v/c906/smartl-c906/scripts/ld.script
  */
-INCLUDE flexpret_hwconfig.ld
+INCLUDE ../../../../build/config.ld
 INCLUDE flexpret_swconfig.ld
 
 

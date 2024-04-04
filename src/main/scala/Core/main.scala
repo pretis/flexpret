@@ -16,18 +16,16 @@ import flexpret.core.FlexpretConfiguration
 object CoreMain {
   
   def verilatorMain(args: Array[String]) : Unit = {
-    val confString = args(0)
-    val chiselArgs = args.slice(1, args.length)
-    val coreConfig = FlexpretConfiguration.parseString(confString)
+    val chiselArgs = args.slice(0, args.length)
+    val coreConfig = FlexpretConfiguration.fromFile()
 
     // Pass configuration to FlexPRET processor.
     (new chisel3.stage.ChiselStage).emitVerilog(new VerilatorTop(coreConfig), chiselArgs)
   } 
   
   def fpgaMain(args: Array[String]) : Unit = {
-    val confString = args(0)
-    val chiselArgs = args.slice(1, args.length)
-    val coreConfig = FlexpretConfiguration.parseString(confString)
+    val chiselArgs = args.slice(0, args.length)
+    val coreConfig = FlexpretConfiguration.fromFile()
 
     // Pass configuration to FlexPRET processor.
     (new chisel3.stage.ChiselStage).emitVerilog(new FpgaTop(coreConfig), chiselArgs)

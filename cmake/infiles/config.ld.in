@@ -1,0 +1,16 @@
+/**
+* This FlexPRET configuration file is auto-generated, and based on the
+* configuration used during build.
+*
+* Do not edit.
+*
+*/
+
+ISPM_START    = 0x00000000 ;
+DSPM_START    = 0x20000000 ;
+BUS_START     = 0x40000000 ;
+ISPM_END      = ISPM_START + (@ISPM_KBYTES@ << 10) ; /* 2^10 = kB */
+DSPM_END      = DSPM_START + (@DSPM_KBYTES@ << 10) ; /* 2^10 = kB */
+BUS_END       =  BUS_START + 0x400 ;
+
+NUM_THREADS   = @THREADS@ ;

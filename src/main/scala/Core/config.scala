@@ -6,6 +6,8 @@ import Core.FlexpretConstants._
 import Core._
 
 import java.io._
+import pureconfig._
+import pureconfig.generic.auto._
 
 object FlexpretConfiguration {
   /**
@@ -37,6 +39,9 @@ object FlexpretConfiguration {
       0,
     )
   }
+  def fromFile(): FlexpretConfiguration = {
+    ConfigSource.default.loadOrThrow[FlexpretConfiguration]
+  }
 }
 
 case class InstMemConfiguration(
@@ -51,7 +56,7 @@ case class InstMemConfiguration(
 case class FlexpretConfiguration(
   threads: Int,
   flex: Boolean,
-  clkFreq: Int,
+  clkFreqMHz: Int,
   imemConfig: InstMemConfiguration,
   dMemKB: Int,
   mul: Boolean,   // FIXME: Unused, to be removed.
@@ -142,10 +147,10 @@ case class FlexpretConfiguration(
   val iMemBtlSize = 0x1000
 
   // functionality
-  val clkFreqMHz    = clkFreq / 1000000
+  val clkFreqHz     = clkFreqMHz * 1000000
   val timeBits      = 32
   val nsPerS        = 1000000000
-  val timeInc       = nsPerS / clkFreq
+  val timeInc       = nsPerS / clkFreqHz
   require(timeBits <= 32)
   val getTime       = delayUntil || interruptExpire
   val hwLock        = true
