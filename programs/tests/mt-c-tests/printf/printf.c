@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 // Using floats increases the final .mem by approximately 30 kB
 #define HAVE_FLOATS (PRINTF_SUPPORT_DECIMAL_SPECIFIERS == 1)

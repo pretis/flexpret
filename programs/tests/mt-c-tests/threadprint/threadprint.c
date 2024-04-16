@@ -3,12 +3,12 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <flexpret_hwconfig.h>
-#include <flexpret_pbuf.h>
-#include <flexpret_thread.h>
-#include <flexpret_types.h>
-#include <flexpret_assert.h>
-#include <flexpret_uart.h>
+#include <flexpret/hwconfig.h>
+#include <flexpret/pbuf.h>
+#include <flexpret/thread.h>
+#include <flexpret/types.h>
+#include <flexpret/assert.h>
+#include <flexpret/uart.h>
 
 void* pumper(void* arg) {
     struct PrintBuffer *printbuf = arg;

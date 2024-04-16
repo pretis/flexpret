@@ -15,7 +15,7 @@ import Core.FlexpretConstants._
 import Core.LoadStore
 import Core.CSRs
 
-class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration) extends Module {
+class Datapath(confHash: UInt, val debug: Boolean = false)(implicit conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
     val control = Flipped(new ControlDatapathIO())
     val imem = Flipped(new InstMemCoreIO())
@@ -337,7 +337,7 @@ class Datapath(val debug: Boolean = false)(implicit conf: FlexpretConfiguration)
   io.imem_store := loadstore.io.imem_store
 
   // Control and Status Register (CSR) Unit
-  val csr = Module(new CSR())
+  val csr = Module(new CSR(confHash, conf))
   val exe_csr_data = if (conf.dedicatedCsrData) exe_reg_csr_data else exe_alu_result
   // CSR modification
   csr.io.rw.addr := exe_reg_csr_addr

@@ -12,8 +12,8 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include <flexpret.h>
-#include <flexpret_assert.h>
+#include <flexpret/flexpret.h>
+#include <flexpret/assert.h>
 
 int main() {
     int ret;

@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include <flexpret.h>
-#include <flexpret_lock.h>
+#include <flexpret/flexpret.h>
+#include <flexpret/lock.h>
 
 int main() {
     

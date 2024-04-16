@@ -1,6 +1,6 @@
 /* A threaded version of add.c */
 #include <stdlib.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 void* t1_do_work(void* num) {
     uint32_t* _num = (uint32_t*) num;

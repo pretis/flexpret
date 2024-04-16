@@ -6,11 +6,16 @@
 *
 */
 
+#ifndef FP_AUTOGEN_CONFIG_H
+#define FP_AUTOGEN_CONFIG_H
+
 #define FP_TARGET @TARGET@
 #define FP_THREADS @THREADS@
-#define FP_Flex @Flex@
+#define FP_Flex @FLEX@
 #define FP_ISPM_KBYTES @ISPM_KBYTES@
 #define FP_DSPM_KBYTES @DSPM_KBYTES@
 #define FP_MULTIPLIER @MULTIPLIER@
 #define FP_SUFFIX @SUFFIX@
 #define FP_CLK_FREQ_MHZ @CLK_FREQ_MHZ@
+
+#endif // FP_AUTOGEN_CONFIG_H

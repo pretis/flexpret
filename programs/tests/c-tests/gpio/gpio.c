@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 /**
  * This test can be run with a client connected to the emulator; see 

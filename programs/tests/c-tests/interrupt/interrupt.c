@@ -1,4 +1,4 @@
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include <errno.h>
 #include <string.h>
 

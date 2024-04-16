@@ -1,5 +1,5 @@
 threads = @THREADS@
-flex = @Flex@
+flex = @FLEX@
 clk-freq-m-hz = @CLK_FREQ_MHZ@
 imem-config = {
     bypass = false, size-kb = @ISPM_KBYTES@

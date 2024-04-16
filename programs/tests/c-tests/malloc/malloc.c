@@ -3,7 +3,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 #define A_INIT 100
 #define B_INIT 200

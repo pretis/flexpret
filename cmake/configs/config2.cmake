@@ -1,6 +1,6 @@
 set(TARGET "emulator")
 set(THREADS 4)
-set(Flex True)
+set(FLEX True)
 set(ISPM_KBYTES 64)
 set(DSPM_KBYTES 64)
 set(MULTIPLIER False)

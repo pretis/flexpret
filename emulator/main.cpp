@@ -10,7 +10,7 @@
 #include "verilated_vcd_c.h"
 #include <iostream>
 
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+#include "../../sdk/lib/include/flexpret/hwconfig.h"
 
 #include "pin_event.h"
 

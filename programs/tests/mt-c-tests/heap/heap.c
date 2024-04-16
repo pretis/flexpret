@@ -9,8 +9,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <flexpret.h>
-#include <flexpret_exceptions.h>
+#include <flexpret/flexpret.h>
+#include <flexpret/exceptions.h>
 
 /**
  * These functions are found in ../../lib/syscalls/syscalls.c.

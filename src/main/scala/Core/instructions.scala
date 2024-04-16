@@ -295,6 +295,7 @@ object CSRs {
   val uarch13   = 0xccd
   val uarch14   = 0xcce
   val uarch15   = 0xccf
+  val confHash  = 0xcd0
   // Extra CSRs to account for 32-bit architecture
   val counth    = 0x586   // FIXME: Why is this not read-only?
   val cycleh    = 0xc80

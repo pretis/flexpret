@@ -7,8 +7,8 @@
  * 
  */
 
-#include <flexpret.h>
-#include <flexpret_assert.h>
+#include <flexpret/flexpret.h>
+#include <flexpret/assert.h>
 
 #include <stdlib.h>
 #include <sys/time.h>

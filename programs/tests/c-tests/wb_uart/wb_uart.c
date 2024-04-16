@@ -1,4 +1,4 @@
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include <stdlib.h>
 
 #include "file.txt.h"

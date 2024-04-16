@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
-#include "flexpret.h"
+#include <flexpret/flexpret.h>
 
 int main() {
     // Allocate an array

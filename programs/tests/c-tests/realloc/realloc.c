@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 int main() {
 	int *ptr = (int *)malloc(sizeof(int)*2);

@@ -1,7 +1,7 @@
 /* A threaded version of add.c */
 #include <stdlib.h>
 #include <stdint.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 fp_lock_t lock = FP_LOCK_INITIALIZER;
 fp_cond_t cond = FP_COND_INITIALIZER(&lock);

@@ -93,8 +93,8 @@ The built configuration is available to software through a number of generated f
 
 The use case for this is:
 ```C
-#include <flexpret_hwconfig.h>
-#include <flexpret_thread.h>
+#include <flexpret/hwconfig.h>
+#include <flexpret/thread.h>
 
 fp_thread_t tid[NUM_THREADS-1];
 for (int i = 0; i < NUM_THREADS-1; i++) {

@@ -4,10 +4,10 @@
 #include <cstring>
 
 // For NUM_THREADS macro
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+#include "../../sdk/lib/include/flexpret/hwconfig.h"
 
 // For THREAD_ARRAY_INTIALIZER macro
-#include "../../programs/lib/include/flexpret_types.h"
+#include "../../sdk/lib/include/flexpret/types.h"
 
 /**
  * The finite state machine (fsm) is designed with three states: EXPECT_DELIM, 

@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <string.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 #define CLOCKFREQ     ((int)(50e6)) // 100 MHz
 #define NS_PER_CLK    (10)

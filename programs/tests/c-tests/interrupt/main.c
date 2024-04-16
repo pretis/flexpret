@@ -1,4 +1,4 @@
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include "interrupt.h"
 
 #define do_run(test) do { \

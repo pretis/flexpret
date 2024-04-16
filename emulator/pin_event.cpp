@@ -23,7 +23,7 @@
 #include "VVerilatorTop.h"
 #include "pin_event.h"
 
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+#include "../../sdk/lib/include/flexpret/hwconfig.h"
 
 #define NUM_GPI (4)
 #define MAX_NUM_THREADS (8)

@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 #define X_INIT 0x10E0
 #define Y_INIT 2

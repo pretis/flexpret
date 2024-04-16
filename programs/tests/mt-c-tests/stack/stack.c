@@ -17,8 +17,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <flexpret.h>
-#include <flexpret_exceptions.h>
+#include <flexpret/flexpret.h>
+#include <flexpret/exceptions.h>
 
 extern uint32_t __stack_chk_guard;
 

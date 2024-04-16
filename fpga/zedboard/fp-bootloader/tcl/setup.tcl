@@ -6,7 +6,7 @@ puts "Adding design sources"
 add_files -norecurse rtl/ispm.mem
 
 # Add verilog sources
-add_files -norecurse {rtl/DualPortBramFPGA.v rtl/Top.v rtl/flexpret.v}
+add_files -norecurse {rtl/DualPortBram.v rtl/Top.v rtl/flexpret.v}
 
 # Add constraints file
 add_files -fileset constrs_1 -norecurse { xdc/Top.xdc xdc/clock.xdc }
@@ -17,5 +17,5 @@ puts "Creating clocking wizard IP"
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_0
 
 # This is automatically generated based on configuration
-source tcl/generated/clk_wiz_config.tcl
+source tcl/clk_wiz_config.tcl
 update_compile_order -fileset sources_1

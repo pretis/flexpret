@@ -2,7 +2,7 @@
 Example program where core0 blinks the LED which should be connected to port0.
 */
 #include <stdint.h>
-#include <flexpret_io.h>
+#include <flexpret/io.h>
 
 void set_ledmask(const uint8_t byte)
 {
