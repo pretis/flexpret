@@ -6,4 +6,10 @@
 *
 */
 
+#ifndef FP_INTERNAL_SWCONFIG_H
+#define FP_INTERNAL_SWCONFIG_H
+
 #define FP_STACKSIZE_BITS 11
+
+
+#endif // FP_INTERNAL_SWCONFIG_H

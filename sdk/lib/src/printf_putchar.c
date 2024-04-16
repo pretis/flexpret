@@ -16,7 +16,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <flexpret>
+#include <flexpret/flexpret.h>
 
 void _write_emulation(int fd, char character) {
     static bool first_character[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(true);

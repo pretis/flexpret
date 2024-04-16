@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 typedef struct {
     volatile bool waiting[NUM_THREADS];

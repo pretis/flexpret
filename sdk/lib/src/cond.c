@@ -1,5 +1,5 @@
-#include <flexpret.h>
-#include <cond>
+#include <flexpret/flexpret.h>
+#include <flexpret/cond.h>
 
 fp_ret_t fp_cond_wait(fp_cond_t * cond) {
     int hartid = read_hartid();

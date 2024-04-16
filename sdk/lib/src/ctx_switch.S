@@ -3,7 +3,7 @@
  *
  */
 
-#include "flexpret_csrs.h"
+#include <flexpret/csrs.h>
 
 .section .text
 .globl thread_ctx_switch_store

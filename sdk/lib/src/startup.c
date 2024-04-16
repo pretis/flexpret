@@ -7,7 +7,7 @@
  */
 
 #include <unistd.h>      // Declares _exit() with definition in syscalls.c.
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 
 /* Linker */
@@ -77,7 +77,7 @@ void Reset_Handler() {
 
         // Perform some sanity checks on the stack and heap pointers
         const uint32_t *stack_end_calculated = (uint32_t *)
-            ((uint32_t) (&__sstack) - (NUM_THREADS * STACKSIZE));
+            ((uint32_t) (&__sstack) - (NUM_THREADS * FP_STACKSIZE));
 
         fp_assert(&__estack == stack_end_calculated, 
             "Stack not set up correctly: End of stack: 0x%x, Calculated end of stack: 0x%x\n",
@@ -149,13 +149,18 @@ void Reset_Handler() {
     register uint32_t *stack_pointer asm("sp");
     
     const uint32_t *stack_start = (uint32_t *)
-        ((uint32_t) (&__sstack) - (hartid * STACKSIZE));
+        ((uint32_t) (&__sstack) - (hartid * FP_STACKSIZE));
     
     const uint32_t *stack_end   = (uint32_t *) 
-        ((uint32_t) (stack_start) - STACKSIZE);
+        ((uint32_t) (stack_start) - FP_STACKSIZE);
 
     fp_assert(check_bounds_inclusive(stack_pointer, stack_end, stack_start),
         "Stack pointer incorrectly set: %p\n", stack_pointer);
+
+    // Compare hash of configuration hard-wired on FlexPRET vs. the hash
+    // found when software was built to ensure they match
+    fp_assert(read_csr(CSR_CONFIGHASH) == FP_CONFIGHASH,
+        "Hardware and software configurations do not match");
 
     // Setup exception handling
     setup_exceptions();

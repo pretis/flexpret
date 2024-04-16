@@ -39,6 +39,7 @@
 #define CSR_UARCH13     0xccd
 #define CSR_UARCH14     0xcce
 #define CSR_UARCH15     0xccf
+#define CSR_CONFIGHASH  0xcd0
 
 #define CSR_COUNTH      0x586
 #define CSR_CYCLEH      0xc80

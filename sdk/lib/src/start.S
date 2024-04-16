@@ -25,7 +25,7 @@
     // Calculate how much to subtract
     // from the max address based on
     // thread id and STACKSIZE_BITS from flexpret_swconfig.h.
-    sll t1, t0, STACKSIZE_BITS // (thread_id) * 2^STACKSIZE_BITS
+    sll t1, t0, FP_STACKSIZE_BITS // (thread_id) * 2^STACKSIZE_BITS
 
     // Set the stack pointer.
     sub sp, sp, t1

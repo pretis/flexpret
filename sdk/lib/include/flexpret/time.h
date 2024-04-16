@@ -2,7 +2,7 @@
 #define FLEXPRET_TIME_H
 
 #include <stdint.h>
-#include <csrs>
+#include <flexpret/csrs.h>
 
 /**
  * @brief Delay execution until an absolute time. Loads the timeout 

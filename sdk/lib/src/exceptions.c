@@ -1,9 +1,9 @@
-#include <exceptions>
-#include <io>
-#include <csrs>
-#include <assert>
+#include <flexpret/exceptions.h>
+#include <flexpret/io.h>
+#include <flexpret/csrs.h>
+#include <flexpret/assert.h>
 
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include <errno.h>
 
 typedef void (*isr_t)(void);

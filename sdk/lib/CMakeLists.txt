@@ -12,9 +12,14 @@ set(SOURCES
 
 list(TRANSFORM SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
-target_sources(
-  fp-sdk PUBLIC ${SOURCES}
-)
+target_sources(fp-sdk PRIVATE ${SOURCES})
+
+if (${TARGET} STREQUAL "fpga")
+  target_compile_definitions(fp-sdk PUBLIC __FPGA__)
+else()
+  target_compile_definitions(fp-sdk PUBLIC __EMULATOR__)
+endif()
+
 
 target_include_directories(fp-sdk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_options(fp-sdk PUBLIC

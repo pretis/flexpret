@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <setjmp.h>
-#include <flexpret>
+#include <flexpret/flexpret.h>
 
 #include <errno.h>
 

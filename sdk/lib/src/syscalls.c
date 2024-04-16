@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 // See https://github.com/eblot/newlib/blob/master/newlib/libc/include/reent.h
 // for more information on re-entry to newlib.
