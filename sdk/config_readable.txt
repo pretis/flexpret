@@ -1,8 +1,0 @@
-TARGET = verilator
-THREADS = 4
-FLEX = true
-ISPM_KBYTES = 64
-DSPM_KBYTES = 64
-MULTIPLIER = false
-SUFFIX = all
-CLK_FREQ_MHZ = 100
