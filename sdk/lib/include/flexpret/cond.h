@@ -7,7 +7,7 @@
 #include <flexpret/flexpret.h>
 
 typedef struct {
-    volatile bool waiting[NUM_THREADS];
+    volatile bool waiting[FP_THREADS];
     fp_lock_t *lock;    
 } fp_cond_t;
 #define FP_COND_INITIALIZER(lock_ptr) { .waiting = THREAD_ARRAY_INITIALIZER(false), .lock = lock_ptr}

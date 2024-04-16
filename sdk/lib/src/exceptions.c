@@ -5,21 +5,30 @@
 
 #include <flexpret/flexpret.h>
 #include <errno.h>
+#include <setjmp.h>
 
 typedef void (*isr_t)(void);
 
-static isr_t ext_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
-static isr_t ie_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
-static isr_t ee_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ext_int_handler[FP_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ie_int_handler[FP_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ee_int_handler[FP_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
 
-struct thread_ctx_t contexts[NUM_THREADS];
+struct thread_ctx_t contexts[FP_THREADS];
+
+jmp_buf __ie_jmp_buf[FP_THREADS];
+jmp_buf __ee_jmp_buf[FP_THREADS];
+
+bool    __ie_jmp_buf_active[FP_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+bool    __ee_jmp_buf_active[FP_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 
 #ifndef NDEBUG
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
 FP_TEST_OVERRIDE
 void __stack_chk_fail(void) {
-    _fp_abort("Stack check failed");
+    register uint32_t linkreg = rdlinkreg();
+    register uint32_t stack_ptr = rdstackptr();
+    _fp_abort("Stack check failed: link register (%p), stack ptr (%p)\n", linkreg, stack_ptr);
 }
 #endif // NDEBUG
 
@@ -71,13 +80,18 @@ void fp_exception_handler(void) {
         fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
 
-    // Call the function to load the thread's context
-    // We mark it with attribute noretun because the function will not return
-    // to fp_exception_handler, but instead to where the exception occurred.
-    void thread_ctx_switch_load(void) __attribute__((noreturn));
-    
-    // In ctx_switch.S
-    thread_ctx_switch_load();
+    if (__ie_jmp_buf_active[hartid]) {
+        longjmp(__ie_jmp_buf[hartid], 1);
+    } else if (__ee_jmp_buf_active[hartid]) {
+        longjmp(__ee_jmp_buf[hartid], 1);
+    } else {
+        // Call the function to load the thread's context
+        // We mark it with attribute noretun because the function will not return
+        // to fp_exception_handler, but instead to where the exception occurred.
+        void thread_ctx_switch_load(void) __attribute__((noreturn));    
+        // In ctx_switch.S
+        thread_ctx_switch_load();
+    }
 }
 
 void setup_exceptions() {

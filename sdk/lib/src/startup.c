@@ -34,7 +34,7 @@ extern uint32_t __sstack;
 
 /* Threading */
 static volatile bool     __ready__;
-extern volatile bool     exit_requested[NUM_THREADS];
+extern volatile bool     exit_requested[FP_THREADS];
 extern volatile uint32_t num_threads_busy;
 extern volatile uint32_t num_threads_exited;
 
@@ -77,7 +77,7 @@ void Reset_Handler() {
 
         // Perform some sanity checks on the stack and heap pointers
         const uint32_t *stack_end_calculated = (uint32_t *)
-            ((uint32_t) (&__sstack) - (NUM_THREADS * FP_STACKSIZE));
+            ((uint32_t) (&__sstack) - (FP_THREADS * FP_STACKSIZE));
 
         fp_assert(&__estack == stack_end_calculated, 
             "Stack not set up correctly: End of stack: 0x%x, Calculated end of stack: 0x%x\n",
@@ -114,16 +114,16 @@ void Reset_Handler() {
         // to wake up and execute up to here,
         // by allocating the slots to them.
         slot_t slots[8];
-        for (int i = 0; i < NUM_THREADS; i++) {
+        for (int i = 0; i < FP_THREADS; i++) {
             slots[i] = i;
         }
-        // Disable slots with ID >= NUM_THREADS,
-        for (int j = NUM_THREADS; j < SLOTS_SIZE; j++)
+        // Disable slots with ID >= FP_THREADS,
+        for (int j = FP_THREADS; j < SLOTS_SIZE; j++)
             slots[j] = SLOT_D;
         
         // Acquire lock and allow all threads to start execute as HRTTs
         fp_hwlock_acquire();
-        for (int i = 0; i < NUM_THREADS; i++) {
+        for (int i = 0; i < FP_THREADS; i++) {
             tmode_set(i, TMODE_HA);
         }
         slot_set(slots, 8);
@@ -157,10 +157,8 @@ void Reset_Handler() {
     fp_assert(check_bounds_inclusive(stack_pointer, stack_end, stack_start),
         "Stack pointer incorrectly set: %p\n", stack_pointer);
 
-    // Compare hash of configuration hard-wired on FlexPRET vs. the hash
-    // found when software was built to ensure they match
     fp_assert(read_csr(CSR_CONFIGHASH) == FP_CONFIGHASH,
-        "Hardware and software configurations do not match");
+        "Hardware and software configuration mismatch\n");
 
     // Setup exception handling
     setup_exceptions();

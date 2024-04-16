@@ -3,6 +3,7 @@
 
 #define CSR_EPC         0x502
 #define CSR_SLOTS       0x503
+#define CSR_IMEM_PROT   0x505
 #define CSR_EVEC        0x508 
 #define CSR_CAUSE       0x509 
 #define CSR_STATUS      0x50a
@@ -89,6 +90,14 @@
 
 #define rdinstret() ({ unsigned long __tmp; \
   asm volatile ("rdinstret %0" : "=r"(__tmp)); \
+  __tmp; })
+
+#define rdlinkreg() ({ unsigned long __tmp; \
+  asm volatile ("addi %0, ra, 0" : "=r"(__tmp)); \
+  __tmp; })
+
+#define rdstackptr() ({ unsigned long __tmp; \
+  asm volatile ("addi %0, sp, 0" : "=r"(__tmp)); \
   __tmp; })
 
 #define read_hartid() read_csr(CSR_HARTID)

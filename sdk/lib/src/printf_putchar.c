@@ -17,14 +17,15 @@
 #include <string.h>
 
 #include <flexpret/flexpret.h>
+#include <flexpret/uart.h>
 
 void _write_emulation(int fd, char character) {
-    static bool first_character[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(true);
+    static bool first_character[FP_THREADS] = THREAD_ARRAY_INITIALIZER(true);
     
     // Use these variables to buffer up four characters at a time and send them
     // together. Keep one for each thread to make it thread-safe.
-    static uint32_t word[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-    static int word_idx[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+    static uint32_t word[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+    static int word_idx[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 
     int tid = read_hartid();
 
@@ -66,16 +67,15 @@ void _write_emulation(int fd, char character) {
     }
 }
 
-int _write_fpga(int fd, char character) {
-    // TODO: Implement UART comm here
-    errno = ENOSYS;
-    return -1;
+void _write_fpga(int fd, char character) {
+    uart_send(character);
 }
 
 void putchar_(char character) {
 #ifdef __EMULATOR__
     _write_emulation(1, character); // TODO: Use real file descriptors?
-#else
+#endif // __EMULATOR__
+#ifdef __FPGA__
     _write_fpga(1, character);
-#endif
+#endif // __FPGA__
 }
