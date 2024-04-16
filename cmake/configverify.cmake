@@ -2,27 +2,7 @@
 # of completeness
 # Structure is based on: https://stackoverflow.com/a/39671055/16358883
 
-# Standardized function to check a parameter
-function(check_parameter parameter options severity)
-    set_property(CACHE TARGET PROPERTY STRINGS ${options})
-
-    # Check if parameter is in the recommened/valid list
-    list(FIND ${options} ${${parameter}} index)
-
-    # If not found, print out warning/error and recommened/valid options
-    if(index EQUAL -1)
-        set(msg_part "${parameter} should be one of:\n")
-
-        foreach(option ${${options}})
-            string(APPEND msg_part "* ${option}\n")
-        endforeach()
-        message(${severity} ${msg_part})
-    endif()
-endfunction()
-
-function(check_paramater_range parameter min max)
-    set_property(CACHE TARGET PROPERTY STRINGS ${options})
-endfunction()
+include(${CMAKE_CURRENT_LIST_DIR}/lib/check.cmake)
 
 set(TARGET_OPTIONS fpga verilator)
 set(THREADS_OPTIONS 1 2 3 4 5 6 7 8)

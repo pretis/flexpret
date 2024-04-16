@@ -6,9 +6,11 @@ project(FlexPRET
     VERSION 1.0
 )
 
+# TODO: Check whether ENV FP_SDK and so on set
+
 # Make it possible to override which configuration file to use from command line
 # Like so: cmake --build TODO: Cannot get it to work yet
-set(CONFIGFILE "cmake/configs/default.cmake" CACHE PATH "Which configuration file to select")
+set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/default.cmake" CACHE PATH "Which configuration file to select")
 
 # Sets lots of variables that are used
 include(${CONFIGFILE})
@@ -49,12 +51,12 @@ calculate_crc32()
 # Generate configuration files that contain the necessary information about
 # hardware
 configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/infiles/config.h.in 
-    ${CMAKE_BINARY_DIR}/config.h
+    ${CMAKE_SOURCE_DIR}/cmake/infiles/hwconfig.h.in 
+    ${CMAKE_BINARY_DIR}/hwconfig.h
 )
 configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/infiles/config.ld.in 
-    ${CMAKE_BINARY_DIR}/config.ld
+    ${CMAKE_SOURCE_DIR}/cmake/infiles/hwconfig.ld.in 
+    ${CMAKE_BINARY_DIR}/hwconfig.ld
 )
 
 # When placed in this location, Scala automatically picks it up
@@ -124,15 +126,15 @@ set_property(
         ${UNIQUE_CONFIG_FILE}
 )
 
-file(WRITE "${CMAKE_BINARY_DIR}/confighash.txt" ${CRC32_HASH})
+file(WRITE "${CMAKE_BINARY_DIR}/hwconfighash.txt" ${CRC32_HASH})
 
 add_subdirectory(emulator)
 add_subdirectory(fpga)
 
 install(FILES
-    "${PROJECT_BINARY_DIR}/config.h"
-    "${PROJECT_BINARY_DIR}/config.ld"
-    "${PROJECT_BINARY_DIR}/confighash.txt"
+    "${PROJECT_BINARY_DIR}/hwconfig.h"
+    "${PROJECT_BINARY_DIR}/hwconfig.ld"
+    "${PROJECT_BINARY_DIR}/hwconfighash.txt"
     DESTINATION "${PROJECT_SOURCE_DIR}/sdk/flexpret"
 )
 
