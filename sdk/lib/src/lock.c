@@ -1,4 +1,4 @@
-#include "flexpret.h"
+#include <flexpret>
 
 /**
  * Acquire a hardware lock.

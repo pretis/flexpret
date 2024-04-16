@@ -1,7 +1,7 @@
-#include "flexpret_exceptions.h"
-#include "flexpret_io.h"
-#include "flexpret_csrs.h"
-#include "flexpret_assert.h"
+#include <exceptions>
+#include <io>
+#include <csrs>
+#include <assert>
 
 #include <flexpret.h>
 #include <errno.h>

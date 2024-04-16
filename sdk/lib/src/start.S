@@ -7,8 +7,8 @@
  */
 
 
-#include "flexpret_hwconfig.h"
-#include "flexpret_swconfig.h"
+#include <flexpret/hwconfig.h>
+#include <flexpret/swconfig.h>
 
 .section .zero_addr_function
 .globl _start

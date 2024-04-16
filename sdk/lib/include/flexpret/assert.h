@@ -1,7 +1,7 @@
 #ifndef FLEXPRET_ASSERT_H
 #define FLEXPRET_ASSERT_H
 
-#include "flexpret_io.h"
+#include <io>
 #include <stdbool.h>
 
 // NDEBUG is used by the standard library to filter out asserts, so it's a good

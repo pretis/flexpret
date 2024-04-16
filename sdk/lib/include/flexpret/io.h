@@ -2,7 +2,7 @@
 #define FLEXPRET_IO_H
 
 #include <stdint.h>
-#include "flexpret_csrs.h"
+#include <csrs>
 #include <printf/printf.h>
 
 #define CSR_TOHOST_PRINTF (0xffffffff)
