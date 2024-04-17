@@ -10,7 +10,7 @@
 #include "verilated_vcd_c.h"
 #include <iostream>
 
-#include "../../sdk/lib/include/flexpret/hwconfig.h"
+#include "../../build/hwconfig.h"
 
 #include "pin_event.h"
 
@@ -28,8 +28,8 @@ static inline uint32_t get_to_host(int tid, VVerilatorTop *top) {
   switch (tid)
   {
 /**
- * NUM_THREADS determines how many of the to_host variables are available in the
- * VVerilatorTop class. E.g., if NUM_THREADS = 2, then 
+ * FP_THREADS determines how many of the to_host variables are available in the
+ * VVerilatorTop class. E.g., if FP_THREADS = 2, then 
  * 
  *  top->io_to_host_0
  *  top->io_to_host_1
@@ -37,28 +37,28 @@ static inline uint32_t get_to_host(int tid, VVerilatorTop *top) {
  * are available. The other ones would yield compilation errors if not for the
  * #if statements here.
  */
-#if NUM_THREADS >= 1
+#if FP_THREADS >= 1
     case 0: return top->io_to_host_0;
 #endif
-#if NUM_THREADS >= 2
+#if FP_THREADS >= 2
     case 1: return top->io_to_host_1;
 #endif
-#if NUM_THREADS >= 3
+#if FP_THREADS >= 3
     case 2: return top->io_to_host_2;
 #endif
-#if NUM_THREADS >= 4
+#if FP_THREADS >= 4
     case 3: return top->io_to_host_3;
 #endif
-#if NUM_THREADS >= 5
+#if FP_THREADS >= 5
     case 4: return top->io_to_host_4;
 #endif
-#if NUM_THREADS >= 6
+#if FP_THREADS >= 6
     case 5: return top->io_to_host_5;
 #endif
-#if NUM_THREADS >= 7
+#if FP_THREADS >= 7
     case 6: return top->io_to_host_6;
 #endif
-#if NUM_THREADS >= 8
+#if FP_THREADS >= 8
     case 7: return top->io_to_host_7;
 #endif
   default:
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     top->clock = 0;
     top->eval();
 
-    for (int i = 0; i < NUM_THREADS; i++) {
+    for (int i = 0; i < FP_THREADS; i++) {
       const uint32_t to_host = get_to_host(i, top);
       
       if (to_host == 0xdeaddead) {
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    for (int i = 0; i < NUM_THREADS; i++) {
+    for (int i = 0; i < FP_THREADS; i++) {
       printf_fsm(i, get_to_host(i, top));
       print_int_fsm(i, get_to_host(i, top));
     }

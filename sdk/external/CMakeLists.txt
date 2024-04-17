@@ -1,3 +1,4 @@
+# TODO: Condition for adding
 if (True)
 
   set(BUILD_STATIC_LIBRARY True)
@@ -5,9 +6,12 @@ if (True)
     
   target_compile_definitions(printf PUBLIC 
     printf_=printf
-    
+    sprintf_=sprintf
+    vsprintf_=vsprintf
+    snprintf_=snprintf
+    vsnprintf_=vsnprintf
+    vprintf_=vprintf
   )
+
   target_link_libraries(${PROJECT_NAME} printf)
 endif()
-
-# TODO: Add and configure

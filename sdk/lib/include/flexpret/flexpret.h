@@ -1,7 +1,7 @@
 #ifndef FLEXPRET_H
 #define FLEXPRET_H
 
-#include <flexpret/hwconfig.h>
+#include <flexpret/internal/hwconfig.h>
 #include <flexpret/swconfig.h>
 #include <flexpret/types.h>
 #include <flexpret/csrs.h>

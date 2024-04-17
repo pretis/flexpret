@@ -13,7 +13,7 @@
 #include <sys/socket.h>
 
 #include "common.h"
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+#include "../../programs/lib/include/flexpret_internal/hwconfig.h"
 
 static pin_event_t long_interrupt[] = {
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 0, .high_low = HIGH },

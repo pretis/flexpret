@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <flexpret/hwconfig.h>
+#include <flexpret/internal/hwconfig.h>
 #include <flexpret/pbuf.h>
 #include <flexpret/thread.h>
 #include <flexpret/types.h>

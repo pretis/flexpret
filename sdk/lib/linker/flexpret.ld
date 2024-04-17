@@ -21,8 +21,8 @@
 /* 
  * Taken from https://github.com/apache/nuttx/blob/master/boards/risc-v/c906/smartl-c906/scripts/ld.script
  */
-INCLUDE flexpret_hwconfig.ld
-INCLUDE flexpret_swconfig.ld
+INCLUDE internal/hwconfig.ld
+INCLUDE internal/swconfig.ld
 
 
 ISPM_SIZE = ISPM_END - ISPM_START;
@@ -38,7 +38,13 @@ MEMORY
 
 OUTPUT_ARCH("riscv")
 
-ENTRY(__stext)
+/**
+ * To ensure _start is always located at address zero: set ENTRY(_start)
+ * to let linker know we want to start at this function. Also place _start
+ * function in section .zero_addr_function and place it at the very beginning
+ * of .text.
+ */
+ENTRY(_start)
 EXTERN(_vectors)
 SECTIONS
 {

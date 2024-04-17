@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-# TODO: Check ENV set
-
 include(${CMAKE_SOURCE_DIR}/cmake/riscv-toolchain.cmake)
 
 project(fp-sdk
@@ -10,18 +8,29 @@ project(fp-sdk
   VERSION 0.0.1
 )
 
-set(FP_INSTALLED_FILES
-  "fp-emu"
-  "hwconfig.cmake"
-  "hwconfig.h"
-  "hwconfig.ld"
-  "hwconfighash.txt"
+set(ENVS
+  FP_PATH
+  FP_SDK_PATH
 )
 
-list(TRANSFORM FP_INSTALLED_FILES PREPEND "${CMAKE_SOURCE_DIR}/flexpret/")
+foreach(env ${ENVS})
+  if (NOT DEFINED ENV{${env}})
+    message(FATAL_ERROR "Environment variable ${env} not set. To fix this\
+    step into the top-level directory and `source env.bash` or `source env.fish`.")
+  endif()
+endforeach()
+
+set(FP_INSTALLED_FILES
+  "flexpret/fp-emu"
+  "flexpret/hwconfig.cmake"
+  "flexpret/hwconfighash.txt"
+  "lib/include/flexpret/internal/hwconfig.h"
+  "lib/linker/internal/hwconfig.ld"
+)
+
+list(TRANSFORM FP_INSTALLED_FILES PREPEND "${CMAKE_SOURCE_DIR}/")
 foreach(f ${FP_INSTALLED_FILES})
   if (NOT EXISTS ${f})
-    # TODO: messafge
     message(FATAL_ERROR "Could not find ${f}. Please build FlexPRET and install\
     it here with `cmake --install` to continue.")
   endif()
@@ -42,6 +51,11 @@ include(${CMAKE_SOURCE_DIR}/cmake/configderive.cmake)
 configure_file(
   "${CMAKE_SOURCE_DIR}/cmake/infiles/swconfig.h.in"
   "${CMAKE_SOURCE_DIR}/lib/include/flexpret/internal/swconfig.h"
+)
+
+configure_file(
+  "${CMAKE_SOURCE_DIR}/cmake/infiles/swconfig.ld.in"
+  "${CMAKE_SOURCE_DIR}/lib/linker/internal/swconfig.ld"
 )
 
 add_library(fp-sdk STATIC)
@@ -66,3 +80,11 @@ add_subdirectory(external)
 if (True)
   add_subdirectory(tests)
 endif()
+
+
+set_property(
+  TARGET ${PROJECT_NAME} APPEND PROPERTY
+  ADDITIONAL_CLEAN_FILES
+    "${CMAKE_SOURCE_DIR}/lib/include/flexpret/internal/swconfig.h"
+    "${CMAKE_SOURCE_DIR}/lib/linker/internal/swconfig.ld"
+)

@@ -23,11 +23,11 @@
 #include "VVerilatorTop.h"
 #include "pin_event.h"
 
-#include "../../sdk/lib/include/flexpret/hwconfig.h"
+#include "../../build/hwconfig.h"
 
 #define NUM_GPI (4)
-#define MAX_NUM_THREADS (8)
-#define NUM_PINS (MAX_NUM_THREADS + (NUM_GPI * 32) + 2)
+#define FP_NUM_THREADS (8)
+#define NUM_PINS (FP_NUM_THREADS + (NUM_GPI * 32) + 2)
 
 typedef struct {
     uint64_t ncycles;

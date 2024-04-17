@@ -7,10 +7,10 @@
  */
 
 
-#include <flexpret/hwconfig.h>
+#include <flexpret/internal/hwconfig.h>
 #include <flexpret/swconfig.h>
 
-.section .text
+.section .zero_addr_function
 .globl _start
 .type _start,@function
 

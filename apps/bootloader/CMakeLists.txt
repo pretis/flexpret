@@ -41,8 +41,7 @@ add_custom_command(
 )
 
 set_property(
-    TARGET bootloader
-    APPEND
+    TARGET bootloader APPEND
     PROPERTY ADDITIONAL_CLEAN_FILES "location.h"
 )
 
