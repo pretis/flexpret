@@ -46,7 +46,11 @@ static inline const uint64_t ns_to_us(const uint64_t ns) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void _exit (int code) {
-    _fp_finish();
+    if (code == 0) {
+        _fp_finish();
+    } else {
+        _fp_abort("Got exit code: %i\n", code);
+    }
     while(1) {}
     __builtin_unreachable();
 }

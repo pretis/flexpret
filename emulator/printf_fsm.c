@@ -4,7 +4,7 @@
 #include <cstring>
 
 // For FP_THREADS macro
-#include "../../build/internal/hwconfig.h"
+#include "../../build/hwconfig.h"
 
 // For THREAD_ARRAY_INTIALIZER macro
 #include "../../sdk/lib/include/flexpret/types.h"

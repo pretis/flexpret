@@ -11,6 +11,6 @@ if (printf IN_LIST EXTERNAL_LIBS_USED)
     vsnprintf_=vsnprintf
     vprintf_=vprintf
   )
-
+  target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_PRINTF)
   target_link_libraries(${PROJECT_NAME} printf)
 endif()

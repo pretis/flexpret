@@ -164,8 +164,9 @@ void Reset_Handler() {
     setup_exceptions();
 
     // Call main().
+    int ret = 0;
     if (hartid == 0) {
-        main();
+        ret = main();
     } else {
         worker_main();
     }
@@ -194,7 +195,7 @@ void Reset_Handler() {
         // clean up handlers here.
 
         // Exit the program.
-        _exit(0);
+        _exit(ret);
     } else {
         while (1);
     }

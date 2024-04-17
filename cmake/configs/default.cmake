@@ -9,7 +9,7 @@
 # advantageous to connect a description to the variable instead of a comment
 
 # Valid: <verilator/fpga>
-set(TARGET fpga CACHE STRING "Whether to build FlexPRET for emulation or FPGA" FORCE)
+set(TARGET verilator CACHE STRING "Whether to build FlexPRET for emulation or FPGA" FORCE)
 
 # Valid: [1-8]
 set(THREADS 4 CACHE STRING "How many hardware threads to build FlexPRET with" FORCE)

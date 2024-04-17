@@ -73,6 +73,8 @@ target_compile_options(fp-sdk PUBLIC
 
 target_compile_definitions(fp-sdk PUBLIC FP_CONFIGHASH=0x${CRC32_HASH})
 
+# TODO: Fix issues when printf is removed
+# TODO: Default for target FPGA should be not using printf
 set(EXTERNAL_LIBS_USED
   printf
 )
@@ -82,6 +84,8 @@ add_subdirectory(external)
 
 # TODO: Test framework
 if (True)
+  include(CTest)
+  enable_testing()
   add_subdirectory(tests)
 endif()
 

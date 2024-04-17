@@ -17,4 +17,3 @@ int main() {
     fp_assert(z == 3, "1 + 2 =/= 3");
     return 0;
 }
-
