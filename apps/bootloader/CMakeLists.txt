@@ -45,8 +45,8 @@ set_property(
     PROPERTY ADDITIONAL_CLEAN_FILES "location.h"
 )
 
-include($ENV{FP_SDK_PATH}/fp-targets.cmake)
-include($ENV{FP_SDK_PATH}/riscv-toolchain.cmake)
+include($ENV{FP_SDK_PATH}/cmake/fp-targets.cmake)
+include($ENV{FP_SDK_PATH}/cmake/riscv-toolchain.cmake)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".riscv")
 

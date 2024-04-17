@@ -73,6 +73,10 @@ target_compile_options(fp-sdk PUBLIC
 
 target_compile_definitions(fp-sdk PUBLIC FP_CONFIGHASH=0x${CRC32_HASH})
 
+set(EXTERNAL_LIBS_USED
+  printf
+)
+
 add_subdirectory(lib)
 add_subdirectory(external)
 
@@ -81,10 +85,26 @@ if (True)
   add_subdirectory(tests)
 endif()
 
-
 set_property(
-  TARGET ${PROJECT_NAME} APPEND PROPERTY
+  TARGET ${CMAKE_PROJECT_NAME} APPEND PROPERTY
   ADDITIONAL_CLEAN_FILES
     "${CMAKE_SOURCE_DIR}/lib/include/flexpret/internal/swconfig.h"
     "${CMAKE_SOURCE_DIR}/lib/linker/internal/swconfig.ld"
 )
+
+export(
+  TARGETS ${CMAKE_PROJECT_NAME} "${EXTERNAL_LIBS_USED}"
+  FILE ${CMAKE_PROJECT_NAME}-import.cmake
+)
+
+#install(
+#  TARGETS ${PROJECT_NAME}
+#  EXPORT  ${PROJECT_NAME}-export
+#  LIBRARY_DESTINATION ${CMAKE_BINARY_DIR}
+#)
+#
+#install(
+#  EXPORT ${PROJECT_NAME}-export
+#  FILE ${PROJECT_NAME}-import.cmake
+#  DESTINATION ${CMAKE_BINARY_DIR}
+#)

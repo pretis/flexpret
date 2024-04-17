@@ -1,5 +1,4 @@
-# TODO: Condition for adding
-if (True)
+if (printf IN_LIST EXTERNAL_LIBS_USED)
 
   set(BUILD_STATIC_LIBRARY True)
   add_subdirectory(printf)

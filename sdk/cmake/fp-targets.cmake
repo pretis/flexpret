@@ -26,7 +26,7 @@ function(fp_add_mem_output target)
   )
 endfunction()
 
-function(fp_add_target_outputs target)
+function(fp_add_extra_outputs target)
   fp_add_dump_output(${target})
   fp_add_mem_output(${target})
 endfunction()

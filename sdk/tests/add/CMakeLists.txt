@@ -9,6 +9,6 @@ set(CMAKE_EXECUTABLE_SUFFIX ".riscv")
 target_link_libraries(add printf)
 target_link_libraries(add fp-sdk)
 
-fp_add_target_outputs(add)
+fp_add_extra_outputs(add)
 
 

@@ -118,5 +118,3 @@ add_custom_command(
         "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
     DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
 )
-
-# TODO: Specify how to make bootloader.mem

@@ -25,8 +25,12 @@ else()
 endif()
 
 
-target_include_directories(fp-sdk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_include_directories(fp-sdk PUBLIC "${CMAKE_SOURCE_DIR}/")
+target_include_directories(fp-sdk PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
 target_link_options(fp-sdk PUBLIC
   "-L" "${CMAKE_CURRENT_SOURCE_DIR}/linker" "-T" "flexpret.ld"
 )
