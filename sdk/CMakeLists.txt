@@ -96,15 +96,3 @@ export(
   TARGETS ${CMAKE_PROJECT_NAME} "${EXTERNAL_LIBS_USED}"
   FILE ${CMAKE_PROJECT_NAME}-import.cmake
 )
-
-#install(
-#  TARGETS ${PROJECT_NAME}
-#  EXPORT  ${PROJECT_NAME}-export
-#  LIBRARY_DESTINATION ${CMAKE_BINARY_DIR}
-#)
-#
-#install(
-#  EXPORT ${PROJECT_NAME}-export
-#  FILE ${PROJECT_NAME}-import.cmake
-#  DESTINATION ${CMAKE_BINARY_DIR}
-#)
