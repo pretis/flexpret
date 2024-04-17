@@ -45,15 +45,11 @@ set_property(
     PROPERTY ADDITIONAL_CLEAN_FILES "location.h"
 )
 
-include($ENV{FP_SDK_PATH}/cmake/fp-targets.cmake)
+include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
 include($ENV{FP_SDK_PATH}/cmake/riscv-toolchain.cmake)
 
-set(CMAKE_EXECUTABLE_SUFFIX ".riscv")
-
-target_link_libraries(bootloader-first fp-sdk)
 target_include_directories(bootloader-first PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-fp_add_extra_outputs(bootloader-first)
-
-target_link_libraries(bootloader fp-sdk)
 target_include_directories(bootloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-fp_add_extra_outputs(bootloader)
+
+fp_setup_default(bootloader-first)
+fp_setup_default(bootloader)

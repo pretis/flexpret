@@ -1,3 +1,4 @@
+# Generate .dump file
 function(fp_add_dump_output target)
   add_custom_command(
     TARGET ${target} POST_BUILD
@@ -10,6 +11,7 @@ function(fp_add_dump_output target)
   )
 endfunction()
 
+# Generate .mem and .mem.orig files
 function(fp_add_mem_output target)
   add_custom_command(
     TARGET ${target} POST_BUILD
@@ -26,7 +28,11 @@ function(fp_add_mem_output target)
   )
 endfunction()
 
-function(fp_add_extra_outputs target)
+function(fp_setup_default target)
+  set(CMAKE_EXECUTABLE_SUFFIX ".riscv" PARENT_SCOPE)
+  
+  target_link_libraries(${target} ${EXTERNAL_LIBS_USED} fp-sdk)
+  
   fp_add_dump_output(${target})
   fp_add_mem_output(${target})
 endfunction()
