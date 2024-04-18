@@ -18,7 +18,7 @@ class WishboneUartTest extends AnyFlatSpec with ChiselScalatestTester {
   val READ_DATA = 12
   val STATUS = 16
 
-  val cfg = FlexpretConfiguration(threads = 1, flex = false,
+  val cfg = FlexpretConfiguration(threads = 1, flex = false, clkFreq=100000000,
     InstMemConfiguration(bypass = true, sizeKB = 4),
     dMemKB = 256, mul = false, priv = false, features = "all"
   )
