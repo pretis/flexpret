@@ -1,5 +1,8 @@
 /* A threaded version of add.c */
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+
 #include <flexpret/flexpret.h>
 
 void* t1_do_work(void* num) {
@@ -23,10 +26,10 @@ int main() {
     printf("num initialized to: %i\n", *num);
 
     fp_thread_t tid[2];
-    int errno = fp_thread_create(HRTT, &tid[0], t1_do_work, num);
-    fp_assert(errno == 0, "Could not create thread");
-    errno = fp_thread_create(HRTT, &tid[1], t2_do_work, num);
-    fp_assert(errno == 0, "Could not create thread");
+    int err = fp_thread_create(HRTT, &tid[0], t1_do_work, num);
+    fp_assert(err == 0, "Could not create thread 0: %s\n", strerror(errno));
+    err = fp_thread_create(HRTT, &tid[1], t2_do_work, num);
+    fp_assert(err == 0, "Could not create thread 1: %s\n", strerror(errno));
 
     void * exit_code_t1;
     void * exit_code_t2;

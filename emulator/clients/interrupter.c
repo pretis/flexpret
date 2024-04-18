@@ -26,9 +26,9 @@
 static pin_event_t interrupt[] = {
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 10000, .high_low = HIGH },
 
-    // Wait NUM_THREADS cycles before setting low again so the HW thread gets
+    // Wait FP_THREADS cycles before setting low again so the HW thread gets
     // enough time to react
-    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = NUM_THREADS, .high_low = LOW  },
+    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = FP_THREADS, .high_low = LOW  },
 };
 
 static void usage(int argc, char *const* argv, char *err)

@@ -59,8 +59,8 @@ typedef void (*isr_t)(void);
  * @param timeout_ns 
  */
 #define fp_int_on_expire(ns, cleanup) do { \
-    extern jmp_buf __ie_jmp_buf[NUM_THREADS]; \
-    extern bool    __ie_jmp_buf_active[NUM_THREADS]; \
+    extern jmp_buf __ie_jmp_buf[FP_THREADS]; \
+    extern bool    __ie_jmp_buf_active[FP_THREADS]; \
 \
     uint32_t hartid = read_hartid(); \
     int ret = setjmp(__ie_jmp_buf[hartid]); \
@@ -78,7 +78,7 @@ typedef void (*isr_t)(void);
 } while(0)
 
 #define fp_int_on_expire_cancel() do { \
-    extern bool __ie_jmp_buf_active[NUM_THREADS]; \
+    extern bool __ie_jmp_buf_active[FP_THREADS]; \
 \
     uint32_t hartid = read_hartid(); \
     __ie_jmp_buf_active[hartid] = false; \
@@ -90,8 +90,8 @@ typedef void (*isr_t)(void);
  * @param timeout_ns 
  */
 #define fp_exc_on_expire(ns, cleanup) do { \
-    extern jmp_buf __ee_jmp_buf[NUM_THREADS]; \
-    extern bool    __ee_jmp_buf_active[NUM_THREADS]; \
+    extern jmp_buf __ee_jmp_buf[FP_THREADS]; \
+    extern bool    __ee_jmp_buf_active[FP_THREADS]; \
 \
     uint32_t hartid = read_hartid(); \
     int ret = setjmp(__ee_jmp_buf[hartid]); \
@@ -106,7 +106,7 @@ typedef void (*isr_t)(void);
 } while(0)
 
 #define fp_exc_on_expire_cancel() do { \
-    extern bool __ee_jmp_buf_active[NUM_THREADS]; \
+    extern bool __ee_jmp_buf_active[FP_THREADS]; \
 \
     uint32_t hartid = read_hartid(); \
     __ee_jmp_buf_active[hartid] = false; \

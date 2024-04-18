@@ -58,7 +58,7 @@ void *trigger_wu_same_time(void *args) {
 } while (0)
 
 int main(void) {
-    int nthreads = NUM_THREADS-1;
+    int nthreads = FP_THREADS-1;
 
     volatile uint32_t now = rdtime();
 
@@ -67,7 +67,7 @@ int main(void) {
     // to execute it before another thread is allocated the next. Otherwise
     // the same thread will simply run all triggers sequentually.
     uint32_t trigger = now + 1000000;
-    uint32_t* triggers[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(&trigger);
+    uint32_t* triggers[FP_THREADS] = THREAD_ARRAY_INITIALIZER(&trigger);
     run_simultaneous_tests(nthreads, trigger_du_same_time, (void **) triggers);
 
     printf("trigger_du_same_time passed\n");

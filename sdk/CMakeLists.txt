@@ -60,6 +60,10 @@ configure_file(
 
 add_library(fp-sdk STATIC)
 
+# Make sdk dependent on these files so it will detect changes to them
+target_sources(fp-sdk PRIVATE ${FP_INSTALLED_FILES})
+
+
 # TODO: Check if we are missing other options from before
 target_compile_options(fp-sdk PUBLIC 
   # Gives build-time error if the developer attempts to allocate variables on the
@@ -71,7 +75,12 @@ target_compile_options(fp-sdk PUBLIC
 )
 
 
-target_compile_definitions(fp-sdk PUBLIC FP_CONFIGHASH=0x${CRC32_HASH})
+target_compile_definitions(fp-sdk PUBLIC 
+  FP_CONFIGHASH=0x${CRC32_HASH}
+  
+  # See configderive.cmake
+  ${NEWLIB_REENTRANCY_METHOD}
+)
 
 # TODO: Fix issues when printf is removed
 # TODO: Default for target FPGA should be not using printf

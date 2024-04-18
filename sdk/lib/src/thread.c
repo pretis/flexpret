@@ -49,7 +49,7 @@ int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
         fp_assert(false, "Invalid slot set: %i given", slot);
         return 1;
     }
-    if (hartid > NUM_THREADS) {
+    if (hartid > FP_THREADS) {
         // FIXME: Panic.
         fp_assert(false, "Hardware thread id out of bounds");
         return 2;
@@ -110,7 +110,7 @@ int slot_disable(uint32_t slot) {
  * @return tmode_t The current thread mode
  */
 tmode_t tmode_get(uint32_t hartid) {
-    if (hartid > NUM_THREADS) {
+    if (hartid > FP_THREADS) {
         // FIXME: Panic.
         return 1;
     }
@@ -136,7 +136,7 @@ tmode_t tmode_get(uint32_t hartid) {
  * @return int If success, return 0, otherwise an error code.
  */
 int tmode_set(uint32_t hartid, tmode_t val) {
-    if (hartid > NUM_THREADS) {
+    if (hartid > FP_THREADS) {
         // FIXME: Panic.
         return 1;
     }
@@ -195,30 +195,30 @@ int tmode_sleep(uint32_t hartid) {
  */
 
 // An array of function pointers
-static volatile void*   (*routines[NUM_THREADS])(void *);
-static volatile void**  args[NUM_THREADS];
-static volatile void**  exit_code[NUM_THREADS];
+static volatile void*   (*routines[FP_THREADS])(void *);
+static volatile void**  args[FP_THREADS];
+static volatile void**  exit_code[FP_THREADS];
 
 // Whether a thread is currently executing a routine.
-static volatile bool    in_use[NUM_THREADS];
-static          jmp_buf envs[NUM_THREADS];
-static volatile bool    cancel_requested[NUM_THREADS];
+static volatile bool    in_use[FP_THREADS];
+static          jmp_buf envs[FP_THREADS];
+static volatile bool    cancel_requested[FP_THREADS];
 
 // Accessed in startup.c
-bool volatile           exit_requested[NUM_THREADS];
+bool volatile           exit_requested[FP_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
 // If this is 0, the main thread can
 // safely terminate the execution.
-volatile uint32_t num_threads_busy = 0;
+volatile uint32_t FP_THREADS_busy = 0;
 
 // Keep track of the number of threads
 // currently marked as EXITED.
 // FIXME: Once a worker thread exits,
 // it should have completed executing
 // some pre-registered clean-up handlers.
-volatile uint32_t num_threads_exited = 0;
+volatile uint32_t FP_THREADS_exited = 0;
 
 
 /* Pthreads-like threading library functions */
@@ -244,7 +244,7 @@ static int assign_hartid(
 ) {
     routines[hartid] = (volatile void *(*)(void *))(start_routine);
     args[hartid] = arg;
-    num_threads_busy += 1;
+    FP_THREADS_busy += 1;
 
     // Signal the worker thread to do work.
     in_use[hartid] = true;
@@ -268,7 +268,7 @@ int fp_thread_create(
     // Allocate an available thread.
     // Cannot allocate to thread 0.
     fp_hwlock_acquire();
-    for (uint32_t i = 1; i < NUM_THREADS; i++) {
+    for (uint32_t i = 1; i < FP_THREADS; i++) {
         if (!in_use[i]) {
             *hartid = i;
             return assign_hartid(i, start_routine, arg);
@@ -294,7 +294,7 @@ int fp_thread_map(
     }
 
     // Do an additional check on hartid, since user requests a specific thread here
-    if (!(0 < *hartid && *hartid < NUM_THREADS)) {
+    if (!(0 < *hartid && *hartid < FP_THREADS)) {
         errno = EINVAL;
         return 1;
     }
@@ -374,7 +374,7 @@ void worker_main() {
     // If so, mark the thread as not in use.
     if (val == 1) {
         fp_hwlock_acquire();
-        num_threads_busy -= 1;
+        FP_THREADS_busy -= 1;
         in_use[hartid] = false;
         fp_hwlock_release();
 
@@ -404,7 +404,7 @@ void worker_main() {
 
             // Mark the thread as available again.
             fp_hwlock_acquire();
-            num_threads_busy -= 1;
+            FP_THREADS_busy -= 1;
             in_use[hartid] = false;
             fp_hwlock_release();
         }
@@ -414,7 +414,7 @@ void worker_main() {
 
     // Increment the counter of exited threads.
     fp_hwlock_acquire();
-    num_threads_exited += 1;
+    FP_THREADS_exited += 1;
     fp_hwlock_release();
 
     return;

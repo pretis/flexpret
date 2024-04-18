@@ -35,8 +35,8 @@ extern uint32_t __sstack;
 /* Threading */
 static volatile bool     __ready__;
 extern volatile bool     exit_requested[FP_THREADS];
-extern volatile uint32_t num_threads_busy;
-extern volatile uint32_t num_threads_exited;
+extern volatile uint32_t FP_THREADS_busy;
+extern volatile uint32_t FP_THREADS_exited;
 
 //prototype of main
 int main(void);
@@ -177,11 +177,11 @@ void Reset_Handler() {
 
         // Wait for all hardware worker threads
         // to finish their ongoing routines.
-        while (num_threads_busy > 0);
+        while (FP_THREADS_busy > 0);
 
         // Signal all threads besides T0 to exit.
         fp_hwlock_acquire();
-        for (int i = 1; i < NUM_THREADS; i++) {
+        for (int i = 1; i < FP_THREADS; i++) {
             exit_requested[i] = true;
             // FIXME: If the thread is sleeping,
             // wake up the thread.
@@ -189,7 +189,7 @@ void Reset_Handler() {
         fp_hwlock_release();
 
         // Wait for all hardware worker threads to exit.
-        while (num_threads_exited < NUM_THREADS-1);
+        while (FP_THREADS_exited < FP_THREADS-1);
 
         // FIXME: Execute the main thread
         // clean up handlers here.

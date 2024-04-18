@@ -24,23 +24,23 @@ int main(void) {
     printf("Hello world from tid: %i\n", read_hartid());
     
     // One more than strictly necessary
-    struct PrintBuffer bufs[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(
+    struct PrintBuffer bufs[FP_THREADS] = THREAD_ARRAY_INITIALIZER(
         get_new_printbuffer()
     );
 
     int ret = 0;
-    fp_thread_t tid[NUM_THREADS-1];
-    for (int i = 0; i < NUM_THREADS-1; i++) {
+    fp_thread_t tid[FP_THREADS-1];
+    for (int i = 0; i < FP_THREADS-1; i++) {
         ret = fp_thread_create(HRTT, &tid[i], pumper, &bufs[i]);
         fp_assert(ret == 0, "Could not create thread");
     }
 
-    for (int i = 0; i < NUM_THREADS-1; i++) {
+    for (int i = 0; i < FP_THREADS-1; i++) {
         fp_thread_join(tid[i], NULL);
     }
 
     char printable[128];
-    for (int i = 0; i < NUM_THREADS-1; i++) {
+    for (int i = 0; i < FP_THREADS-1; i++) {
         uint32_t nbytes = 0;
         while ((nbytes = printbuffer_drain(&bufs[i], printable)) > 0) {
             for (int j = 0; j < nbytes; j++) {

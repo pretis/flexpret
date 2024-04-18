@@ -8,16 +8,16 @@
 // because more threads -> more wasted cycles in the pipeline
 // (At least when the hw threads are not sleeping, which is the case
 //  at the time of writing this test.)
-#define EXPIRE_DELAY_NS (((uint32_t)(1e4)) * (NUM_THREADS))
+#define EXPIRE_DELAY_NS (((uint32_t)(1e4)) * (FP_THREADS))
 #define TIMEOUT_INIT (1000)
 
-static volatile int flag0[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static volatile int flag1[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static volatile int ext_int_flag[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static volatile int du_int_triggered[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static volatile int wu_int_triggered[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static volatile uint64_t isr_time[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
-static volatile int ninterrupts[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int flag0[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int flag1[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int ext_int_flag[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int du_int_triggered[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int wu_int_triggered[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile uint64_t isr_time[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
+static volatile int ninterrupts[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 
 void reset_flags(void) {
     memset((void *) flag0, 0, sizeof(flag0));

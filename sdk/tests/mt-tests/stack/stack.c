@@ -22,7 +22,7 @@
 
 extern uint32_t __stack_chk_guard;
 
-static volatile bool stack_fail_fnc_called[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+static volatile bool stack_fail_fnc_called[FP_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 
 // The function is weakly linked. Its default implementation would exit and fail
 // the test. In this test, we want the function to be called but not fail the test.
@@ -91,15 +91,15 @@ int main() {
 
     printf("Test success in single-threaded environment\n");
 
-    fp_thread_t tid[NUM_THREADS-1];
-    for (int i = 0; i < NUM_THREADS-1; i++) {
+    fp_thread_t tid[FP_THREADS-1];
+    for (int i = 0; i < FP_THREADS-1; i++) {
         fp_assert(fp_thread_create(HRTT, &tid[i], test_break_and_safe, NULL) == 0, 
             "Could not create thread\n");
     }
 
 
-    void *exit_codes[NUM_THREADS-1];
-    for (int i = 0; i < NUM_THREADS-1; i++) {
+    void *exit_codes[FP_THREADS-1];
+    for (int i = 0; i < FP_THREADS-1; i++) {
         fp_thread_join(tid[i], &exit_codes[i]);
         fp_assert(exit_codes[i] == 0, "Thread's exit code was non-zero\n");
     }

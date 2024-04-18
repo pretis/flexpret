@@ -16,7 +16,7 @@
 
 #define INITIAL_HEAPSIZE (0x400)
 
-struct _reent _reents[NUM_THREADS];
+struct _reent _reents[FP_THREADS];
 struct _reent *__getreent(void) {
     uint32_t hartid = read_hartid();
     return &_reents[hartid];
