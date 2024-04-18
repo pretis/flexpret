@@ -23,7 +23,7 @@
 #include "VVerilatorTop.h"
 #include "pin_event.h"
 
-#include "../../build/hwconfig.h"
+#include "../build/hwconfig.h"
 
 #define NUM_GPI (4)
 #define FP_NUM_THREADS (8)

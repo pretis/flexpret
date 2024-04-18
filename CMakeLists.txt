@@ -18,9 +18,14 @@ foreach(env ${ENVS})
   endif()
 endforeach()
 
+if (NOT DEFINED CMAKE_CONFIG)
+  set(CMAKE_CONFIG "default")
+  message(STATUS "Got config ${CMAKE_CONFIG}")
+endif()
+
 # Make it possible to override which configuration file to use from command line
 # Like so: cmake --build TODO: Cannot get it to work yet
-set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/default.cmake" CACHE PATH "Which configuration file to select")
+set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/${CMAKE_CONFIG}.cmake" CACHE PATH "Which configuration file to select")
 
 # Sets lots of variables that are used
 include(${CONFIGFILE})

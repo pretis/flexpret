@@ -10,7 +10,7 @@
 #include "verilated_vcd_c.h"
 #include <iostream>
 
-#include "../../build/hwconfig.h"
+#include "../build/hwconfig.h"
 
 #include "pin_event.h"
 
