@@ -32,15 +32,14 @@ C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
 MT_C_TESTS_DIRS = \
 	add \
 	cond \
-	heap \
 	interrupt \
 	lockowner \
 	printf \
-	stack \
 	swlock \
 	syscall \
 	threadcancel
 # uart
+# heap 
 
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)

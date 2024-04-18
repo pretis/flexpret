@@ -45,7 +45,7 @@ TEST_DIR = programs/tests
 # Override by modifying or pass variable assignment as argument.
 
 # THREADS=[1-8]: Specify number of hardware threads
-THREADS ?= 1
+THREADS ?= 4
 
 # FLEXPRET=[true/false]: Use flexible thread scheduling
 FLEXPRET ?= false
@@ -67,7 +67,7 @@ MUL ?= false
 SUFFIX ?= all
 
 # In MHz
-CLK_FREQ ?= 50
+CLK_FREQ ?= 100
 
 # Target
 # TARGET=[emulator/fpga]: Select target

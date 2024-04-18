@@ -1,6 +1,8 @@
 /**
  * FlexPRET's context switch mechanism
  *
+ * Author: Magnus Mæhlum (magnmaeh@stud.ntnu.no)
+ *
  */
 
 #include "flexpret_csrs.h"

@@ -11,13 +11,12 @@
 #include <string.h>
 #include <flexpret.h>
 
-#define CLOCKFREQ     ((int)(50e6)) // 100 MHz
+#define CLOCKFREQ     ((int)(CLOCK_FREQ_MHZ)) // 100 MHz
 #define NS_PER_CLK    (10)
 #define UART_BAUDRATE (9600)
 #define CLKS_PER_BAUD ((int) ((CLOCKFREQ) / (UART_BAUDRATE)))
 #define NS_PER_BAUD   ((CLKS_PER_BAUD) * (NS_PER_CLK))
 
-// TODO: Only one state...
 enum State {
     STATE_STARTBIT,
     STATE_DATABITS,
