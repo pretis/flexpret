@@ -3,7 +3,7 @@ puts "Programming Zedboard"
 open_hw_manager
 connect_hw_server -allow_non_jtag
 open_hw_target
-source tcl/generated/set_program_file.tcl
+source tcl/set_program_file.tcl
 current_hw_device [get_hw_devices ${partShort}_1]
 refresh_hw_device -update_hw_probes false [lindex [get_hw_devices ${partShort}_1] 0]
 

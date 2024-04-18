@@ -2,14 +2,12 @@ file mkdir $outputDir/$projectName
 create_project -force -part $part $outputDir/$projectName
 
 puts "Adding design sources"
-# Add default ISPM contents with bootloader
-add_files -norecurse rtl/ispm.mem
 
-# Add verilog sources
-add_files -norecurse {rtl/DualPortBramFPGA.v rtl/Top.v rtl/flexpret.v}
+# Add recursively and assume all rtl is located here
+add_files rtl
 
-# Add constraints file
-add_files -fileset constrs_1 -norecurse { xdc/Top.xdc xdc/clock.xdc }
+# Add recursively and assume all xdc is located here
+add_files -fileset constrs_1 xdc
 update_compile_order -fileset sources_1
 
 puts "Creating clocking wizard IP"
@@ -17,5 +15,5 @@ puts "Creating clocking wizard IP"
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_0
 
 # This is automatically generated based on configuration
-source tcl/generated/clk_wiz_config.tcl
+source tcl/clk_wiz_config.tcl
 update_compile_order -fileset sources_1

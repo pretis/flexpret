@@ -2,28 +2,31 @@
 # See https://stackoverflow.com/questions/649246/is-it-possible-to-create-a-multi-line-string-variable-in-a-makefile
 
 include $(FLEXPRET_ROOT_DIR)/hwconfig.mk
-TCL_GENERATE_FOLDER := $(FLEXPRET_ROOT_DIR)/fpga/$(BOARD_NAME)/$(PROJECT_NAME)/tcl/generated
 CLK_PERIOD_NS := $(shell echo $$((1000 / $(CLK_FREQ_MHZ))))
 CLK_HALF_PERIOD_NS := $(shell echo $$(($(CLK_PERIOD_NS) / 2)))
 
-$(TCL_GENERATE_FOLDER)/flash_runnable.tcl: generate
-	cat $(TCL_GENERATE_FOLDER)/variables.tcl $(PROJECT_TCL_DIR)/flash.tcl > $@
+$(PROJECT_GENERATED_DIR)/flash_runnable.tcl: $(PROJECT_GENERATED_DIR)/variables.tcl
+	cat $(PROJECT_GENERATED_DIR)/variables.tcl $(BOARD_TCL_DIR)/flash.tcl > $@
 
-$(TCL_GENERATE_FOLDER)/bitstream_runnable.tcl: generate
-	cat $(TCL_GENERATE_FOLDER)/variables.tcl $(PROJECT_TCL_DIR)/setup.tcl $(PROJECT_TCL_DIR)/bitstream.tcl > $@
+# Not really dependent on clk_wiz_config, but easier to force it to generate
+$(PROJECT_GENERATED_DIR)/bitstream_runnable.tcl: $(PROJECT_GENERATED_DIR)/variables.tcl $(PROJECT_GENERATED_DIR)/clk_wiz_config.tcl
+	cat $(PROJECT_GENERATED_DIR)/variables.tcl $(BOARD_TCL_DIR)/setup.tcl $(BOARD_TCL_DIR)/bitstream.tcl > $@
 
-$(TCL_GENERATE_FOLDER):
-	mkdir -p $@
+$(PROJECT_GENERATED_DIR)/variables.tcl:
+	echo "$$VARIABLES_TCL" > $@
 
-generate: $(TCL_GENERATE_FOLDER)
-	echo "$$VARIABLES_TCL" > $(TCL_GENERATE_FOLDER)/variables.tcl
-	echo "$$CLK_WIZ_CONFIG_TCL" > $(TCL_GENERATE_FOLDER)/clk_wiz_config.tcl
-	echo "$$SET_PROGRAM_FILE_TCL" > $(TCL_GENERATE_FOLDER)/set_program_file.tcl
-	echo "$$CLOCK_XDC" > $(PROJECT_DIR)/xdc/clock.xdc
+$(PROJECT_GENERATED_DIR)/clk_wiz_config.tcl:
+	echo "$$CLK_WIZ_CONFIG_TCL" > $@
+
+$(PROJECT_GENERATED_DIR)/set_program_file.tcl:
+	echo "$$SET_PROGRAM_FILE_TCL" > $@
+
+$(PROJECT_DIR)/xdc/clock.xdc:
+	echo "$$CLOCK_XDC" > $@
 
 clean::
-	rm -rf $(TCL_GENERATE_FOLDER)
-	rm -f $(PROJECT_TCL_DIR)/xdc/clock.xdc
+	rm -rf $(PROJECT_GENERATED_DIR)
+	rm -f $(PROJECT_DIR)/xdc/clock.xdc
 
 HASHTAG := \#
 define COMMON_WARNING

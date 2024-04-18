@@ -1,13 +1,36 @@
-## This file is a general .xdc for the PYNQ-Z1 board Rev. C
-## To use it in a project:
-## - uncomment the lines corresponding to used pins
-## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
-
-## Clock signal 100 MHz
-set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports {CLK_50MHZ_FPGA}];  # "GCLK"
-create_clock -period 20.000 -name sys_clk_pin -waveform {0.000 10.000} -add [get_ports CLK_50MHZ_FPGA]
-
-## LEDs
+# ----------------------------------------------------------------------------
+#     _____
+#    /     \
+#   /____   \____
+#  / \===\   \==/
+# /___\===\___\/  AVNET Design Resource Center
+#      \======/         www.em.avnet.com/drc
+#       \====/    
+# ----------------------------------------------------------------------------
+# 
+#  Created With Avnet UCF Generator V0.4.0 
+#     Date: Saturday, June 30, 2012 
+#     Time: 12:18:55 AM 
+# 
+#  This design is the property of Avnet.  Publication of this
+#  design is not authorized without written consent from Avnet.
+#  
+#  Please direct any questions to:
+#     ZedBoard.org Community Forums
+#     http://www.zedboard.org
+# 
+#  Disclaimer:
+#     Avnet, Inc. makes no warranty for the use of this code or design.
+#     This code is provided  "As Is". Avnet, Inc assumes no responsibility for
+#     any errors, which may appear in this code, nor does it make a commitment
+#     to update the information contained herein. Avnet, Inc specifically
+#     disclaims any implied warranties of fitness for a particular purpose.
+#                      Copyright(c) 2012 Avnet, Inc.
+#                              All rights reserved.
+# 
+# ----------------------------------------------------------------------------
+# User LEDs - Bank 33
+# ---------------------------------------------------------------------------- 
 set_property -dict {PACKAGE_PIN T22 IOSTANDARD LVCMOS33} [get_ports {LEDS[0]}];  # "LD0"
 set_property -dict {PACKAGE_PIN T21 IOSTANDARD LVCMOS33} [get_ports {LEDS[1]}];  # "LD1"
 set_property -dict {PACKAGE_PIN U22 IOSTANDARD LVCMOS33} [get_ports {LEDS[2]}];  # "LD2"
@@ -16,25 +39,6 @@ set_property -dict {PACKAGE_PIN V22 IOSTANDARD LVCMOS33} [get_ports {LEDS[4]}]; 
 set_property -dict {PACKAGE_PIN W22 IOSTANDARD LVCMOS33} [get_ports {LEDS[5]}];  # "LD5"
 set_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33} [get_ports {LEDS[6]}];  # "LD6"
 set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports {LEDS[7]}];  # "LD7"
-
-## UART pins
-set_property -dict {PACKAGE_PIN Y11 IOSTANDARD LVCMOS33} [get_ports {UART_TX}];  # "JA1"
-set_property -dict {PACKAGE_PIN AA11 IOSTANDARD LVCMOS33} [get_ports {UART_RX}];  # "JA2"
-
-## Buttons
-set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS33} [get_ports {RESET}];  # "BTNC"
-
-## Switches
-set_property -dict {PACKAGE_PIN F22 IOSTANDARD LVCMOS33} [get_ports {SW}];  # "SW0"
-#set_property -dict {PACKAGE_PIN G22 IOSTANDARD LVCMOS33} [get_ports {SWS[1]}];  # "SW1"
-#set_property -dict {PACKAGE_PIN H22 IOSTANDARD LVCMOS33} [get_ports {SWS[2]}];  # "SW2"
-#set_property -dict {PACKAGE_PIN F21 IOSTANDARD LVCMOS33} [get_ports {SWS[3]}];  # "SW3"
-#set_property -dict {PACKAGE_PIN H19 IOSTANDARD LVCMOS33} [get_ports {SWS[4]}];  # "SW4"
-#set_property -dict {PACKAGE_PIN H18 IOSTANDARD LVCMOS33} [get_ports {SWS[5]}];  # "SW5"
-#set_property -dict {PACKAGE_PIN H17 IOSTANDARD LVCMOS33} [get_ports {SWS[6]}];  # "SW6"
-#set_property -dict {PACKAGE_PIN M15 IOSTANDARD LVCMOS33} [get_ports {SWS[7]}];  # "SW7"
-
-
 
 # ----------------------------------------------------------------------------
 # IOSTANDARD Constraints
