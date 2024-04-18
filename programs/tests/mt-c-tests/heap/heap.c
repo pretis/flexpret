@@ -38,7 +38,6 @@ void *task_heap_user(void *arg) {
 }
 
 int main() {
-    printf("Start test\n");
     fp_thread_t tid[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
         fp_assert(fp_thread_create(HRTT, &tid[i], task_heap_user, (void *)100) == 0, 
