@@ -20,7 +20,7 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
   val threads = 1
   val conf = FlexpretConfiguration(threads=threads, flex=false,
     InstMemConfiguration(bypass=true, sizeKB=4),
-    dMemKB=256, mul=false, features="all")
+    dMemKB=256, mul=false, priv=false, features="all")
   def core = new Core(conf)
 
   it should "jal" in {

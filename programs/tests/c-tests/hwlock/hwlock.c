@@ -8,10 +8,10 @@ int main() {
     printf("HW thread id: %i\n", read_hartid());
 
     // Acquire the lock.
-    hwlock_acquire();
+    fp_hwlock_acquire();
 
     // Release the lock.
-    hwlock_release();
+    fp_hwlock_release();
 
     printf("HW lock sucessfully acquired and released\n");
     return 0;

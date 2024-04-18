@@ -4,16 +4,32 @@
 #include "flexpret_assert.h"
 
 #include <flexpret.h>
+#include <errno.h>
 
 typedef void (*isr_t)(void);
 
-static isr_t ext_int_handler;
-static isr_t ie_int_handler;
-static isr_t ee_int_handler;
+static isr_t ext_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ie_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
+static isr_t ee_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
 
+struct thread_ctx_t contexts[NUM_THREADS];
+
+// We mark it with attribute noretun because the function will not return
+// to fp_exception_handler, but instead to where the exception occurred.
+void thread_ctx_switch_load(void) __attribute__((noreturn));
+void thread_ctx_switch_store(void);
+
+#ifndef NDEBUG
+uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
+
+FP_TEST_OVERRIDE
+void __stack_chk_fail(void) {
+    _fp_abort("Stack check failed");
+}
+#endif // NDEBUG
 
 static void register_exception_handler(void (*isr)(void)) {
-  write_csr(CSR_EVEC, (uint32_t) isr);
+    write_csr(CSR_EVEC, (uint32_t) isr);
 }
 
 static const char *exception_to_str(const uint32_t cause) {
@@ -41,66 +57,47 @@ static const char *exception_to_str(const uint32_t cause) {
     case EXE_CAUSE_EXT_INTERRUPT6: return "External interrupt 6";
     case EXE_CAUSE_TIMER_INTERRUPT: return "Timer interrupt";
     case EXC_CAUSE_INTERRUPT_EXPIRE: return "Interrupt expire";
-    case EXC_CAUSE_EXTERNAL_INT: return "External int"; // FIXME: int = interrupt? 
+    case EXC_CAUSE_EXTERNAL_INT: return "External interrupt";
     default: return "Unknown exception code";
     }
 }
 
-static void fp_exception_handler(void) {
+void fp_exception_handler(void) {
     int cause = read_csr(CSR_CAUSE);
-    
+    uint32_t hartid = read_hartid();
+
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  
-        if(ext_int_handler) ext_int_handler();
+        if(ext_int_handler[hartid]) ext_int_handler[hartid]();
     } else if (cause == EXC_CAUSE_INTERRUPT_EXPIRE) {
-        if(ie_int_handler) ie_int_handler();
+        if(ie_int_handler[hartid]) ie_int_handler[hartid]();
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
-        if(ee_int_handler) ee_int_handler();
+        if(ee_int_handler[hartid]) ee_int_handler[hartid]();
     } else {
-        printf("Exception occured: %i, %s\n", cause, exception_to_str(cause));
-        assert(false, "Exception not handled");
+        fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
+    
+    // Call the function to load the thread's context
+    // In ctx_switch.S
+    thread_ctx_switch_load();
 }
 
 void setup_exceptions() {
-    // Initialize the interrupt handlers to null pointers
-    ie_int_handler = (isr_t) 0;
-    ee_int_handler = (isr_t) 0;
-    ext_int_handler = (isr_t) 0;
-    
-    // Register the exception handler
-    write_csr(CSR_EVEC, (uint32_t) fp_exception_handler);
+    // Register the function to call on exceptions; this function stores the
+    // thread's context and calls the fp_exception_handler function afterwards
+    write_csr(CSR_EVEC, (uint32_t) thread_ctx_switch_store);
 }
 
 void register_isr(int cause, void (*isr)(void)) {
+    uint32_t hartid = read_hartid();
     switch (cause)
     {
     case EXC_CAUSE_EXTERNAL_INT:
-        ext_int_handler = isr; break;
+        ext_int_handler[hartid] = isr; break;
     case EXC_CAUSE_INTERRUPT_EXPIRE:
-        ie_int_handler  = isr; break;
+        ie_int_handler[hartid]  = isr; break;
     case EXC_CAUSE_EXCEPTION_EXPIRE:
-        ee_int_handler  = isr; break;
+        ee_int_handler[hartid]  = isr; break;
     default: 
-        assert(false, "Attempt to register isr for non-supported cause");
+        fp_assert(false, "Attempt to register isr for non-supported cause: %i\n", cause);
     }
-}
-
-void exception_on_expire(unsigned timeout_ns) {
-  write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x705B;");
-}
-
-void interrupt_on_expire(unsigned timeout_ns) {
-  write_csr(CSR_COMPARE, timeout_ns);
-  __asm__ volatile(".word 0x200705B;");
-}
-
-void enable_interrupts() 
-{
-  set_csr(CSR_STATUS,16);
-}
-
-void disable_interrupts() 
-{
-  clear_csr(CSR_STATUS,16);
 }

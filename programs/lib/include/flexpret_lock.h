@@ -4,28 +4,29 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX }
+#define FP_LOCK_INITIALIZER { .locked = false, .owner = UINT32_MAX, .count = 0 }
 typedef struct {
     bool locked;
     uint32_t owner;
-} lock_t;
+    uint32_t count;
+} fp_lock_t;
 
 /**
  * Acquire a hardware lock.
  */
-void hwlock_acquire();
+void fp_hwlock_acquire(void);
 
 /**
  * Release a hardware lock.
  */
-void hwlock_release();
+void fp_hwlock_release(void);
 
 /**
  * Software lock function declarations
  * 
  * @param lock the software lock instance to acquire/release
  */
-void lock_acquire(lock_t* lock);
-void lock_release(lock_t* lock);
+void fp_lock_acquire(fp_lock_t* lock);
+void fp_lock_release(fp_lock_t* lock);
 
 #endif // FLEXPRET_LOCK_H

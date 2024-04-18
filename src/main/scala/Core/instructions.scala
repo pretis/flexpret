@@ -99,9 +99,15 @@ object Instructions {
   def AMOSWAP_D          = BitPat("b00001????????????011?????0101111")
   def LR_D               = BitPat("b00010??00000?????011?????0101111")
   def SC_D               = BitPat("b00011????????????011?????0101111")
-  //def SCALL              = BitPat("b00000000000000000000000001110011")
+  // System calls
+  def SCALL              = BitPat("b00000000000000000000000001110011")
   def SBREAK             = BitPat("b00000000000100000000000001110011")
-  //def SRET               = BitPat("b10000000000000000000000001110011")
+
+  // See https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf 
+  // Used to return from exceptions
+  def MRET               = BitPat("b00110000001000000000000001110011")
+  
+  // CSR operations
   def CSRRW              = BitPat("b?????????????????001?????1110011")
   def CSRRS              = BitPat("b?????????????????010?????1110011")
   def CSRRC              = BitPat("b?????????????????011?????1110011")
@@ -197,8 +203,6 @@ object Instructions {
   val DU = CUSTOM0_RD_RS1_RS2
   val WU = CUSTOM1_RD_RS1_RS2
   val IE = CUSTOM2_RD_RS1_RS2
-  def SCALL              = BitPat("b0??????????0?????000?????1110011")
-  def SRET               = BitPat("b1????????????????000?????1110011")
 }
 object Causes {
   val misaligned_fetch = 0x0
@@ -242,12 +246,10 @@ object CSRs {
   val stats     = 0xc0
   val sup0      = 0x500
   val sup1      = 0x501
-  val epc       = 0x502
   val badvaddr  = 0x503
   val ptbr      = 0x504
   val asid      = 0x505   // iMemProtection
   val count     = 0x506
-  val compare   = 0x507
   val evec      = 0x508
   val cause     = 0x509
   val status    = 0x50a
@@ -257,9 +259,13 @@ object CSRs {
   val send_ipi  = 0x50e
   val clear_ipi = 0x50f
   val core_id = 0x510
+  val mepc       = 0x511
   val reset = 0x51d
   val fromhost = 0x51f
   val hwlock    = 0x520
+
+  val compare_du_wu = 0x521
+  val compare_ie_ee = 0x522
 
   val tohost0   = 0x530
   val tohost1   = 0x531 
@@ -311,12 +317,10 @@ object CSRs {
     res += stats
     res += sup0
     res += sup1
-    res += epc
     res += badvaddr
     res += ptbr
     res += asid
     res += count
-    res += compare
     res += evec
     res += cause
     res += status
@@ -325,10 +329,13 @@ object CSRs {
     res += fatc
     res += send_ipi
     res += clear_ipi
+    res += core_id
+    res += mepc
     res += reset
-    //res += tohost
     res += fromhost
     res += hwlock
+    res += compare_du_wu
+    res += compare_ie_ee
     res += tohost0 
     res += tohost1 
     res += tohost2 

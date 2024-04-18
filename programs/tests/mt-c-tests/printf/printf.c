@@ -26,15 +26,15 @@ void *printer(void *args) {
 int main() {
     printf("Hello world %i\n", i);
 
-    thread_t tid[NUM_THREADS-1];
+    fp_thread_t tid[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
-        assert(thread_create(HRTT, &tid[i], printer, NULL) == 0, "Could not create thread");
+        fp_assert(fp_thread_create(HRTT, &tid[i], printer, NULL) == 0, "Could not create thread");
     }
 
     void *exit_codes[NUM_THREADS-1];
     for (int i = 0; i < NUM_THREADS-1; i++) {
-        thread_join(tid[i], &exit_codes[i]);
-        assert(exit_codes[i] == 0, "Thread's exit code was non-zero");
+        fp_thread_join(tid[i], &exit_codes[i]);
+        fp_assert(exit_codes[i] == 0, "Thread's exit code was non-zero");
     }
 
     printf("Bye to all threads\n");

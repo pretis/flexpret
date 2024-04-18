@@ -24,7 +24,7 @@ class LoadStoreTest extends AnyFlatSpec with ChiselScalatestTester {
   val threads = 1
   val conf = FlexpretConfiguration(threads=threads, flex=false,
     InstMemConfiguration(bypass=false, sizeKB=512),
-    dMemKB=512, mul=false, features="all")
+    dMemKB=512, mul=false, priv=false, features="all")
   def loadStore = new LoadStore()(conf=conf)
 
   it should "not crash with an invalid request if not enabled" in {

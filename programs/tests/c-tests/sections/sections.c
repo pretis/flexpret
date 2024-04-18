@@ -63,24 +63,24 @@ int main() {
     _print_addr_val(&rodata);
     _print_addr_val(&srodata);
 
-    assert(c_textdata == TEXTDATA_INIT_VAL, "Const value not properly set");
-    assert(c_rodata   == RODATA_INIT_VAL, "Const value not properly set");
-    assert(c_srodata  == SRODATA_INIT_VAL, "Const value not properly set");
+    fp_assert(c_textdata == TEXTDATA_INIT_VAL, "Const value not properly set");
+    fp_assert(c_rodata   == RODATA_INIT_VAL, "Const value not properly set");
+    fp_assert(c_srodata  == SRODATA_INIT_VAL, "Const value not properly set");
 
-    assert(d_textdata == TEXTDATA_INIT_VAL, "Static value not properly set");
-    assert(d_rodata   == RODATA_INIT_VAL, "Static value not properly set");
-    assert(d_srodata  == SRODATA_INIT_VAL, "Static value not properly set");
+    fp_assert(d_textdata == TEXTDATA_INIT_VAL, "Static value not properly set");
+    fp_assert(d_rodata   == RODATA_INIT_VAL, "Static value not properly set");
+    fp_assert(d_srodata  == SRODATA_INIT_VAL, "Static value not properly set");
 
-    assert(textdata == TEXTDATA_INIT_VAL, "Value not properly set");
-    assert(rodata   == RODATA_INIT_VAL, "Value not properly set");
-    assert(srodata  == SRODATA_INIT_VAL, "Value not properly set");
+    fp_assert(textdata == TEXTDATA_INIT_VAL, "Value not properly set");
+    fp_assert(rodata   == RODATA_INIT_VAL, "Value not properly set");
+    fp_assert(srodata  == SRODATA_INIT_VAL, "Value not properly set");
 
     const uint8_t array[4] = ARRAY_INIT_VAL;
 
     for (int i = 0; i < sizeof(arraytext); i++) {
         // Expect the array to have the same value for all indicies; see earlier
         // for explanation
-        assert(
+        fp_assert(
             arraytext[i] == (
                 (array[0] <<  0) | 
                 (array[1] <<  8) |
@@ -91,11 +91,11 @@ int main() {
     }
 
     for (int i = 0; i < sizeof(arrayrodata); i++) {
-        assert(arrayrodata[i] == array[i], "Array in .rodata incorrect");
+        fp_assert(arrayrodata[i] == array[i], "Array in .rodata incorrect");
     }
 
     for (int i = 0; i < sizeof(arraysrodata); i++) {
-        assert(arraysrodata[i] == array[i], "Array in .srodata incorrect");
+        fp_assert(arraysrodata[i] == array[i], "Array in .srodata incorrect");
     }
     
     return 0;

@@ -40,28 +40,36 @@ typedef void (*isr_t)(void);
  * @brief Enable interrupts for thread
  * 
  */
-void enable_interrupts();
+#define ENABLE_INTERRUPTS() do { \
+    set_csr(CSR_STATUS, 0x10); \
+} while(0)
 
 /**
  * @brief Disable interrupts for thread
  * 
  */
-void disable_interrupts();
+#define DISABLE_INTERRUPTS() do { \
+    clear_csr(CSR_STATUS, 0x10); \
+} while(0)
 
 /**
  * @brief Execute the interrupt on expire instruction
- * FIXME: Make into macro
  * @param timeout_ns 
  */
-void interrupt_on_expire(unsigned timeout_ns);
-
+#define INTERRUPT_ON_EXPIRE(ns) do { \
+    write_csr(CSR_COMPARE_IE_EE, ns); \
+    __asm__ volatile(".word 0x0200705B;"); \
+} while(0)
 
 /**
- * @brief Execute `exception_on_expire` or EE instruction
+ * @brief Execute `EXCEPTION_ON_EXPIRE` or EE instruction
  * 
  * @param timeout_ns 
  */
-void exception_on_expire(unsigned timeout_ns);
+#define EXCEPTION_ON_EXPIRE(ns) do { \
+    write_csr(CSR_COMPARE_IE_EE, ns); \
+    __asm__ volatile(".word 0x0000705B;"); \
+} while(0)
 
 /**
  * @brief Register an ISR handler for one of the IRQ sources
@@ -75,7 +83,9 @@ void register_isr(int cause, isr_t isr);
  * @brief Set the up exception handling. Should be called for each thread
  * 
  */
-void setup_exceptions();
+void setup_exceptions(void);
+
+#define STACK_GUARD_INITVAL (0xDEADBEEF)
 
 
 #endif

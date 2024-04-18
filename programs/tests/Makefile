@@ -11,12 +11,16 @@ C_TESTS_DIRS = \
 	calloc \
 	fib \
 	global \
+	gpio \
+	hwlock \
+	interrupt \
+	interrupt-delay \
+	lbu \
 	malloc \
 	realloc \
-	lbu \
+	sections \
 	syscall \
-    gpio \
-	hwlock
+	time
 
 # Transform list into e.g. c-tests/add/add/out
 C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
@@ -26,17 +30,22 @@ C_TESTS_RES := $(foreach s,$(C_TESTS_DIRS),c-tests/$(s)/$(s).out)
 #--------------------------------------------------------------------
 MT_C_TESTS_DIRS = \
 	add \
+	cond \
+	heap \
 	lockowner \
+	printf \
+	stack \
 	swlock \
 	printf \
 	syscall \
 	cond \
-	threadcancel 
+	threadcancel
+#uart
 
 # Transform list into e.g. c-tests/add/add/out
 MT_C_TESTS_RES := $(foreach s,$(MT_C_TESTS_DIRS),mt-c-tests/$(s)/$(s).out)
 
-include $(FLEXPRET_ROOT_DIR)/config.mk
+include $(FLEXPRET_ROOT_DIR)/swconfig.mk
 
 ifeq ($(THREADS),1)
 all: run-c-tests
@@ -44,10 +53,14 @@ else
 all: run-c-tests run-mt-c-tests
 endif
 
-# .out file is created from compiled .mem file by running the emulator
+# We want to write stdout both to file and terminal - this is done using 'tee'
+# To catch the exit code from running make, we 'set -o pipefail'.
+# Then we pass the output into a result parser along with the exit code from
+# make.
 %.out: %.mem
-	-@set -o pipefail; $(EMU) +ispm=$< | tee $@; $(RES_PARSER) $@ $$?
-	
+	-@set -o pipefail
+	@make run -C $(dir $@) | tee $@
+	@$(RES_PARSER) $@ $$?
 
 # .mem file is created by compiling using the Makefile in the test dir
 %.mem:
@@ -63,7 +76,7 @@ run-c-tests: $(EMU) $(C_TESTS_RES)
 run-mt-c-tests: $(EMU) $(MT_C_TESTS_RES)
 
 # Remove all generated files by calling make clean in all the test dirs
-clean:
+clean::
 	for test in $(C_TESTS_DIRS) ; do \
         make -C c-tests/$$test clean ; \
     done

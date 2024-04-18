@@ -2,6 +2,8 @@
 #include <setjmp.h>
 #include "flexpret.h"
 
+#include <errno.h>
+
 /*************************************************
  * FlexPRET's hardware thread scheduling functions
  * These functions assume that a lock is held
@@ -20,7 +22,7 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        assert(false, "No more than 8 slots supported");
+        fp_assert(false, "No more than 8 slots supported: %i given", length);
         return 1;
     }
     uint32_t val = 0;
@@ -44,12 +46,12 @@ int slot_set(slot_t slots[], uint32_t length) {
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
-        assert(false, "Invalid slot set");
+        fp_assert(false, "Invalid slot set: %i given", slot);
         return 1;
     }
     if (hartid > NUM_THREADS) {
         // FIXME: Panic.
-        assert(false, "Hardware thread id out of bounds");
+        fp_assert(false, "Hardware thread id out of bounds");
         return 2;
     }
     uint32_t mask = 0xf << (slot * 4);
@@ -189,101 +191,133 @@ int tmode_sleep(uint32_t hartid) {
 /* Variables that keep track of the status of threads */
 
 // An array of function pointers
-static void*   (*routines[NUM_THREADS])(void *);
-static void**  args[NUM_THREADS];
-static void**  exit_code[NUM_THREADS];
+volatile static void*   (*routines[NUM_THREADS])(void *);
+volatile static void**  args[NUM_THREADS];
+volatile static void**  exit_code[NUM_THREADS];
 // Whether a thread is currently executing a routine.
-static bool    in_use[NUM_THREADS];
+volatile static bool    in_use[NUM_THREADS];
 static jmp_buf envs[NUM_THREADS];
-static bool    cancel_requested[NUM_THREADS];
+volatile static bool    cancel_requested[NUM_THREADS];
 // Accessed in startup.c
-bool           exit_requested[NUM_THREADS];
+volatile bool           exit_requested[NUM_THREADS];
 
 // Keep track of the number of threads
 // currently processing routines.
 // If this is 0, the main thread can
 // safely terminate the execution.
-uint32_t num_threads_busy = 0;
+volatile uint32_t num_threads_busy = 0;
 
 // Keep track of the number of threads
 // currently marked as EXITED.
 // FIXME: Once a worker thread exits,
 // it should have completed executing
 // some pre-registered clean-up handlers.
-uint32_t num_threads_exited = 0;
+volatile uint32_t num_threads_exited = 0;
 
 
 /* Pthreads-like threading library functions */
 
-// Assign a routine to the first available
-// hardware thread.
-int thread_create(
-    bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid,
+static int check_args(
+    fp_thread_t *hartid,
+    void *(*start_routine)(void *)
+) {
+    if (hartid == NULL) {
+        errno = EINVAL;
+    } else if (start_routine == NULL) {
+        errno = EINVAL;
+    } else {
+        return 0;
+    }
+    return -1;
+}
+
+static int assign_hartid(
+    fp_thread_t hartid,
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
+    routines[hartid] = (volatile void *(*)(void *))(start_routine);
+    args[hartid] = arg;
+    num_threads_busy += 1;
+
+    // Signal the worker thread to do work.
+    in_use[hartid] = true;
+    // FIXME: If the thread is asleep,
+    // wake up the thread.
+    fp_hwlock_release();
+    return 0;
+}
+
+// Assign a routine to the first available
+// hardware thread.
+int fp_thread_create(
+    bool is_hrtt,   // HRTT = true, SRTT = false
+    fp_thread_t *restrict hartid,
+    void *(*start_routine)(void *),
+    void *restrict arg
+) {
+    if (check_args(hartid, start_routine) < 0) {
+        return 1;
+    }
     // Allocate an available thread.
     // Cannot allocate to thread 0.
-    hwlock_acquire();
-    for (int i = 1; i < NUM_THREADS; i++) {
+    fp_hwlock_acquire();
+    for (uint32_t i = 1; i < NUM_THREADS; i++) {
         if (!in_use[i]) {
             *hartid = i;
-            routines[i] = start_routine;
-            args[i] = arg;
-            num_threads_busy += 1;
-            // Signal the worker thread to do work.
-            in_use[i] = true;
-            // FIXME: If the thread is asleep,
-            // wake up the thread.
-            hwlock_release();
-            return 0;
+            return assign_hartid(i, start_routine, arg);
         }
     }
-    hwlock_release();
+    fp_hwlock_release();
     // All the threads are occupied, return error.
+    errno = EBUSY;
     return 1;
 }
 
 // Assign a routine to a _specific_
 // hardware thread. If the thread is in use,
 // return 1. Otherwise, map the routine and return 0.
-int thread_map(
+int fp_thread_map(
     bool is_hrtt,   // HRTT = true, SRTT = false
-    thread_t *restrict hartid, // hartid requested by the user
+    fp_thread_t *restrict hartid, // hartid requested by the user
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
+    if (check_args(hartid, start_routine) < 0) {
+        return 1;
+    }
+
+    // Do an additional check on hartid, since user requests a specific thread here
+    if (!(0 < *hartid && *hartid < NUM_THREADS)) {
+        errno = EINVAL;
+        return 1;
+    }
+
     // Allocate an available thread.
     // Cannot allocate to thread 0.
-    hwlock_acquire();
+    fp_hwlock_acquire();
     if (!in_use[*hartid]) {
-        routines[*hartid] = start_routine;
-        args[*hartid] = arg;
-        num_threads_busy += 1;
-        // Signal the worker thread to do work.
-        in_use[*hartid] = true;
-        // FIXME: If the thread is asleep,
-        // wake up the thread.
-        hwlock_release();
-        return 0;
+        return assign_hartid(*hartid, start_routine, arg);
     }
-    hwlock_release();
+    fp_hwlock_release();
     // All the threads are occupied, return error.
+    errno = EBUSY;
     return 1;
 }
 
-int thread_join(thread_t hartid, void **retval) {
+int fp_thread_join(fp_thread_t hartid, void **retval) {
     // FIXME: What if it waits for the long-running thread?
     while(in_use[hartid]); // Wait
     // Get the exit code from the exiting thread.
-    hwlock_acquire();
-    *retval = exit_code[hartid];
+    fp_hwlock_acquire();
+    if (retval) {
+        *retval = exit_code[hartid];
+    }
     // FIXME: To avoid losing lots of cycles,
     // a worker thread should put itself to sleep.
     // Put the thread to sleep.
     // FIXME: Should we make an idle thread an SRTT?
-    hwlock_release();
+    fp_hwlock_release();
     return 0;
 }
 
@@ -291,32 +325,32 @@ int thread_join(thread_t hartid, void **retval) {
  * This should be called by a thread
  * that hopes to exit.
  */
-void thread_exit(void *retval) {
+void fp_thread_exit(void *retval) {
     uint32_t hartid = read_hartid();
-    hwlock_acquire();
+    fp_hwlock_acquire();
     exit_code[hartid] = retval;
     exit_requested[hartid] = true;
-    hwlock_release();
+    fp_hwlock_release();
     // FIXME: Run cleanup handlers
     // registered using thread_cleanup_push.
     return;
 }
 
-int thread_cancel(thread_t hartid) {
-    hwlock_acquire(); // FIXME: Unnecessary?
+int fp_thread_cancel(fp_thread_t hartid) {
+    fp_hwlock_acquire(); // FIXME: Unnecessary?
     cancel_requested[hartid] = true;
-    hwlock_release();
+    fp_hwlock_release();
     return 0;
 }
 
-void thread_testcancel() {
+void fp_thread_testcancel() {
     uint32_t hartid = read_hartid();
-    hwlock_acquire();
+    fp_hwlock_acquire();
     if (cancel_requested[hartid]) {
-        hwlock_release();
+        fp_hwlock_release();
         longjmp(envs[hartid], 1);
     }
-    hwlock_release();
+    fp_hwlock_release();
 }
 
 /**
@@ -326,24 +360,24 @@ void worker_main() {
     uint32_t hartid = read_hartid();
 
     // Save the environment buffer
-    // for potential thread_cancel calls.
+    // for potential fp_thread_cancel calls.
     // The execution will jump here
     // if a cancellation request is handled.
     int val = setjmp(envs[hartid]);
     // Check if the thread returns from longjmp.
     // If so, mark the thread as not in use.
     if (val == 1) {
-        hwlock_acquire();
+        fp_hwlock_acquire();
         num_threads_busy -= 1;
         in_use[hartid] = false;
-        hwlock_release();
+        fp_hwlock_release();
 
         // FIXME: Remove the print? It was kept here because it used to say
         //        _fp_print(6662);
         printf("worker_main: Handled cancellation request\n");
     }
     else if (val != 0) {
-        assert(false, "Reached unreachable code");
+        fp_assert(false, "Reached unreachable code");
     }
 
     while(!exit_requested[hartid]) {
@@ -363,19 +397,19 @@ void worker_main() {
             (*routines[hartid])(args[hartid]);
 
             // Mark the thread as available again.
-            hwlock_acquire();
+            fp_hwlock_acquire();
             num_threads_busy -= 1;
             in_use[hartid] = false;
-            hwlock_release();
+            fp_hwlock_release();
         }
     }
 
     // FIXME: Execute clean up handlers here.
 
     // Increment the counter of exited threads.
-    hwlock_acquire();
+    fp_hwlock_acquire();
     num_threads_exited += 1;
-    hwlock_release();
+    fp_hwlock_release();
 
     return;
 }
