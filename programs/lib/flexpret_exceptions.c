@@ -14,6 +14,11 @@ static isr_t ee_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
 
 struct thread_ctx_t contexts[NUM_THREADS];
 
+// We mark it with attribute noretun because the function will not return
+// to fp_exception_handler, but instead to where the exception occurred.
+void thread_ctx_switch_load(void) __attribute__((noreturn));
+void thread_ctx_switch_store(void);
+
 #ifndef NDEBUG
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
@@ -70,12 +75,8 @@ void fp_exception_handler(void) {
     } else {
         fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
-
-    // Call the function to load the thread's context
-    // We mark it with attribute noretun because the function will not return
-    // to fp_exception_handler, but instead to where the exception occurred.
-    void thread_ctx_switch_load(void) __attribute__((noreturn));
     
+    // Call the function to load the thread's context
     // In ctx_switch.S
     thread_ctx_switch_load();
 }
@@ -83,7 +84,6 @@ void fp_exception_handler(void) {
 void setup_exceptions() {
     // Register the function to call on exceptions; this function stores the
     // thread's context and calls the fp_exception_handler function afterwards
-    void thread_ctx_switch_store(void);
     write_csr(CSR_EVEC, (uint32_t) thread_ctx_switch_store);
 }
 

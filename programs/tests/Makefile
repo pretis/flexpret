@@ -53,7 +53,7 @@ else
 all: run-c-tests run-mt-c-tests
 endif
 
-# We want to write stdout both to file and terminal - this is done using 'tee
+# We want to write stdout both to file and terminal - this is done using 'tee'
 # To catch the exit code from running make, we 'set -o pipefail'.
 # Then we pass the output into a result parser along with the exit code from
 # make.
