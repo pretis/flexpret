@@ -1,18 +1,5 @@
 # FPGA
 
-FlexPRET may be run on an FPGA.
+FlexPRET may be run on an FPGA. Each supported FPGA board has its own folder. Currently, the only supported board is the *Zedboard*. Refer to the `README.md` there for getting started.
 
-
-## Getting started
-
-### Prerequisites
-
-### Hardware setup
-
-### LED example
-
-Run the example located in `./zedboard/leds` to verify that the setup is correct.
-
-### Blinky example
-
-Run the example located in `./zedboard/fp-blinky`. This example runs blinky using the FlexPRET CPU and verifies that software can run on the FPGA.
+To create an FPGA bitstream, first run `make fpga` in the top-level directory. This will generate an `FpgaTop.v` file based on the Chisel code. The makefile system here will pick up that file.
