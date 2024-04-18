@@ -10,8 +10,6 @@ add_custom_target(fp-emu ${ISALL} DEPENDS
 
 # TODO: Emulator clients
 
-# TODO: Place all verilator artifacts in build instead of source
-
 # Run Verilator and copy its final executable to the expected location
 # For some reason, Verilator does not seem to accept all arguments as a single
 # string, so many strings need to be passed instead.

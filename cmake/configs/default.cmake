@@ -1,7 +1,8 @@
 # This is the default configuration for FlexPRET
 # Feel free to copy this file and create your own
 # You can override which configuration file to use either in the top-level 
-# CMakeLists.txt or from the command-line when running cmake, like so: TODO: Figure out
+# CMakeLists.txt or from the command-line when running cmake, like so:
+# Like so: cmake -DCMAKE_CONFIG=my_config --build .
 
 # See `../configverify.cmake` for valid options for each configuration parameter
 

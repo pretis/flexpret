@@ -41,7 +41,7 @@ include($ENV{FP_PATH}/cmake/confighash.cmake)
 calculate_crc32()
 
 # Make it possible to override which configuration file to use from command line
-# Like so: cmake --build TODO: Cannot get it to work yet
+# Like so: cmake -DCMAKE_CONFIG=my_config --build .
 set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/default.cmake" CACHE PATH "Which configuration file to select")
 
 include(${CONFIGFILE})
