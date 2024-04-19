@@ -28,10 +28,10 @@ function(fp_add_mem_output target)
   )
 endfunction()
 
-function(fp_setup_default target)
+function(fp_setup_default target sdk)
   set(CMAKE_EXECUTABLE_SUFFIX ".riscv" PARENT_SCOPE)
   
-  target_link_libraries(${target} ${EXTERNAL_LIBS_USED} fp-sdk)
+  target_link_libraries(${target} ${EXTERNAL_LIBS_USED} ${sdk})
   
   fp_add_dump_output(${target})
   fp_add_mem_output(${target})

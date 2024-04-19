@@ -16,21 +16,21 @@ set(SOURCES
 
 list(TRANSFORM SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
-target_sources(fp-sdk PRIVATE ${SOURCES})
+target_sources(fp-sdk-if INTERFACE ${SOURCES})
 
 if (${TARGET} STREQUAL "fpga")
-  target_compile_definitions(fp-sdk PUBLIC __FPGA__)
+  target_compile_definitions(fp-sdk-if INTERFACE __FPGA__)
 else()
-  target_compile_definitions(fp-sdk PUBLIC __EMULATOR__)
+  target_compile_definitions(fp-sdk-if INTERFACE __EMULATOR__)
 endif()
 
 
-target_include_directories(fp-sdk PUBLIC
+target_include_directories(fp-sdk-if INTERFACE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_options(fp-sdk PUBLIC
+target_link_options(fp-sdk-if INTERFACE
   "-L" "${CMAKE_CURRENT_SOURCE_DIR}/linker" "-T" "flexpret.ld"
 )

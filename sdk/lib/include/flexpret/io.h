@@ -17,7 +17,7 @@
 #define PRINTF_COLOR_GREEN "\x1B[32m"
 #define PRINTF_COLOR_NONE  "\x1B[0m"
 
-#ifdef HAVE_PRINTF
+#if defined(HAVE_PRINTF) && !defined(NDEBUG)
 
     #define _fp_abort(fmt, ...) do { \
         printf("%s: %s: %i: " PRINTF_COLOR_RED "Abort:" PRINTF_COLOR_NONE, __FILE__, __func__, __LINE__); \

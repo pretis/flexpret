@@ -8,6 +8,11 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+# Ensure the file does not get included twice
+# If it does get included multiple times, flags will appear multiple times too
+# because they are appended to already existing flags
+include_guard(GLOBAL)
+
 set(CMAKE_SYSTEM_PROCESSOR riscv)
 set(RISCV_HOST_TAG linux)
 
