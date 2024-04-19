@@ -1,3 +1,5 @@
+set -e
+
 # $1: Which config to run
 run_test() {
     # Get a clean state
