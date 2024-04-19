@@ -40,6 +40,7 @@ extern volatile uint32_t FP_THREADS_exited;
 
 //prototype of main
 int main(void);
+void Reset_Handler(void) __attribute__((weak));
 
 void syscalls_init(void);
 

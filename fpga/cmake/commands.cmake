@@ -28,10 +28,12 @@ configure_file(
 )
 
 set(BOOTLOADER "${PROJECT_SOURCE_DIR}/apps/build/bootloader/bootloader.mem")
-if (NOT EXISTS ${BOOTLOADER})
-  message(FATAL_ERROR
-    "Could not find ${BOOTLAODER}. Please build the bootloader before proceeding."
-  )
+if (${TARGET} STREQUAL "fpga")
+  if (NOT EXISTS ${BOOTLOADER})
+    message(FATAL_ERROR
+      "Could not find ${BOOTLOADER}. Please build the bootloader before proceeding."
+    )
+  endif()
 endif()
 
 # Make vivado directory for log and journal files
