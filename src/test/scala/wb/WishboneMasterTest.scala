@@ -78,7 +78,7 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  val conf = FlexpretConfiguration(threads = 1, flex = false,
+  val conf = FlexpretConfiguration(threads = 1, flex = false, clkFreqMHz=100,
     InstMemConfiguration(bypass = true, sizeKB = 4),
     dMemKB = 256, mul = false, priv = false, features = "all",0)
 
