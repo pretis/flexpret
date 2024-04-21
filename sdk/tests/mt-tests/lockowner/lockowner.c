@@ -9,10 +9,12 @@ fp_lock_t lock = FP_LOCK_INITIALIZER;
 
 void* t1_do_work() {
     fp_lock_acquire(&lock);
+    return NULL;
 }
 
 void* t2_do_work() {
     fp_lock_release(&lock);
+    return NULL;
 }
 
 int main() {
@@ -28,14 +30,14 @@ int main() {
     // to thread 1 again after it returns from
     // t1_do_work and the exception does not get triggered.
     int errno = fp_thread_map(HRTT, &tid[0], t1_do_work, NULL);
-    fp_assert(errno == 0, "Could not create thread");
+    fp_assert(errno == 0, "Could not create thread\n");
     void * exit_code_t1;
     fp_thread_join(tid[0], &exit_code_t1);
 
     // Map t2_do_work to thread 2 specifically.
     // Expect an exception raised by thread 2.
     errno = fp_thread_map(HRTT, &tid[0], t2_do_work, NULL);
-    fp_assert(errno == 0, "Could not create thread");
+    fp_assert(errno == 0, "Could not create thread\n");
     
     void * exit_code_t2;
     fp_thread_join(tid[1], &exit_code_t2);

@@ -28,7 +28,8 @@ void* t1_do_work() {
 void* t2_do_work() {
     while(!ready);
     fp_thread_cancel(tid[0]);
-    printf("Sucessfully cancelled thread %i\n", tid[0]);
+    printf("Sucessfully cancelled thread %i\n", (int) tid[0]);
+    return NULL;
 }
 
 int main() {

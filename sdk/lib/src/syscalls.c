@@ -33,11 +33,11 @@ char **environ;
 // Helper functions
 ////////////////////////////////////////////////////////////////////////////////
 
-static inline const uint64_t ns_to_s(const uint64_t ns) {
+static inline uint64_t ns_to_s(const uint64_t ns) {
     return ((uint64_t) (ns) / (uint64_t) (1e9));
 }
 
-static inline const uint64_t ns_to_us(const uint64_t ns) {
+static inline uint64_t ns_to_us(const uint64_t ns) {
     return ((uint64_t) (ns) / (uint64_t) (1e3));
 }
 
@@ -56,16 +56,26 @@ void _exit (int code) {
 }
 
 int _close (int fd) {
+    UNUSED(fd);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _execve (const char *pathname, char *const *argv, char *const *envp) {
+    UNUSED(pathname);
+    UNUSED(argv);
+    UNUSED(envp);
+    
     errno = ENOSYS;
     return -1;
 }
 
 int _fcntl (int fd, int cmd, int arg) {
+    UNUSED(fd);
+    UNUSED(cmd);
+    UNUSED(arg);
+
     errno = ENOSYS;
     return -1;
 }
@@ -76,6 +86,9 @@ int _fork (void) {
 }
 
 int _fstat (int fd, struct stat *st) {
+    UNUSED(fd);
+    UNUSED(st);
+
     errno = ENOSYS;
     return -1;
 }
@@ -86,41 +99,67 @@ int _getpid (void) {
 }
 
 int _isatty (int fd) {
+    UNUSED(fd);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _kill (int pid, int sig) {
+    UNUSED(pid);
+    UNUSED(sig);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _link (const char *oldpath, const char *newpath) {
+    UNUSED(oldpath);
+    UNUSED(newpath);
+
     errno = ENOSYS;
     return -1;
 }
 
 _off_t _lseek (int fd, _off_t offset, int whence) {
+    UNUSED(fd);
+    UNUSED(offset);
+    UNUSED(whence);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _mkdir (const char *pathname, int mode) {
+    UNUSED(pathname);
+    UNUSED(mode);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _open (const char *path, int flags, int mode) {
+    UNUSED(path);
+    UNUSED(flags);
+    UNUSED(mode);
+
     errno = ENOSYS;
     return -1;
 }
 
 _ssize_t _read (int fd, void *data, size_t nbytes) {
+    UNUSED(fd);
+    UNUSED(data);
+    UNUSED(nbytes);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _rename (const char *oldpath, const char *newpath) {
+    UNUSED(oldpath);
+    UNUSED(newpath);
+
     errno = ENOSYS;
     return -1;
 }
@@ -149,31 +188,46 @@ void *_sbrk(int incr) {
 }
 
 int _stat (const char *path, struct stat *st) {
+    UNUSED(path);
+    UNUSED(st);
+
     errno = ENOSYS;
     return -1;
 }
 
 _CLOCK_T_ _times (struct tms *tms) {
+    UNUSED(tms);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _unlink (const char *path) {
+    UNUSED(path);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _wait (int *wstatus) {
+    UNUSED(wstatus);
+
     errno = ENOSYS;
     return -1;
 }
 
 _ssize_t _write (int fd, const void *data, size_t nbytes) {
+    UNUSED(fd);
+    UNUSED(data);
+    UNUSED(nbytes);
+
     errno = ENOSYS;
     return -1;
 }
 
 int _gettimeofday(struct timeval *tv, void *tz) {
+    UNUSED(tz);
+
     errno = 0;
     uint64_t ns = rdtime64();
     tv->tv_sec  = ns_to_s(ns);
@@ -190,11 +244,15 @@ static fp_lock_t malloc_lock = FP_LOCK_INITIALIZER;
 FP_TEST_OVERRIDE
 void __malloc_lock(struct _reent *r)
 {
+    UNUSED(r);
+
     fp_lock_acquire(&malloc_lock);
 }
 
 FP_TEST_OVERRIDE
 void __malloc_unlock(struct _reent *r)
 {
+    UNUSED(r);
+
     fp_lock_release(&malloc_lock);
 }

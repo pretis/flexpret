@@ -12,7 +12,6 @@ fp_ret_t fp_cond_wait(fp_cond_t * cond) {
 
 fp_ret_t fp_cond_timed_wait(fp_cond_t * cond, uint64_t timeout) {
     bool has_timed_out = false;
-    uint32_t now = rdtime();
     int hartid = read_hartid();
     cond->waiting[hartid] = true;
     fp_lock_release(cond->lock);

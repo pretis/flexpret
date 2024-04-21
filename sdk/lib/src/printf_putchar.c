@@ -68,6 +68,7 @@ void _write_emulation(int fd, char character) {
 }
 
 void _write_fpga(int fd, char character) {
+    UNUSED(fd);
     uart_send(character);
 }
 

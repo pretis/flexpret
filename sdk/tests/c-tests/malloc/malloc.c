@@ -34,10 +34,10 @@ int main() {
     fp_assert(*c == C_INIT, "Incorrect value for c");
     fp_assert(*d == (A_INIT + B_INIT + C_INIT), "Incorrect value for d");
 
-    printf("a has address %p with value %i\n", a, *a);
-    printf("b has address %p with value %i\n", b, *b);
-    printf("c has address %p with value %i\n", c, *c);
-    printf("d has address %p with value %i\n", d, *d);
+    printf("a has address %p with value %i\n", a, (int) *a);
+    printf("b has address %p with value %i\n", b, (int) *b);
+    printf("c has address %p with value %i\n", c, (int) *c);
+    printf("d has address %p with value %i\n", d, (int) *d);
 
     free(a);
     free(b);

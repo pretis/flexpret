@@ -21,13 +21,18 @@ jmp_buf __ee_jmp_buf[FP_THREADS];
 bool    __ie_jmp_buf_active[FP_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 bool    __ee_jmp_buf_active[FP_THREADS] = THREAD_ARRAY_INITIALIZER(false);
 
+// We mark it with attribute noretun because the function will not return
+// to fp_exception_handler, but instead to where the exception occurred.
+void thread_ctx_switch_load(void) __attribute__((noreturn));
+void thread_ctx_switch_store(void);
+
 #ifndef NDEBUG
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
 FP_TEST_OVERRIDE
 void __stack_chk_fail(void) {
-    register uint32_t linkreg = rdlinkreg();
-    register uint32_t stack_ptr = rdstackptr();
+    register uint32_t *linkreg = rdlinkreg();
+    register uint32_t *stack_ptr = rdstackptr();
     _fp_abort("Stack check failed: link register (%p), stack ptr (%p)\n", linkreg, stack_ptr);
 }
 #endif // NDEBUG
@@ -67,7 +72,7 @@ static const char *exception_to_str(const uint32_t cause) {
 }
 
 void fp_exception_handler(void) {
-    int cause = read_csr(CSR_CAUSE);
+    uint32_t cause = read_csr(CSR_CAUSE);
     uint32_t hartid = read_hartid();
 
     if (cause == EXC_CAUSE_EXTERNAL_INT) {  
@@ -77,7 +82,7 @@ void fp_exception_handler(void) {
     } else if (cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
         if(ee_int_handler[hartid]) ee_int_handler[hartid]();
     } else {
-        fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
+        fp_assert(false, "Exception not handled: %i, %s\n", (int) cause, exception_to_str(cause));
     }
 
     if (__ie_jmp_buf_active[hartid]) {
@@ -85,10 +90,7 @@ void fp_exception_handler(void) {
     } else if (__ee_jmp_buf_active[hartid]) {
         longjmp(__ee_jmp_buf[hartid], 1);
     } else {
-        // Call the function to load the thread's context
-        // We mark it with attribute noretun because the function will not return
-        // to fp_exception_handler, but instead to where the exception occurred.
-        void thread_ctx_switch_load(void) __attribute__((noreturn));    
+        // Call the function to load the thread's context 
         // In ctx_switch.S
         thread_ctx_switch_load();
     }
@@ -97,8 +99,7 @@ void fp_exception_handler(void) {
 void setup_exceptions() {
     // Register the function to call on exceptions; this function stores the
     // thread's context and calls the fp_exception_handler function afterwards
-    void thread_ctx_switch_store(void);
-    write_csr(CSR_EVEC, (uint32_t) thread_ctx_switch_store);
+    register_exception_handler(thread_ctx_switch_store);
 }
 
 void register_isr(int cause, void (*isr)(void)) {

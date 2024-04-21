@@ -81,11 +81,11 @@ void Reset_Handler() {
             ((uint32_t) (&__sstack) - (FP_THREADS * FP_STACKSIZE));
 
         fp_assert(&__estack == stack_end_calculated, 
-            "Stack not set up correctly: End of stack: 0x%x, Calculated end of stack: 0x%x\n",
+            "Stack not set up correctly: End of stack: %p, Calculated end of stack: %p\n",
             &__estack, stack_end_calculated);
 
         fp_assert(&__eheap == &__estack, 
-            "Heap end and stack end are not equal: Heap end: 0x%x, Stack end: 0x%x\n",
+            "Heap end and stack end are not equal: Heap end: %p, Stack end: %p\n",
             &__eheap, &__estack);
 
         /**

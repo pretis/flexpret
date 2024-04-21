@@ -15,13 +15,14 @@ void* pumper(void* arg) {
     
     char writebuf[128];
     int len = snprintf(writebuf, sizeof(writebuf),
-        "Hello world from tid: %i\n", read_hartid());
+        "Hello world from tid: %i\n", (int) read_hartid());
     
     printbuffer_pump(printbuf, writebuf, len);
+    return NULL;
 }
 
 int main(void) {
-    printf("Hello world from tid: %i\n", read_hartid());
+    printf("Hello world from tid: %i\n", (int) read_hartid());
     
     // One more than strictly necessary
     struct PrintBuffer bufs[FP_THREADS] = THREAD_ARRAY_INITIALIZER(
@@ -43,7 +44,7 @@ int main(void) {
     for (int i = 0; i < FP_THREADS-1; i++) {
         uint32_t nbytes = 0;
         while ((nbytes = printbuffer_drain(&bufs[i], printable)) > 0) {
-            for (int j = 0; j < nbytes; j++) {
+            for (uint32_t j = 0; j < nbytes; j++) {
                 uart_send(printable[j]);
             }
         }

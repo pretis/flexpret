@@ -79,6 +79,9 @@ target_compile_options(fp-sdk-if INTERFACE
   
   # Makes it possible to catch that stack is broken
   "-fstack-protector"
+
+  # Warnings
+  "-Wall" "-Wextra"
 )
 
 

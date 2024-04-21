@@ -30,8 +30,8 @@ int main() {
     fp_assert(ret == 0, "Return value not as expected");
     fp_assert(errno == 0, "Errno not as expected");
 
-    printf("tv.tv_sec is %i\n", tv.tv_sec);
-    printf("tv.tv_usec is %i\n", tv.tv_usec);
+    printf("tv.tv_sec is %lli\n", tv.tv_sec);
+    printf("tv.tv_usec is %li\n", tv.tv_usec);
 
     exit(0);
 

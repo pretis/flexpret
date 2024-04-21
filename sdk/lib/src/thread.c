@@ -22,11 +22,11 @@
  */
 int slot_set(slot_t slots[], uint32_t length) {
     if (length > 8) {
-        fp_assert(false, "No more than 8 slots supported: %i given", length);
+        fp_assert(false, "No more than 8 slots supported: %i given\n", (int) length);
         return 1;
     }
     uint32_t val = 0;
-    for (int i = 0; i < length; i++) {
+    for (uint32_t i = 0; i < length; i++) {
         val |= slots[i] << (i * 4);
     }
     write_csr(CSR_SLOTS, val);
@@ -46,12 +46,12 @@ int slot_set(slot_t slots[], uint32_t length) {
 int slot_set_hrtt(uint32_t slot, uint32_t hartid) {
     if (slot > 7) {
         // FIXME: Panic.
-        fp_assert(false, "Invalid slot set: %i given", slot);
+        fp_assert(false, "Invalid slot set: %i given\n", (int) slot);
         return 1;
     }
     if (hartid > FP_THREADS) {
         // FIXME: Panic.
-        fp_assert(false, "Hardware thread id out of bounds");
+        fp_assert(false, "Hardware thread id out of bounds\n");
         return 2;
     }
     uint32_t mask = 0xf << (slot * 4);
@@ -262,6 +262,8 @@ int fp_thread_create(
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
+    UNUSED(is_hrtt);
+
     if (check_args(hartid, start_routine) < 0) {
         return 1;
     }
@@ -289,6 +291,8 @@ int fp_thread_map(
     void *(*start_routine)(void *),
     void *restrict arg
 ) {
+    UNUSED(is_hrtt);
+
     if (check_args(hartid, start_routine) < 0) {
         return 1;
     }

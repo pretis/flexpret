@@ -24,6 +24,7 @@ void* t1_gettimeofday(void* arg) {
         gettimeofday(&tv, NULL);
         fp_assert(errno == 0, "Errno not as expected: %s\n", strerror(errno));
     }
+    return NULL;
 }
 
 void* t2_close(void* arg) {
@@ -32,6 +33,7 @@ void* t2_close(void* arg) {
         close(22);
         fp_assert(errno == ENOSYS, "Errno not as expected\n");
     }
+    return NULL;
 }
 
 int main() {

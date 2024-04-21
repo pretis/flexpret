@@ -9,12 +9,12 @@ struct PrintBuffer get_new_printbuffer(void) {
     };
 }
 
-static inline const uint32_t printbuffer_get_wrsize(struct PrintBuffer *pbuf) {
+static inline uint32_t printbuffer_get_wrsize(struct PrintBuffer *pbuf) {
     return pbuf->wrpos >= pbuf->rdpos ? (PRINT_BUFFER_SIZE - pbuf->wrpos + pbuf->rdpos)
                                       : (pbuf->rdpos - pbuf->wrpos);
 }
 
-static inline const uint32_t printbuffer_get_rdsize(struct PrintBuffer *pbuf) {
+static inline uint32_t printbuffer_get_rdsize(struct PrintBuffer *pbuf) {
     return PRINT_BUFFER_SIZE - printbuffer_get_wrsize(pbuf);
 }
 
@@ -40,7 +40,7 @@ void printbuffer_pump(struct PrintBuffer *pbuf, char *pump, const uint32_t pump_
     fp_lock_release(&pbuf->lock);
 }
 
-const uint32_t printbuffer_drain(struct PrintBuffer *pbuf, char *drain) {
+uint32_t printbuffer_drain(struct PrintBuffer *pbuf, char *drain) {
     fp_lock_acquire(&pbuf->lock);
 
     uint32_t rdsize = printbuffer_get_rdsize(pbuf);

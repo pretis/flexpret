@@ -4,7 +4,7 @@
 
 int main() {
     // Allocate an array
-    int length = 10;
+    uint32_t length = 10;
     uint32_t *arr = calloc(length, sizeof(uint32_t));
     
     fp_assert(arr, "Array allocation unsucessful");
@@ -20,7 +20,7 @@ int main() {
 
     for (uint32_t i = 0; i < length; i++) {
         fp_assert(arr[i] == i, "Array element not set");
-        printf("arr[%i] = %i\n", i, arr[i]);
+        printf("arr[%i] = %i\n", (int) i, (int) arr[i]);
     }
 
     // Free the memory.

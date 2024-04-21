@@ -6,8 +6,8 @@
 
 int main() {
     
-    uint32_t x = X_INIT; // x = 4320
-    uint32_t y = Y_INIT;
+    int x = X_INIT; // x = 4320
+    int y = Y_INIT;
     printf("x is %i\n", x);
     printf("y is %i\n", y);
 
@@ -25,7 +25,7 @@ int main() {
     void *p = (void*)0x20004000;
 
     // Store word
-    uint32_t z;
+    int z;
     asm volatile (
     "sw %1, 0(%2)\n\t"
     "lw %0, 0(%2)"

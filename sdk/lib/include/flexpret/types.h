@@ -10,6 +10,8 @@ typedef uint32_t timeout_t;
 #define TIMEOUT_NEVER 0
 #define NON_BLOCKING 0
 
+#define UNUSED(x) (void) (x)
+
 #ifdef __TEST__
 /**
  * Weak attribute allows other files to override the implementation, which is

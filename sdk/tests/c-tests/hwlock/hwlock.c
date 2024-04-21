@@ -4,7 +4,7 @@
 int main() {
     
     // Print the hardware thread id.
-    printf("HW thread id: %i\n", read_hartid());
+    printf("HW thread id: %i\n", (int) read_hartid());
 
     // Acquire the lock.
     fp_hwlock_acquire();

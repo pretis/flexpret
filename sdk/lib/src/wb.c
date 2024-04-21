@@ -41,7 +41,7 @@ void wb_write(uint32_t addr, uint32_t data) {
     while(!WISHBONE_BUS->status); // TODO: Move while up and remove !
 }
 
-volatile uint32_t wb_read(uint32_t addr) {
+uint32_t wb_read(uint32_t addr) {
     WISHBONE_BUS->read_addr = addr;
     fp_nop;
     fp_nop;

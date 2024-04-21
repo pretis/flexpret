@@ -12,6 +12,7 @@ void* t1() {
     fp_cond_wait(&cond);
     count++;
     fp_lock_release(&lock);
+    return NULL;
 }
 
 void* t2() {
@@ -19,6 +20,7 @@ void* t2() {
     fp_cond_wait(&cond);
     count++;
     fp_lock_release(&lock);
+    return NULL;
 }
 
 int test_signal() {
@@ -48,6 +50,7 @@ int test_signal() {
     void * exit_code_t2;
     fp_thread_join(tid[0], &exit_code_t1);
     fp_thread_join(tid[1], &exit_code_t2);
+    return 0;
 }
 
 int test_broadcast() {
@@ -69,19 +72,20 @@ int test_broadcast() {
     void * exit_code_t2;
     fp_thread_join(tid[0], &exit_code_t1);
     fp_thread_join(tid[1], &exit_code_t2);
+    return 0;
 }
 
 void test_timed_wait() {
 
     fp_lock_acquire(&lock);
     uint64_t t1 = rdtime64();
-    printf("t1 is %i\n", t1);
+    printf("t1 is %lli\n", t1);
     uint64_t wakeup = t1 + 100000;
-    printf("wakeup is %i\n", wakeup);
+    printf("wakeup is %lli\n", wakeup);
 
     fp_cond_timed_wait(&cond, wakeup);
     uint64_t t2 = rdtime64();
-    printf("t2 is %i\n", t2);
+    printf("t2 is %lli\n", t2);
 
     fp_assert(t2 > wakeup, "rdtime64() got value less than waketime");   
     fp_lock_release(&lock);

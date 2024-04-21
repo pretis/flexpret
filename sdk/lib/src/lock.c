@@ -45,9 +45,9 @@ void fp_lock_release(fp_lock_t* lock) {
     fp_hwlock_acquire();
     fp_assert(read_hartid() == lock->owner, 
         "Attempt to release lock not owned by thread. thread id: %i, lock->owner: %i\n", 
-        read_hartid(), lock->owner);
+        (int) read_hartid(), (int) lock->owner);
     fp_assert(lock->count > 0, 
-        "Attempt to relase lock with count <= 0: count: %i\n", lock->count);
+        "Attempt to relase lock with count <= 0: count: %i\n", (int) lock->count);
     if (--lock->count == 0) {
         lock->locked = false;
         lock->owner  = UINT32_MAX;

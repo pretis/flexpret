@@ -92,20 +92,18 @@
   asm volatile ("rdinstret %0" : "=r"(__tmp)); \
   __tmp; })
 
-#define rdlinkreg() ({ unsigned long __tmp; \
+#define rdlinkreg() ({ unsigned long *__tmp; \
   asm volatile ("addi %0, ra, 0" : "=r"(__tmp)); \
   __tmp; })
 
-#define rdstackptr() ({ unsigned long __tmp; \
+#define rdstackptr() ({ unsigned long *__tmp; \
   asm volatile ("addi %0, sp, 0" : "=r"(__tmp)); \
   __tmp; })
-
-#define read_hartid() read_csr(CSR_HARTID)
 
 #endif
 
 #define read_coreid() read_csr(CSR_COREID)
 
-#define read_hartid() read_csr(CSR_HARTID)
+#define read_hartid() (uint32_t) read_csr(CSR_HARTID)
 
 #endif // FLEXPRET_CSRS_H

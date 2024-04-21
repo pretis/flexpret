@@ -48,7 +48,7 @@ uint8_t arraysrodata[4] __attribute__((section(".srodata.a#"))) = ARRAY_INIT_VAL
 // Pass-by-value will copy it, losing the address
 static inline void _print_addr_val(const int32_t *val)
 {
-    printf("word has address %p and value %i\n", val, *val);
+    printf("word has address %p and value %i\n", val, (int) *val);
 }
 
 int main() {
@@ -80,7 +80,7 @@ int main() {
     // compile time since all values are available
     const volatile uint8_t array[4] = ARRAY_INIT_VAL;
 
-    for (int i = 0; i < sizeof(arraytext); i++) {
+    for (uint32_t i = 0; i < sizeof(arraytext); i++) {
         // Expect the array to have the same value for all indicies; see earlier
         // for explanation
         fp_assert(
@@ -93,11 +93,11 @@ int main() {
         );
     }
 
-    for (int i = 0; i < sizeof(arrayrodata); i++) {
+    for (uint32_t i = 0; i < sizeof(arrayrodata); i++) {
         fp_assert(arrayrodata[i] == array[i], "Array in .rodata incorrect\n");
     }
 
-    for (int i = 0; i < sizeof(arraysrodata); i++) {
+    for (uint32_t i = 0; i < sizeof(arraysrodata); i++) {
         fp_assert(arraysrodata[i] == array[i], "Array in .srodata incorrect\n");
     }
     
