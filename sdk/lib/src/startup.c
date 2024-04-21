@@ -158,8 +158,10 @@ void Reset_Handler() {
     fp_assert(check_bounds_inclusive(stack_pointer, stack_end, stack_start),
         "Stack pointer incorrectly set: %p\n", stack_pointer);
 
-    fp_assert(read_csr(CSR_CONFIGHASH) == FP_CONFIGHASH,
-        "Hardware and software configuration mismatch\n");
+    uint32_t hwconfighash = read_csr(CSR_CONFIGHASH);
+    fp_assert(hwconfighash == FP_CONFIGHASH,
+        "Hardware and software configuration mismatch (0x%x vs. 0x%x)\n",
+        (unsigned int) hwconfighash, (unsigned int) FP_CONFIGHASH);
 
     // Setup exception handling
     setup_exceptions();

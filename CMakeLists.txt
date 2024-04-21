@@ -134,6 +134,15 @@ add_custom_command(
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
+# Always delete previously installed configuration if it exists
+add_custom_command(
+  TARGET FlexPRET
+  COMMAND "rm" "-rf"
+    "$ENV{FP_SDK_PATH}/flexpret"
+    "$ENV{FP_SDK_PATH}/lib/include/flexpret/internal/hwconfig.h"
+    "$ENV{FP_SDK_PATH}/lib/linker/internal/hwconfig.ld"
+)
+
 set_property(
   TARGET FlexPRET APPEND
   PROPERTY ADDITIONAL_CLEAN_FILES ${UNIQUE_CONFIG_FILE}

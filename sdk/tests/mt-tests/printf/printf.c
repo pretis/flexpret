@@ -15,7 +15,7 @@ float f = 8.928;
 
 void *printer(void *args) {
     UNUSED(args);
-
+    
 #if HAVE_FLOATS
     printf("The variable f is: %f\n", f);
 #endif
