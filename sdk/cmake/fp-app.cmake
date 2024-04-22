@@ -1,3 +1,30 @@
+if (NOT DEFINED TARGET)
+  set(TARGET "verilator")
+endif()
+
+# When running on FPGA, we need to offset for the size of the bootloader
+# in the linker scripts
+if (${TARGET} STREQUAL "fpga")
+  set(BOOTLOADER_SIZE_PATH "$ENV{FP_SDK_PATH}/flexpret/bootloader.cmake")
+  
+  if (NOT EXISTS ${BOOTLOADER_SIZE_PATH})
+    message(FATAL_ERROR
+      "Could not find ${BOOTLOADER_SIZE_PATH}, which is required to build software \
+      for FlexPRET on FPGA using the bootloader."
+  )
+  endif()
+  
+  # Sets BOOTLOADER_SIZE
+  include(${BOOTLOADER_SIZE_PATH})
+else()
+  set(BOOTLOADER_SIZE 0)
+endif()
+
+configure_file(
+  "$ENV{FP_SDK_PATH}/cmake/infiles/bootloader.ld.in"
+  "$ENV{FP_SDK_PATH}/lib/linker/internal/bootloader.ld"
+)
+
 # Generate .dump file
 function(fp_add_dump_output target)
   add_custom_command(

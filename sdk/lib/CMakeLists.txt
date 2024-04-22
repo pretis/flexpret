@@ -18,6 +18,8 @@ list(TRANSFORM SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
 target_sources(fp-sdk PUBLIC ${SOURCES})
 
+# TODO: Add .h and linker script as well so lib is sensitive to tchanges
+
 if (${TARGET} STREQUAL "fpga")
   target_compile_definitions(fp-sdk-if INTERFACE __FPGA__)
 else()

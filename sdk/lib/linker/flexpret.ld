@@ -21,6 +21,7 @@
 /* 
  * Taken from https://github.com/apache/nuttx/blob/master/boards/risc-v/c906/smartl-c906/scripts/ld.script
  */
+INCLUDE internal/bootloader.ld
 INCLUDE internal/hwconfig.ld
 INCLUDE internal/swconfig.ld
 
@@ -29,10 +30,17 @@ ISPM_SIZE = ISPM_END - ISPM_START;
 DSPM_SIZE = DSPM_END - DSPM_START;
 TOTAL_STACKSIZES = STACKSIZE * NUM_THREADS;
 
+ISPM_BOOTLOADER_END = ISPM_START + BOOTLOADER_SIZE;
+
+/* TODO: Do we really need to take this into account? Or can we just overwrite
+         the bootloader's data? I think we can, becasue it gets copied into RAM
+         at the start.s of the bootloader every time. */
+DSPM_BOOTLOADER_END = DSPM_START;
+
 MEMORY
 {
-    ROM (rx)  : ORIGIN = ISPM_START, LENGTH = ISPM_SIZE
-    RAM (rwx) : ORIGIN = DSPM_START, LENGTH = DSPM_SIZE
+    ROM (rx)  : ORIGIN = ISPM_BOOTLOADER_END, LENGTH = ISPM_SIZE
+    RAM (rwx) : ORIGIN = DSPM_BOOTLOADER_END, LENGTH = DSPM_SIZE
     STACK (rw) : ORIGIN = DSPM_END - TOTAL_STACKSIZES, LENGTH = TOTAL_STACKSIZES
 }
 

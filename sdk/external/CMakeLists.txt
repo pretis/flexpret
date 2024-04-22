@@ -1,7 +1,7 @@
 if (printf IN_LIST EXTERNAL_LIBS_USED)
 
   set(BUILD_STATIC_LIBRARY True)
-  add_subdirectory(printf)
+  add_subdirectory(printf EXCLUDE_FROM_ALL)
     
   target_compile_definitions(printf PUBLIC 
     printf_=printf
