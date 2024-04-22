@@ -7,13 +7,11 @@ There are a few things to note about the bootloader.
 
 ## Static loading
 
-The bootloader will be compiled with an application placed directly after the bootloader. This is mostly for testing/debugging purposes - if the application is, e.g., `../blinky`, it will be easy to confirm that the bootloader and FPGA is behaving well.
+The bootloader will be compiled with an application placed directly after the bootloader. This is mostly for testing/debugging purposes - if the application is, e.g., `blinky`, it will be easy to confirm that the bootloader and FPGA is behaving well.
 
 ## Dynamic loading
 
-The bootloader can dynamically load an application from UART. This will overwrite the currently loaded application. 
-
-Note that this application MUST be compiled with an offset in its start address, which can be done by setting the `START_ADDR` variable in the makefile equal to the size of the bootloader. One way of doing this is `wc -l bootloader.mem` multiplied with four. This is automated in the `Makefile` in this folder - feel free to see how it's done there.
+The bootloader can dynamically load an application from UART. This will overwrite the currently loaded application. Note that this application MUST be compiled with an offset in its start address; this is done automatically when the `TARGET` cmake variable is set to `fpga`. To verify correct bahavior, you may inspect the generated `.dump` file and check that the `_start` function has a non-zero address.
 
 ## Load configuration
 
@@ -21,19 +19,6 @@ Dynamic loading is selected if `(gpi_read_0() & 0b1) == 0b1` evaluates to true -
 
 Furthermore, a system-wide reset should be connected to a button. The system-wide reset should reset the entire CPU so it starts at program counter zero and restarts the bootloader.
 
-# Emulating bootloader
+## Once built
 
-To emulate the static bootloader, just run `make clean all run`. Override the variable `APP_NAME` with any other program, like so: `make clean all run APP_NAME=malloc`.
-
-To emulate the dynamic bootloader, the process is a bit more complex and time-consuming. First, compile everything with `make clean all`. Make sure the `bootloader()` function is actually run in the `loader.c` file. 
-
-Next, the application .mem file needs to be serialized. This is automated in the `Makefile`, but can be done manually using the `$(FLEXPRET_ROOT_DIR)/scripts/serialize_app.py` script. It adds data to the application .mem file which concides with the protocol used in the `bootloader()` function.
-
-Finally, run the bootloader with a UART client that transmits the serialized .mem file. This is best done using two terminals. From this folder:
-
-`$(FLEXPRET_ROOT_DIR)/emulator/fp-emu +ispm=bootloader.mem --client`
-`$(FLEXPRET_ROOT_DIR)/emulator/clients/build/uart.elf --file app/add.mem.serialized`
-
-This will take a long time. It's a good idea to check the size of the file that is transmitted (`ls -l`) and comment in the printing in the bootloader to view the progress. When it completes you should see some output from your application (if it has any).
-
-Also make sure to turn off the `IMEM store` warning in the `main.cpp` emulator. It is helpful for catching bugs that end up writing to instruction memory, but in this case, that is what we want.
+Once the bootloader is built, the build system will automatically install a `bootloader.cmake` file to the `../flexpret/` directory. Applications that target FlexPRET on FPGA refuse to build unless this file exists. The reason for this is that the linker script needs to know the application's offset in the instruction memory before it can be linked.
