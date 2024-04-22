@@ -5,25 +5,6 @@ import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents o
 import flexpret.{WishboneBus, WishboneMaster, WishboneUart}
 
 abstract class AbstractTop(cfg: FlexpretConfiguration, cfgHash: UInt) extends Module {
-
-    /** 
-     * Write the configuration to various files so software has access to it.
-     * 
-     * flexpret_hwconfig.h  contains hardware configuration of the built CPU in
-     *                      the form of C macros
-     * flexpret_hwconfig.ld contains much of the same information, just in the
-     *                      linker script language
-     * hwconfig.mk          again contains the same information, but in the Makefile
-     *                      language
-     * 
-     * The reason for generating the same information in all these languages is
-     * so the software developer has readily access to it where ever it may be
-     * useful.
-     */
-    cfg.writeHeaderConfigToFile("./programs/lib/include/flexpret_hwconfig.h")
-    cfg.writeLinkerConfigToFile("./programs/lib/linker/flexpret_hwconfig.ld")
-    cfg.writeMakeConfigToFile("./hwconfig.mk")
-
     val core = Module(new Core(cfg, cfgHash))
 
     val wbMaster = Module(new WishboneMaster(cfg.busAddrBits)(cfg))
@@ -31,9 +12,7 @@ abstract class AbstractTop(cfg: FlexpretConfiguration, cfgHash: UInt) extends Mo
     val wbBus    = Module(new WishboneBus(cfg.busAddrBits, Seq(4)))
 
     // Connect WB bus to FlexPRET bus
-    //core.io.bus.driveDefaults()
     wbMaster.busIO <> core.io.bus
-    //core.io.bus.addr := 
 
     // Connect WB bus to WB master
     wbBus.io.wbMaster <> wbMaster.wbIO
