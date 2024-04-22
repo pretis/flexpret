@@ -32,7 +32,7 @@ void fp_print_int(uint32_t val) {
     // Max uint32_t is 4,294,967,295 -> 10 digits + \0
     char num[11];
     itoa(val, num, 10);
-    for (int i = 0; i < strlen(num); i++) {
+    for (size_t i = 0; i < strlen(num); i++) {
         uart_send(num[i]);
     }
 #endif // __FPGA__
