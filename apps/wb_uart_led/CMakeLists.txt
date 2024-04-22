@@ -4,7 +4,7 @@ add_executable(wb_uart_led wb_uart_led.c)
 target_compile_definitions(wb_uart_led PRIVATE NDEBUG)
 
 include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
-fp_setup_default(wb_uart_led fp-sdk-if)
+fp_setup_default(wb_uart_led fp-sdk)
 
 # Add sdk as subdirectory
 add_subdirectory($ENV{FP_SDK_PATH} BINARY_DIR)

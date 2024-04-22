@@ -51,5 +51,5 @@ include($ENV{FP_SDK_PATH}/cmake/riscv-toolchain.cmake)
 target_include_directories(bootloader-first PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(bootloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-fp_setup_default(bootloader-first fp-sdk-if)
-fp_setup_default(bootloader fp-sdk-if)
+fp_setup_default(bootloader-first fp-sdk)
+fp_setup_default(bootloader fp-sdk)

@@ -45,7 +45,7 @@ typedef enum {
 // hart0 will set it to true. Other harts wait on it
 bool boot_done = false;
 
-void main(void) {
+int main(void) {
     if ((gpi_read_0() & 0b1) == 0b1) {
         gpo_set_ledmask(0xFF);
         bootloader();
@@ -56,6 +56,7 @@ void main(void) {
 
     // Jump to start.S
     application();
+    return 0;
 }
 
 int bootloader(void) {
@@ -64,10 +65,10 @@ int bootloader(void) {
     unsigned int idx=0;
     unsigned int byte_idx=0;
     unsigned int *app_ptr = (unsigned int *) application;
-    unsigned char recv_buffer[2];
+    unsigned char recv_buffer[4];
     unsigned char recv;
-    unsigned int len;
-    unsigned int instr;
+    unsigned int len = 0;
+    unsigned int instr = 0;
 
     // Disable instruction memory protection
     write_csr(CSR_IMEM_PROT, 0x88888888);
