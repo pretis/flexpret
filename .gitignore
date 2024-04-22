@@ -36,10 +36,3 @@ target/
 .bloop/
 emulator/obj_dir/
 emulator/*.v
-
-programs/lib/include/flexpret_hwconfig.h
-programs/lib/include/flexpret_swconfig.h
-programs/lib/linker/flexpret_hwconfig.ld
-programs/lib/linker/flexpret_swconfig.ld
-programs/lib/linker/flexpret_bootloader_config.ld
-hwconfig.mk
