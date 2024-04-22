@@ -69,6 +69,12 @@ target_link_libraries(fp-sdk PUBLIC fp-sdk-if)
 # Make sdk dependent on these files so it will detect changes to them
 target_sources(fp-sdk-if INTERFACE ${FP_INSTALLED_FILES})
 
+if (${TARGET} STREQUAL "fpga")
+  option(DEBUG "Enable or disable debug such as printf" OFF)
+else()
+  option(DEBUG "Enable or disable debug such as printf" ON)
+endif()
+
 # TODO: Check if we are missing other options from before
 target_compile_options(fp-sdk-if INTERFACE 
   # Gives build-time error if the developer attempts to allocate variables on the
@@ -88,22 +94,18 @@ target_compile_definitions(fp-sdk-if INTERFACE
   
   # See configderive.cmake
   ${NEWLIB_REENTRANCY_METHOD}
-
-  # Set NDEBUG to remove assertions and such
-  #NDEBUG
 )
 
-# TODO: Fix issues when printf is removed
-# TODO: Default for target FPGA should be not using printf
-set(EXTERNAL_LIBS_USED
-  printf
-)
+if (NOT ${DEBUG})
+  target_compile_definitions(fp-sdk-if INTERFACE NDEBUG)
+endif()
 
 add_subdirectory(lib)
 add_subdirectory(external)
 
-# TODO: Test framework
 if (PROJECT_IS_TOP_LEVEL)
+  add_subdirectory(bootloader)
+  
   include(CTest)
   enable_testing()
   add_subdirectory(tests)

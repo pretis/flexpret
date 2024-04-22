@@ -8,5 +8,4 @@ project(fp-apps
   VERSION 0.0.1
 )
 
-add_subdirectory(bootloader)
 add_subdirectory(wb_uart_led)

@@ -26,8 +26,6 @@ add_executable(bootloader
   loader/startup.c
 )
 
-
-
 # 1. Empty location.h
 add_library(location-empty INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/empty/location.h)
 target_include_directories(location-empty INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/empty)
@@ -46,6 +44,9 @@ target_link_libraries(bootloader location)
 add_custom_target(bootloader-verify ALL 
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/bootloader.cmake"
 )
+
+target_compile_definitions(bootloader-first PRIVATE NDEBUG)
+target_compile_definitions(bootloader PRIVATE NDEBUG)
 
 # First run of script will generate an empty location.h header file
 add_custom_command(
@@ -78,7 +79,8 @@ add_custom_command(
 
 set_property(
   TARGET bootloader APPEND
-  PROPERTY ADDITIONAL_CLEAN_FILES "location.h"
+  PROPERTY ADDITIONAL_CLEAN_FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/actual/location.h"
 )
 
 include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
@@ -86,11 +88,5 @@ include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
 target_include_directories(bootloader-first PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(bootloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-fp_setup_default(bootloader-first fp-sdk)
-fp_setup_default(bootloader fp-sdk)
-
-# Install artifacts
-install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/bootloader.cmake"
-  DESTINATION "$ENV{FP_SDK_PATH}/flexpret"
-)
+fp_setup_default(bootloader-first)
+fp_setup_default(bootloader)

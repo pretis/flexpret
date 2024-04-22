@@ -15,7 +15,9 @@
 #include <flexpret/wb.h>
 #include <flexpret/uart.h>
 
+#ifndef NDEBUG
 #include <printf/printf.h>
+#endif // NDEBUG
 
 #include <stdbool.h>
 #include <stdint.h>

@@ -1,5 +1,4 @@
-if (printf IN_LIST EXTERNAL_LIBS_USED)
-
+if (${DEBUG})
   set(BUILD_STATIC_LIBRARY True)
   add_subdirectory(printf EXCLUDE_FROM_ALL)
     

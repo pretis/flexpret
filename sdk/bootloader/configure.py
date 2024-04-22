@@ -25,8 +25,8 @@ if len(sys.argv) != 2:
 #   3. When both bootloader-first.mem and bootloader.mem exist. In this
 #      case we verify that their sizes are equal
 
-app_folder = Path(os.environ.get('FP_PATH')) / 'apps'
-bootloader_build = app_folder / 'build' / 'bootloader'
+sdk_folder = Path(os.environ.get('FP_SDK_PATH'))
+bootloader_build = sdk_folder / 'build' / 'bootloader'
 
 
 if (bootloader_build / 'bootloader-first.mem').is_file():
@@ -68,7 +68,7 @@ elif sys.argv[1] == 'third' and bootloader_first_exist and bootloader_exist:
         exit(1)
     else:
         print('Generate')
-        with open(bootloader_build / 'bootloader.cmake', 'w') as f:
+        with open(sdk_folder / 'flexpret' / 'bootloader.cmake', 'w') as f:
             f.write(f'set(BOOTLOADER_SIZE {lines_bl_final})')
 else:
     print('Invalid run of script')

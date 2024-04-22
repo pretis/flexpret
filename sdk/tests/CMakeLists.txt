@@ -1,4 +1,4 @@
-if (NOT printf IN_LIST EXTERNAL_LIBS_USED)
+if (NOT ${DEBUG})
   message(FATAL_ERROR 
     "Cannot run tests when printf is disabled because it is used to determine\
     whether the test passes or fails."
