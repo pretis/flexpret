@@ -41,6 +41,7 @@ static void register_exception_handler(void (*isr)(void)) {
     write_csr(CSR_EVEC, (uint32_t) isr);
 }
 
+#ifndef NDEBUG
 static const char *exception_to_str(const uint32_t cause) {
     switch (cause)
     {
@@ -70,6 +71,7 @@ static const char *exception_to_str(const uint32_t cause) {
     default: return "Unknown exception code";
     }
 }
+#endif // NDEBUG
 
 void fp_exception_handler(void) {
     uint32_t cause = read_csr(CSR_CAUSE);

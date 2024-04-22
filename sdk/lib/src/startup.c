@@ -76,6 +76,7 @@ void Reset_Handler() {
             pDst[i] = 0;
         }
 
+#ifndef NDEBUG
         // Perform some sanity checks on the stack and heap pointers
         const uint32_t *stack_end_calculated = (uint32_t *)
             ((uint32_t) (&__sstack) - (FP_THREADS * FP_STACKSIZE));
@@ -87,6 +88,7 @@ void Reset_Handler() {
         fp_assert(&__eheap == &__estack, 
             "Heap end and stack end are not equal: Heap end: %p, Stack end: %p\n",
             &__eheap, &__estack);
+#endif // NDEBUG
 
         /**
          * Configure flexible scheduling
@@ -145,6 +147,7 @@ void Reset_Handler() {
         while (!__ready__);
     }
 
+#ifndef NDEBUG
     // Check that each thread's stack pointer is within its own stack start/end
     // addresses
     register uint32_t *stack_pointer asm("sp");
@@ -162,6 +165,7 @@ void Reset_Handler() {
     fp_assert(hwconfighash == FP_CONFIGHASH,
         "Hardware and software configuration mismatch (0x%x vs. 0x%x)\n",
         (unsigned int) hwconfighash, (unsigned int) FP_CONFIGHASH);
+#endif // NDEBUG
 
     // Setup exception handling
     setup_exceptions();

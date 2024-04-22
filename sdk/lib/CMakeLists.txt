@@ -16,7 +16,7 @@ set(SOURCES
 
 list(TRANSFORM SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
-target_sources(fp-sdk-if INTERFACE ${SOURCES})
+target_sources(fp-sdk PUBLIC ${SOURCES})
 
 if (${TARGET} STREQUAL "fpga")
   target_compile_definitions(fp-sdk-if INTERFACE __FPGA__)

@@ -58,18 +58,16 @@ configure_file(
   "$ENV{FP_SDK_PATH}/lib/linker/internal/swconfig.ld"
 )
 
-# Interface library 
+# Interface library
 add_library(fp-sdk-if INTERFACE)
 
-if (PROJECT_IS_TOP_LEVEL)
-  add_library(fp-sdk STATIC)
-  # TODO: Maybe PRIVATE here - might not recompile library for all tests
-  target_link_libraries(fp-sdk PUBLIC fp-sdk-if)
-endif()
+# Library with source files
+# This is the interface library + source code
+add_library(fp-sdk STATIC EXCLUDE_FROM_ALL)
+target_link_libraries(fp-sdk PUBLIC fp-sdk-if)
 
 # Make sdk dependent on these files so it will detect changes to them
 target_sources(fp-sdk-if INTERFACE ${FP_INSTALLED_FILES})
-
 
 # TODO: Check if we are missing other options from before
 target_compile_options(fp-sdk-if INTERFACE 
@@ -90,6 +88,9 @@ target_compile_definitions(fp-sdk-if INTERFACE
   
   # See configderive.cmake
   ${NEWLIB_REENTRANCY_METHOD}
+
+  # Set NDEBUG to remove assertions and such
+  #NDEBUG
 )
 
 # TODO: Fix issues when printf is removed

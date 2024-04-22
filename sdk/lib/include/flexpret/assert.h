@@ -7,7 +7,9 @@
 // NDEBUG is used by the standard library to filter out asserts, so it's a good
 // idea to use the same variable
 #ifdef NDEBUG
-#define fp_assert(cond, fmt, ...) (cond)
+// Assert calls shall never have side effects that are necessary for program
+// execution: https://barrgroup.com/blog/how-and-when-use-cs-assert-macro
+#define fp_assert(cond, fmt, ...) ((void)0)
 #else
 #define fp_assert(cond, fmt, ...) do { \
     if(((cond) == false)) { \
