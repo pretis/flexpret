@@ -1,3 +1,12 @@
+# Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Getting started](#getting-started)
+- [Hardware description](#hardware-description)
+  - [Prerequisites](#prerequisites)
+  - [Physical setup](#physical-setup)
+  - [Software](#software)
+
 # Getting started
 
 There are a number of additional steps required to run FlexPRET on an FPGA as opposed to emulating it. It is recommended to upload the bitstreams from three projects to the FPGA, each with increasing order of complexity. This way, if something fails, it will be easier to know what was wrong. 
@@ -18,14 +27,17 @@ There are a number of additional steps required to run FlexPRET on an FPGA as op
 
 ## Physical setup
 
-Include picture TODO:
+Figure 1 shows the physical setup for the Zedboard. The figure is annotated with important areas.
+1. The leftmost cable connection gives power to the Zedboard. The switch underneath the connector must be flipped to the left to turn on power to the Zedboard. The rightmost connection is a micro-USB cable from your computer to the zedboard, used to upload bitstreams.
+2. In the `fp-bootloader` example, we use this connector to interface with FlexPRET's UART device - which in turn is used to upload new software to the bootloader. Currently, JA1 is FlexPRET's UART TX and JA2 is FlexPRET's UART RX. To add custom pins, consult the `.xdc` files and make corresponding changes to your `Top.v`.
+3. The rightmost switch (SW0) is used to configure whether the bootloader shall await a new program or run the one currently located in its instruction memory.
+4. The center button (BTNC) resets FlexPRET. This includes setting its program counter back to zero, which means FlexPRET will return to it's bootloader. 
 
-## Buttons and LEDs
+![Zedboard physical setup](./docs/zedboard-setup.png)
 
-TODO: References to figure
-Feel free to change the top-level FPGA code to your use case. Currently, the center button (ref figure) is used to reset FlexPRET. Use this when you want to re-upload new software. When software is uploaded, the LEDs will "count" upwards, which indicates the progress.
+Note that you might need to push the reset button several times to reset the system. The reason for this is currently not known, but it likely has something to do with how the reset signal propagates inside of FlexPRET.
 
-The switch (ref) is used to configure whether the bootloader shall accept an executable or just run whatever is currently at the `APP_LOCATION` address. If you want to re-run software already flashed to the FPGA, set this to zero.
+If attempting to reset several times still does not work, we recommend flashing the bitstream again. 
 
 ## Software
 

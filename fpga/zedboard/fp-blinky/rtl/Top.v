@@ -1,14 +1,10 @@
 `timescale 1ns / 1ps
 
 module Top(
-  input CLK_100MHZ_FPGA,
+  input INPUT_CLOCK,
   output [7:0] LEDS,
-  //input [7:0] SWS,
-  //input [3:0] BTNS,
   output UART_TX,
   input UART_RX
-  //input [3:0] JBI,
-  //output [3:0] JBO
 );
 
   // Outputs
@@ -21,7 +17,7 @@ module Top(
       .reset(reset), 
       .locked(locked),
      // Clock in ports
-      .clk_in1(CLK_100MHZ_FPGA)
+      .clk_in1(INPUT_CLOCK)
   );
  
   FpgaTop flexpret(
@@ -32,10 +28,6 @@ module Top(
     .io_gpio_out_3(LEDS[7:6]),
     .io_uart_rx(UART_RX),
     .io_uart_tx(UART_TX)
-    //.io_gpio_in_0(SWS[0]),
-    //.io_gpio_out_1(JBO),
-    //.io_gpio_in_1(JBI),
-    //.io_gpio_in_2(BTNS)
   );
 
 endmodule

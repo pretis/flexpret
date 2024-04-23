@@ -7,7 +7,7 @@ puts "Adding design sources"
 add_files rtl
 
 # Add recursively and assume all xdc is located here
-add_files -fileset constrs_1 xdc
+add_files -fileset constrs_1 -norecurse { xdc/constraints.xdc }
 update_compile_order -fileset sources_1
 
 puts "Creating clocking wizard IP"

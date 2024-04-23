@@ -5,12 +5,15 @@ include $(FLEXPRET_ROOT_DIR)/hwconfig.mk
 CLK_PERIOD_NS := $(shell echo $$((1000 / $(CLK_FREQ_MHZ))))
 CLK_HALF_PERIOD_NS := $(shell echo $$(($(CLK_PERIOD_NS) / 2)))
 
-$(PROJECT_GENERATED_DIR)/flash_runnable.tcl: $(PROJECT_GENERATED_DIR)/variables.tcl
+$(PROJECT_GENERATED_DIR)/flash_runnable.tcl: $(PROJECT_GENERATED_DIR)/variables.tcl $(PROJECT_GENERATED_DIR)/set_program_file.tcl
 	cat $(PROJECT_GENERATED_DIR)/variables.tcl $(BOARD_TCL_DIR)/flash.tcl > $@
 
 # Not really dependent on clk_wiz_config, but easier to force it to generate
-$(PROJECT_GENERATED_DIR)/bitstream_runnable.tcl: $(PROJECT_GENERATED_DIR)/variables.tcl $(PROJECT_GENERATED_DIR)/clk_wiz_config.tcl
+$(PROJECT_GENERATED_DIR)/bitstream_runnable.tcl: $(PROJECT_GENERATED_DIR)/variables.tcl $(PROJECT_DIR)/xdc/constraints.xdc $(PROJECT_GENERATED_DIR)/clk_wiz_config.tcl
 	cat $(PROJECT_GENERATED_DIR)/variables.tcl $(BOARD_TCL_DIR)/setup.tcl $(BOARD_TCL_DIR)/bitstream.tcl > $@
+
+$(PROJECT_DIR)/xdc/constraints.xdc: $(PROJECT_DIR)/xdc/clock.xdc
+	cat $(PROJECT_DIR)/xdc/*.xdc > $(PROJECT_DIR)/xdc/constraints.xdc
 
 $(PROJECT_GENERATED_DIR)/variables.tcl:
 	echo "$$VARIABLES_TCL" > $@
@@ -27,6 +30,7 @@ $(PROJECT_DIR)/xdc/clock.xdc:
 clean::
 	rm -rf $(PROJECT_GENERATED_DIR)
 	rm -f $(PROJECT_DIR)/xdc/clock.xdc
+	rm -f $(PROJECT_DIR)/xdc/constraints.xdc
 
 HASHTAG := \#
 define COMMON_WARNING
@@ -70,7 +74,7 @@ define CLOCK_XDC
 $(COMMON_WARNING)
 
 $(HASHTAG)$(HASHTAG) $(CLK_FREQ_MHZ) MHz clock
-set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports {CLK_$(CLK_FREQ_MHZ)MHZ_FPGA}];  # "GCLK"
-create_clock -period $(CLK_PERIOD_NS).000 -name sys_clk_pin -waveform {0.000 $(CLK_HALF_PERIOD_NS).000} -add [get_ports CLK_$(CLK_FREQ_MHZ)MHZ_FPGA]
+set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports {INPUT_CLOCK}];  # "INPUT_CLOCK"
+create_clock -period $(CLK_PERIOD_NS).000 -name sys_clk_pin -waveform {0.000 $(CLK_HALF_PERIOD_NS).000} -add [get_ports INPUT_CLOCK]
 endef
 export CLOCK_XDC
