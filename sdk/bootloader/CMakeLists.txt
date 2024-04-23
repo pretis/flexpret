@@ -89,5 +89,8 @@ include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
 target_include_directories(bootloader-first PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(bootloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-fp_setup_default(bootloader-first)
-fp_setup_default(bootloader)
+target_link_libraries(bootloader-first fp-sdk)
+target_link_libraries(bootloader fp-sdk)
+
+fp_add_outputs(bootloader-first)
+fp_add_outputs(bootloader)

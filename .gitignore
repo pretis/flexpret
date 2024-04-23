@@ -6,6 +6,7 @@
 project/
 target/
 build/
+bin/
 out/
 test_run_dir/
 

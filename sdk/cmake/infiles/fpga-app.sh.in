@@ -1,0 +1,10 @@
+# !/bin/bash
+
+set -e
+
+if [[ -z "${FP_PATH}" ]]; then
+    echo "Environment variable FP_PATH not set!"
+    exit 1
+fi
+
+echo "This script is yet to be implemented"

@@ -18,15 +18,15 @@ foreach(env ${ENVS})
   endif()
 endforeach()
 
-if (NOT DEFINED CMAKE_CONFIG)
-  set(CMAKE_CONFIG "default")
+if (NOT DEFINED FP_CONFIG)
+  set(FP_CONFIG "default")
 endif()
 
-message(STATUS "Got config ${CMAKE_CONFIG}")
+message(STATUS "Got config ${FP_CONFIG}")
 
 # Make it possible to override which configuration file to use from command line
-# Like so: cmake -DCMAKE_CONFIG=my_config --build .
-set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/${CMAKE_CONFIG}.cmake" CACHE PATH "Which configuration file to select")
+# Like so: cmake -DFP_CONFIG=my_config --build .
+set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/${FP_CONFIG}.cmake" CACHE PATH "Which configuration file to select")
 
 # Sets lots of variables that are used
 include(${CONFIGFILE})
@@ -113,12 +113,14 @@ list(TRANSFORM SCALA_SOURCES APPEND ".scala")
 
 # Could perhaps use "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Top.v"
 # but one letter is capitalized. This is a safer and more explicit approach.
-if (${TARGET} STREQUAL "verilator")
+if (${TARGET} STREQUAL "emulator")
+  set(SCALA_RUN_ARG "verilator")
   set(FP_CHISEL_PRODUCT "${CMAKE_CURRENT_BINARY_DIR}/VerilatorTop.v")
 elseif(${TARGET} STREQUAL "fpga")
+  set(SCALA_RUN_ARG "fpga")
   set(FP_CHISEL_PRODUCT "${CMAKE_CURRENT_BINARY_DIR}/FpgaTop.v")
 else()
-  message(FATAL_ERROR "Target must either be `verilator` or `fpga`.")
+  message(FATAL_ERROR "Target must either be `emulator` or `fpga`.")
 endif()
 
 # Just adding the command here works, but it will always be considered out-of-date.
@@ -129,7 +131,7 @@ add_custom_target(FlexPRET DEPENDS ${FP_CHISEL_PRODUCT})
 # Run sbt, which generates Verilog code for the FlexPRET processor
 add_custom_command(
   OUTPUT ${FP_CHISEL_PRODUCT}
-  COMMAND "sbt" "run ${TARGET} h${CRC32_HASH} --no-dedup --target-dir build"
+  COMMAND "sbt" "run ${SCALA_RUN_ARG} h${CRC32_HASH} --no-dedup --target-dir build"
   DEPENDS ${SCALA_SOURCES}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
@@ -174,6 +176,12 @@ install(FILES "${CONFIGFILE}"
 )
 
 install(FILES
-  "${PROJECT_BINARY_DIR}/emulator/fp-emu" PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+  "${PROJECT_BINARY_DIR}/emulator/fp-emu" 
+  PERMISSIONS 
+    OWNER_EXECUTE 
+    OWNER_READ 
+    OWNER_WRITE 
+    GROUP_READ 
+    WORLD_READ
   DESTINATION "$ENV{FP_SDK_PATH}/flexpret"
 )

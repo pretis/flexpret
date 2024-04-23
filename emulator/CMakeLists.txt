@@ -1,4 +1,4 @@
-if (${TARGET} STREQUAL "verilator")
+if (${TARGET} STREQUAL "emulator")
   set(ISALL ALL)
 else()
   set(ISALL EXCLUDE_FROM_ALL)

@@ -1,0 +1,17 @@
+# !/bin/bash
+
+set -e
+
+if [[ -z "${FP_PATH}" ]]; then
+    echo "Environment variable FP_PATH not set!"
+    exit 1
+fi
+
+if [[ -z "${FP_SDK_PATH}" ]]; then
+    echo "Environment variable FP_SDK_PATH not set!"
+    exit 1
+fi
+
+# Launch installed FlexPRET emulator with instruction memory file
+# @$ adds additional aguments from command line, .e.g, --trace
+${FP_SDK_PATH}/flexpret/fp-emu +ispm=@IMEM_PATH@ $@

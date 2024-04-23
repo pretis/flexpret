@@ -14,7 +14,8 @@ set(REGEX_FAIL_DEFAULT "Abort")
 function(fp_add_test_runs_to_completion name)
   add_test(
     NAME "${name}_runs_to_completion"
-    COMMAND "${CMAKE_SOURCE_DIR}/flexpret/fp-emu" "+ispm=${name}.mem"
+    COMMAND 
+      "${CMAKE_SOURCE_DIR}/bin/${name}"
   )
   set_property(
     TEST "${name}_runs_to_completion" 

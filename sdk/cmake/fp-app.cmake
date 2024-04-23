@@ -1,5 +1,5 @@
 if (NOT DEFINED TARGET)
-  set(TARGET "verilator")
+  set(TARGET "emulator")
 endif()
 
 # When running on FPGA, we need to offset for the size of the bootloader
@@ -25,11 +25,38 @@ configure_file(
   "$ENV{FP_SDK_PATH}/lib/linker/internal/bootloader.ld"
 )
 
+function(fp_add_script_output target)
+  set(IMEM_PATH ${CMAKE_CURRENT_BINARY_DIR}/${target}.mem)
+  
+  if (${TARGET} STREQUAL "emulator")
+    set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/emu-app.sh.in)
+  else()
+    set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/fpga-app.sh.in)
+  endif()
+
+  configure_file(
+    ${INFILE}
+    ${CMAKE_SOURCE_DIR}/bin/${target}
+    FILE_PERMISSIONS 
+      OWNER_EXECUTE # Need execute, the others are normal permissions
+      OWNER_READ 
+      OWNER_WRITE 
+      GROUP_READ 
+      WORLD_READ
+    @ONLY
+  )
+  set_property(
+    TARGET ${target} APPEND PROPERTY
+    ADDITIONAL_CLEAN_FILES
+      ${CMAKE_SOURCE_DIR}/bin
+  )
+endfunction()
+
 # Generate .dump file
 function(fp_add_dump_output target)
   add_custom_command(
     TARGET ${target} POST_BUILD
-    COMMAND ${CMAKE_OBJDUMP} -S -d ${target}.riscv > ${target}.dump
+    COMMAND ${CMAKE_OBJDUMP} -S -d ${target} > ${target}.dump
   )
   set_property(
     TARGET ${target} APPEND PROPERTY
@@ -42,7 +69,7 @@ endfunction()
 function(fp_add_mem_output target)
   add_custom_command(
     TARGET ${target} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O binary ${target}.riscv ${target}.binary.txt
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${target} ${target}.binary.txt
     COMMAND xxd -c 4 -e ${target}.binary.txt | cut -c11-18 > ${target}.mem
     COMMAND xxd -c 4 -e ${target}.binary.txt > ${target}.mem.orig
     COMMAND rm ${target}.binary.txt
@@ -55,11 +82,8 @@ function(fp_add_mem_output target)
   )
 endfunction()
 
-function(fp_setup_default target)
-  set(CMAKE_EXECUTABLE_SUFFIX ".riscv" PARENT_SCOPE)
-
-  target_link_libraries(${target} fp-sdk)
-  
+function(fp_add_outputs target)
   fp_add_dump_output(${target})
   fp_add_mem_output(${target})
+  fp_add_script_output(${target})
 endfunction()

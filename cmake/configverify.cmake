@@ -4,7 +4,7 @@
 
 include(${CMAKE_CURRENT_LIST_DIR}/lib/check.cmake)
 
-set(TARGET_OPTIONS fpga verilator)
+set(TARGET_OPTIONS fpga emulator)
 set(THREADS_OPTIONS 1 2 3 4 5 6 7 8)
 set(FLEX_OPTIONS true false)
 set(ISPM_KBYTES_OPTIONS 16 32 64 128 256 512)
