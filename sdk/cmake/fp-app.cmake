@@ -26,12 +26,19 @@ configure_file(
 )
 
 function(fp_add_script_output target)
-  set(IMEM_PATH ${CMAKE_CURRENT_BINARY_DIR}/${target}.mem)
-  
+  set(IMEM_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
+  set(IMEM_NAME ${target}.mem)
+
   if (${TARGET} STREQUAL "emulator")
     set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/emu-app.sh.in)
   else()
     set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/fpga-app.sh.in)
+    if (NOT DEFINED FP_FLASH_DEVICE)
+      set(FP_FLASH_DEVICE "/dev/ttyUSB0")
+    endif()
+    if (NOT DEFINED FP_FLASH_BAUDRATE)
+      set(FP_FLASH_BAUDRATE 115200)
+    endif()
   endif()
 
   configure_file(

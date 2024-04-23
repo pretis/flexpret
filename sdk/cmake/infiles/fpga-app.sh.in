@@ -7,4 +7,20 @@ if [[ -z "${FP_PATH}" ]]; then
     exit 1
 fi
 
-echo "This script is yet to be implemented"
+if [[ -z "${FP_SDK_PATH}" ]]; then
+    echo "Environment variable FP_SDK_PATH not set!"
+    exit 1
+fi
+
+flashdev=@FP_FLASH_DEVICE@
+baudrate=@FP_FLASH_BAUDRATE@
+imem_path=@IMEM_LOCATION@/@IMEM_NAME@
+imem_serialized_path=/tmp/@IMEM_NAME@.serialized
+
+echo "Serializing app and placing its result in /tmp"
+python3 ${FP_PATH}/scripts/serialize_app.py ${imem_path} ${imem_serialized_path}
+
+echo "Flashing serialized app on device ${flashdev} with baudrate ${baudrate}"
+
+# Script takes usb_path, baudrate, and file
+python3 ${FP_PATH}/scripts/send_uart.py ${flashdev} ${baudrate} ${imem_serialized_path}
