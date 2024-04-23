@@ -32,7 +32,7 @@ list(TRANSFORM FP_INSTALLED_FILES PREPEND "$ENV{FP_SDK_PATH}/")
 foreach(f ${FP_INSTALLED_FILES})
   if (NOT EXISTS ${f})
     message(FATAL_ERROR "Could not find ${f}. Please build FlexPRET and install\
-    it here with `cmake --install` to continue.")
+    it to the SDK with `cmake --install` to continue.")
   endif()
 endforeach()
 
