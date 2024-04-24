@@ -111,34 +111,21 @@ set(SCALA_SOURCES
 list(TRANSFORM SCALA_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/main/scala/")
 list(TRANSFORM SCALA_SOURCES APPEND ".scala")
 
-# Could perhaps use "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}Top.v"
-# but one letter is capitalized. This is a safer and more explicit approach.
-if (${TARGET} STREQUAL "emulator")
-  set(SCALA_RUN_ARG "verilator")
-  set(FP_CHISEL_PRODUCT "${CMAKE_CURRENT_BINARY_DIR}/VerilatorTop.v")
-elseif(${TARGET} STREQUAL "fpga")
-  set(SCALA_RUN_ARG "fpga")
-  set(FP_CHISEL_PRODUCT "${CMAKE_CURRENT_BINARY_DIR}/FpgaTop.v")
-else()
-  message(FATAL_ERROR "Target must either be `emulator` or `fpga`.")
-endif()
+add_custom_target(emulator ALL DEPENDS fp-emu)
 
-# Just adding the command here works, but it will always be considered out-of-date.
-# The solution is to use target + command.
-# https://stackoverflow.com/questions/48758263/why-is-add-custom-target-always-considered-out-of-date
-add_custom_target(FlexPRET DEPENDS ${FP_CHISEL_PRODUCT})
+add_subdirectory(emulator)
+add_subdirectory(fpga)
 
-# Run sbt, which generates Verilog code for the FlexPRET processor
 add_custom_command(
-  OUTPUT ${FP_CHISEL_PRODUCT}
-  COMMAND "sbt" "run ${SCALA_RUN_ARG} h${CRC32_HASH} --no-dedup --target-dir build"
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/FpgaTop.v"
+  COMMAND "sbt" "run fpga h${CRC32_HASH} --no-dedup --target-dir build"
   DEPENDS ${SCALA_SOURCES}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
 # Always delete previously installed configuration if it exists
 add_custom_command(
-  TARGET FlexPRET
+  TARGET emulator
   COMMAND "rm" "-rf"
     "$ENV{FP_SDK_PATH}/flexpret"
     "$ENV{FP_SDK_PATH}/lib/include/flexpret/internal/hwconfig.h"
@@ -146,14 +133,11 @@ add_custom_command(
 )
 
 set_property(
-  TARGET FlexPRET APPEND
+  TARGET emulator APPEND
   PROPERTY ADDITIONAL_CLEAN_FILES ${UNIQUE_CONFIG_FILE}
 )
 
 file(WRITE "${CMAKE_BINARY_DIR}/hwconfighash.txt" ${CRC32_HASH})
-
-add_subdirectory(emulator)
-add_subdirectory(fpga)
 
 install(FILES
   "${PROJECT_BINARY_DIR}/hwconfig.h"

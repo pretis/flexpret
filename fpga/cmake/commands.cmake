@@ -1,9 +1,3 @@
-if (${TARGET} STREQUAL "fpga")
-  set(ISALL ALL)
-else()
-  set(ISALL EXCLUDE_FROM_ALL)
-endif()
-
 math(EXPR CLK_PERIOD_NS "1000 / ${CLK_FREQ_MHZ}" OUTPUT_FORMAT DECIMAL)
 math(EXPR CLK_HALF_PERIOD_NS "${CLK_PERIOD_NS} / 2" OUTPUT_FORMAT DECIMAL)
 
@@ -27,15 +21,6 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl
 )
 
-set(BOOTLOADER "${PROJECT_SOURCE_DIR}/apps/build/bootloader/bootloader.mem")
-if (${TARGET} STREQUAL "fpga")
-  if (NOT EXISTS ${BOOTLOADER})
-    message(FATAL_ERROR
-      "Could not find ${BOOTLOADER}. Please build the bootloader before proceeding."
-    )
-  endif()
-endif()
-
 # Make vivado directory for log and journal files
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/vivado)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rtl)
@@ -54,19 +39,27 @@ add_custom_command(
     "-mode"    "batch" 
     "-journal" "${CMAKE_CURRENT_BINARY_DIR}/vivado/vivado.jou" 
     "-log"     "${CMAKE_CURRENT_BINARY_DIR}/vivado/vivado.log"
-    "-source"  "tcl/bitstream_runnable.tcl"
+    "-source"  "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
   DEPENDS
     ${VIVADO_SOURCES}
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
 )
 
+# Run sbt, which generates Verilog code for the FlexPRET processor
+add_custom_command(
+  OUTPUT "${PROJECT_BINARY_DIR}/FpgaTop.v"
+  COMMAND "sbt" "run fpga h${CRC32_HASH} --no-dedup --target-dir build"
+  DEPENDS ${SCALA_SOURCES}
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
   COMMAND "cp" 
-    "${PROJECT_SOURCE_DIR}/apps/build/bootloader/bootloader.mem"
+    "${PROJECT_SOURCE_DIR}/sdk/build/bootloader/bootloader.mem"
     "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
   DEPENDS 
-    "${PROJECT_SOURCE_DIR}/apps/build/bootloader/bootloader.mem"
+    "${PROJECT_SOURCE_DIR}/sdk/build/bootloader/bootloader.mem"
 )
 
 add_custom_command(
@@ -81,7 +74,8 @@ add_custom_command(
   COMMAND "cp"
     "${PROJECT_BINARY_DIR}/FpgaTop.v"
     "${CMAKE_CURRENT_BINARY_DIR}/rtl/flexpret.v"
-  DEPENDS FlexPRET
+  DEPENDS 
+    "${PROJECT_BINARY_DIR}/FpgaTop.v"
 )
 
 add_custom_command(

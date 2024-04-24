@@ -52,7 +52,7 @@ elif sys.argv[1] == 'second' and bootloader_first_exist and not bootloader_exist
 
     (bootloader_build / 'actual').mkdir(exist_ok=True)
     with open(bootloader_build / 'actual' / 'location.h', 'w') as f:
-        f.write(f'#define APP_LOCATION {lines}')
+        f.write(f'#define APP_LOCATION {4*lines}')
 
 elif sys.argv[1] == 'third' and bootloader_first_exist and bootloader_exist:
     # Third run: Verify
@@ -69,7 +69,7 @@ elif sys.argv[1] == 'third' and bootloader_first_exist and bootloader_exist:
     else:
         print('Generate')
         with open(sdk_folder / 'flexpret' / 'bootloader.cmake', 'w') as f:
-            f.write(f'set(BOOTLOADER_SIZE {lines_bl_final})')
+            f.write(f'set(BOOTLOADER_SIZE {4*lines_bl_final})')
 else:
     print('Invalid run of script')
     exit(1)

@@ -8,6 +8,10 @@ project(fp-sdk
   VERSION 0.0.1
 )
 
+if (NOT DEFINED TARGET)
+  set(TARGET "emulator" CACHE STRING "Whether to compile SDK to target FlexPRET on emulator or FPGA" FORCE)
+endif()
+
 set(ENVS
   FP_PATH
   FP_SDK_PATH

@@ -5,7 +5,6 @@
 include(${CMAKE_CURRENT_LIST_DIR}/lib/check.cmake)
 
 # For each parameter set in the configuration, we set a list of possible options
-set(TARGET_OPTIONS fpga emulator)
 set(THREADS_OPTIONS 1 2 3 4 5 6 7 8)
 set(FLEX_OPTIONS true false)
 set(ISPM_KBYTES_OPTIONS 16 32 64 128 256 512)
@@ -16,7 +15,6 @@ set(CLK_FREQ_MHZ_OPTIONS 50 100)
 set(UART_BAUDRATE_OPTIONS 9600 19200 38400 57600 115200) # Potentially more work
 
 # Then we check whether the parameter is any of the possible options
-check_parameter(TARGET TARGET_OPTIONS FATAL_ERROR)
 check_parameter(THREADS THREADS_OPTIONS FATAL_ERROR)
 check_parameter(FLEX FLEX_OPTIONS FATAL_ERROR)
 check_parameter(ISPM_KBYTES ISPM_KBYTES_OPTIONS WARNING)

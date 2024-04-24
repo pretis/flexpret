@@ -1,10 +1,4 @@
-if (${TARGET} STREQUAL "emulator")
-  set(ISALL ALL)
-else()
-  set(ISALL EXCLUDE_FROM_ALL)
-endif()
-
-add_custom_target(fp-emu ${ISALL} DEPENDS 
+add_custom_target(fp-emu ALL DEPENDS 
   "${CMAKE_CURRENT_BINARY_DIR}/fp-emu"
 )
 
@@ -37,13 +31,12 @@ add_custom_command(
     "${CMAKE_CURRENT_BINARY_DIR}/DualPortBram.v"
 )
 
-# Copy generated Chisel top for Verilator to use
+# Run sbt, which generates Verilog code for the FlexPRET processor
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/VerilatorTop.v"
-  COMMAND "cp" 
-    "${PROJECT_SOURCE_DIR}/build/VerilatorTop.v" 
-    "${CMAKE_CURRENT_BINARY_DIR}"
-  DEPENDS FlexPRET
+  COMMAND "sbt" "run verilator h${CRC32_HASH} --no-dedup --target-dir build/emulator"
+  DEPENDS ${SCALA_SOURCES}
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
 # Copy dual port BRAM implemented in raw Verilog for Verilator to use
