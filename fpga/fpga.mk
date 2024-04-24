@@ -5,8 +5,7 @@ NCORES ?= $(shell nproc --all)
 BOARD_DIR := $(FLEXPRET_ROOT_DIR)/fpga/$(BOARD_NAME)
 PROJECT_DIR := $(BOARD_DIR)/$(PROJECT_NAME)
 BOARD_TCL_DIR := $(BOARD_DIR)/tcl
-PROJECT_TCL_DIR := $(PROJECT_DIR)/tcl
-PROJECT_GENERATED_DIR := $(PROJECT_TCL_DIR)
+PROJECT_GENERATED_TCL := $(PROJECT_DIR)/tcl
 
 # We need both the verilog sources and the imem file (which is the compiled program)
 # to generate a bistream
@@ -17,17 +16,20 @@ VERILOG_SOURCES ?= \
 IMEM_FILE ?= \
 	$(FLEXPRET_ROOT_DIR)/programs/tests/c-tests/bootloader/bootloader.mem
 
+# These are common for all Vivado calls
 VIVADO_ARGS ?= -mode batch -journal $(PROJECT_DIR)/vivado/vivado.jou -log $(PROJECT_DIR)/vivado/vivado.log
 
 all: folders flash
 
 folders:
-	mkdir -p $(PROJECT_TCL_DIR)
-	mkdir -p $(PROJECT_GENERATED_DIR)
+	mkdir -p $(PROJECT_GENERATED_TCL)
 
-flash: $(PROJECT_DIR)/bitstream.bit $(PROJECT_GENERATED_DIR)/flash_runnable.tcl
-	vivado $(VIVADO_ARGS) -source $(PROJECT_GENERATED_DIR)/flash_runnable.tcl
+# Tranferring the bitstream to FGPA (i.e., flashing) requires the bitstream.bit
+# and the generated flash_runnable.tcl script
+flash: $(PROJECT_DIR)/bitstream.bit $(PROJECT_GENERATED_TCL)/flash_runnable.tcl
+	vivado $(VIVADO_ARGS) -source $(PROJECT_GENERATED_TCL)/flash_runnable.tcl
 
+# Double colon makes it possible to "extend" the target with additional commands
 clean::
 	rm -f $(PROJECT_DIR)/bitstream.bit
 
