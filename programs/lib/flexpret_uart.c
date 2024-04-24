@@ -7,12 +7,14 @@ void uart_send(uint8_t data) {
     wb_write(UART_TXD, data);
 }
 
-void uart_check_connection(void) {
-    fp_assert(wb_read(UART_CONST_ADDR) == UART_CONST_VALUE, "uart test failed\n");
-    uint32_t ret = wb_read(2);
-    gpo_set(read_hartid(), 0b11);
-    fp_assert(UART_FAULT_BAD_ADDR(wb_read(UART_CSR)), "Did not get expected bad addr\n");
-    fp_assert(!UART_FAULT_BAD_ADDR(wb_read(UART_CSR)), "Bad addr was not cleared\n");
+bool uart_available(void) {
+    /**
+     * The UART device has a register that contains a magic number
+     * `UART_CONST_VALUE`. The sole purpose of this is to check whether
+     * we can use the UART device.
+     *
+     */
+    return wb_read(UART_CONST_ADDR) == UART_CONST_VALUE;
 }
 
 uint8_t uart_receive(void) {

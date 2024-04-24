@@ -25,7 +25,7 @@ int main(void) {
     
     // One more than strictly necessary
     struct PrintBuffer bufs[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(
-        get_new_printbuffer()
+        PRINTBUFFER_INITIALIZER
     );
 
     int ret = 0;

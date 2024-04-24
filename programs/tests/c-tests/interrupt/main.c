@@ -16,6 +16,7 @@ int main(void) {
     do_run(test_fp_delay_until);
     do_run(test_fp_wait_until);
     do_run(test_external_interrupt);
+    do_run(test_external_interrupt_disabled);
 
     if (!test_du_not_stopped_by_int(NULL)) {
         printf("delay for not stopped early (as expected)\n");

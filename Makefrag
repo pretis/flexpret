@@ -88,19 +88,30 @@ else
 endif
 
 WARNING := \033[0;33mEnsure $(NAME).mem was compiled with TARGET=fpga, otherwise it will immediately crash\e[0m
+
+# Variables used to transfer (flash) a compiled program from the host computer
+# to FlexPRET
+# Only relevant when using FlexPRET on FPGA
 USB_PATH ?= /dev/ttyUSB0
 FPGA_FLASH_BAUDRATE ?= 115200
 
+# Makes flashing programs easy by just typing `make flash` after compiling a program
+# The program is first serialized to make it adhere to the transfer protocol
 flash: $(NAME).mem
 	@echo -e "$(WARNING)"
 	@python3 $(FLEXPRET_ROOT_DIR)/scripts/serialize_app.py $< $<.serialized
 	@python3 $(FLEXPRET_ROOT_DIR)/scripts/send_uart.py $(USB_PATH) $(FPGA_FLASH_BAUDRATE) $<.serialized
 
+# Similar to `make flash`, `make pico` can be used to easily read/write on the
+# UART device
+# --imap lfcrlf fixes and issue with how FlexPRET's output looks
 pico:
 	picocom -b $(FPGA_FLASH_BAUDRATE) $(USB_PATH) --imap lfcrlf
 
 CALLGRAPH_TOP_FUNCTION ?= main
 
+# Generates a callgraph for a given program, with its root in `CALLGRAPH_TOP_FUNCTION`
+# This can be used to better understand the flow in programs
 callgraph: autogen callgraph.svg
 callgraph.svg: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
 	@$(CC) -fdump-rtl-expand $(LFLAGS) $(CFLAGS) $(INCS) -o $(NAME).riscv $^

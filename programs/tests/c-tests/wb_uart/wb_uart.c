@@ -4,7 +4,7 @@
 #include "file.txt.h"
 
 int main(void) {
-    uart_check_connection();
+    fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
     char *file = malloc(file_txt_len);
     if (!file) {
@@ -16,14 +16,14 @@ int main(void) {
         if (file) file[i] = byte;
     }
 
-    uart_check_connection();
+    fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
     int j = 0;
     do {
         printf("File[%i]:\n%s\n", j, &file[512*j]);
     } while (j++ < (file_txt_len / 512));
 
-    uart_check_connection();
+    fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
     for (int i = 0; i < file_txt_len; i++) {
         uart_send(file_txt[i]);

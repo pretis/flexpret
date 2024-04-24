@@ -82,6 +82,7 @@ int main(void) {
     
     do_run(nthreads, test_long_interrupt);
     do_run(nthreads, test_external_interrupt);
+    do_run(nthreads, test_external_interrupt_disabled);
     do_run(nthreads, test_two_interrupts);
     do_run(nthreads, test_two_interrupts);
     do_run(nthreads, test_disabled_interrupts);

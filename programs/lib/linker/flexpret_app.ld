@@ -1,14 +1,12 @@
 OUTPUT_ARCH("riscv")
 
-/*INCLUDE flexpret_config.ld*/
 INCLUDE flexpret_hwconfig.ld
 INCLUDE flexpret_swconfig.ld
 INCLUDE flexpret_bootloader_config.ld
 
 ISPM_BOOTLOADER_END = BOOTLOADER_APP_START_ADDR;
+DSPM_BOOTLOADER_END = DSPM_START;
 
-/* TODO: Fix hardcoded 0x1000, potentially with some nm of the bootloader */
-DSPM_BOOTLOADER_END = DSPM_START + 0x1000;
 TOTAL_STACKSIZES = STACKSIZE * NUM_THREADS;
 
 MEMORY
