@@ -45,6 +45,7 @@ case class FlexpretConfiguration(
   mul: Boolean,   // FIXME: Unused, to be removed.
   priv: Boolean,
   features: String,
+  uartBaudrate: Int,
   coreId: Int = 0
 ) {
   println("features: " + features)

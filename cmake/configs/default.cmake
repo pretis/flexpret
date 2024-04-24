@@ -36,3 +36,5 @@ set(SUFFIX all CACHE STRING "Features enabled. min -> base RV32I, ex -> min + ex
 
 # Valid: <50/100> (and probably more, but these have been tested)
 set(CLK_FREQ_MHZ 100 CACHE STRING "Requested clock frequency in MHz" FORCE)
+
+set(UART_BAUDRATE 115200 CACHE STRING "Requested UART baudrate in Hz" FORCE)

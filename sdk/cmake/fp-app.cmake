@@ -36,9 +36,9 @@ function(fp_add_script_output target)
     if (NOT DEFINED FP_FLASH_DEVICE)
       set(FP_FLASH_DEVICE "/dev/ttyUSB0")
     endif()
-    if (NOT DEFINED FP_FLASH_BAUDRATE)
-      set(FP_FLASH_BAUDRATE 115200)
-    endif()
+    
+    # hwconfig.cmake contains UART_BAUDRATE variable
+    include($ENV{FP_SDK_PATH}/flexpret/hwconfig.cmake)
   endif()
 
   configure_file(

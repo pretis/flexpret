@@ -3,7 +3,6 @@
 # Assume the variables used here are already set, e.g., by ./configs/default.cmake
 
 set(config_params 
-  TARGET
   THREADS
   FLEX
   ISPM_KBYTES
@@ -11,6 +10,7 @@ set(config_params
   MULTIPLIER
   SUFFIX
   CLK_FREQ_MHZ
+  UART_BAUDRATE
 )
 
 set(UNIQUE_CONFIG_STRING "")

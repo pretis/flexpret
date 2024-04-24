@@ -1,5 +1,7 @@
 # Standardized function to check a parameter
 function(check_parameter parameter options severity)
+  # set_property will only affect cmake GUI users, but we do it for the sake
+  # of completeness
   set_property(CACHE TARGET PROPERTY STRINGS ${options})
 
   # Check if parameter is in the recommened/valid list

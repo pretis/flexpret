@@ -13,7 +13,7 @@ if [[ -z "${FP_SDK_PATH}" ]]; then
 fi
 
 flashdev=@FP_FLASH_DEVICE@
-baudrate=@FP_FLASH_BAUDRATE@
+baudrate=@UART_BAUDRATE@
 imem_path=@IMEM_LOCATION@/@IMEM_NAME@
 imem_serialized_path=/tmp/@IMEM_NAME@.serialized
 
