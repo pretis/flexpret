@@ -2,6 +2,7 @@
 #ifndef FLEXPRET_UART_H
 #define FLEXPRET_UART_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <flexpret/wb.h>
 
@@ -31,7 +32,7 @@ void uart_send(uint8_t data);
  *        by reading a magic number from it. Will crash on failure due to assert.
  * 
  */
-void uart_check_connection(void);
+bool uart_available(void);
 
 /**
  * @brief Receive a byte over UART using the wishbone interface

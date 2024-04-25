@@ -1,14 +1,6 @@
 #include <flexpret/pbuf.h>
 #include <string.h>
 
-struct PrintBuffer get_new_printbuffer(void) {
-    return (struct PrintBuffer) {
-        .rdpos = 0,
-        .wrpos = 0,
-        .lock = FP_LOCK_INITIALIZER
-    };
-}
-
 static inline uint32_t printbuffer_get_wrsize(struct PrintBuffer *pbuf) {
     return pbuf->wrpos >= pbuf->rdpos ? (PRINT_BUFFER_SIZE - pbuf->wrpos + pbuf->rdpos)
                                       : (pbuf->rdpos - pbuf->wrpos);
