@@ -20,6 +20,8 @@ void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);
 void print_int_fsm(const int tid, const uint32_t reg);
 
+extern const char *hwconfig_string;
+
 uint64_t timestamp = 0;
 
 double sc_time_stamp() {
@@ -91,6 +93,11 @@ int main(int argc, char* argv[]) {
     if (!strcmp(argv[i], "--allow-imem-store")) {
       std::cout << "IMEM store allowed" << std::endl;
       allow_imem_store = true;
+    }
+
+    if (!strcmp(argv[i], "--hwconfig")) {
+      std::cout << hwconfig_string << std::endl;
+      exit(0);
     }
   }
 

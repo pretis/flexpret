@@ -21,6 +21,7 @@ add_custom_command(
       "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp" 
       "${CMAKE_CURRENT_SOURCE_DIR}/printf_fsm.c" 
       "${CMAKE_CURRENT_SOURCE_DIR}/pin_event.cpp"
+      "${CMAKE_BINARY_DIR}/hwconfig.c" # Has string with hwconfig
   COMMAND "cp" 
     "${CMAKE_CURRENT_BINARY_DIR}/obj_dir/VVerilatorTop" 
     "${CMAKE_CURRENT_BINARY_DIR}/fp-emu"

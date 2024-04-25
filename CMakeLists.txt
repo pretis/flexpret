@@ -69,6 +69,10 @@ configure_file(
   ${CMAKE_BINARY_DIR}/hwconfig.h
 )
 configure_file(
+  ${CMAKE_SOURCE_DIR}/cmake/infiles/hwconfig.c.in 
+  ${CMAKE_BINARY_DIR}/hwconfig.c
+)
+configure_file(
   ${CMAKE_SOURCE_DIR}/cmake/infiles/hwconfig.ld.in 
   ${CMAKE_BINARY_DIR}/hwconfig.ld
 )

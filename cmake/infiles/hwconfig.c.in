@@ -1,0 +1,21 @@
+/**
+* This FlexPRET configuration file is auto-generated, and based on the
+* configuration used during build.
+*
+* The file can be compiled into a build, which makes the variable
+* available to the program.
+*
+* Do not edit.
+*
+*/
+
+const char *hwconfig_string = "\
+FP_THREADS = @THREADS@\n\
+FP_FLEX = @FLEX@\n\
+FP_ISPM_KBYTES = @ISPM_KBYTES@\n\
+FP_DSPM_KBYTES = @DSPM_KBYTES@\n\
+FP_MULTIPLIER = @MULTIPLIER@\n\
+FP_SUFFIX = @SUFFIX@\n\
+FP_CLK_FREQ_MHZ = @CLK_FREQ_MHZ@\n\
+FP_UART_BAUDRATE = @UART_BAUDRATE@\n\
+";
