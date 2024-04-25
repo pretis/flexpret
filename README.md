@@ -68,6 +68,14 @@ make && ctest
 
 Note that the library is built from source for every test. This takes longer time but means each test can have its own permutation of the library, e.g., with and without debug flags. 
 
+## Running a single software unit test
+
+When cmake builds the tests, it also leaves one bash script per test in the `bin/` directory. These can be run directly:
+
+`./bin/add`
+
+Under the hood, the script runs `fp-emu`, which the FlexPRET's emulator, with a `.mem` file.
+
 # Running software
 
 Software can both be run on an emulator and a Field-Programmable Gate Array (FPGA). Running on an FPGA requires quite a lot of setup - we recommend running on an emulator to start. Either way, you will need to [install the RISC-V compiler](#risc-v-compiler) (in particular, `riscv32-unknown-elf-*`).
@@ -102,17 +110,14 @@ Similar to hardware configuration, software can be configured too. It can be fou
 
 We use `verilator` for emulation. Note that a modern version of Verilator is required (e.g. Verilator 4.038+).
 
-To build the emulator, run `cmake -B build && cd build && make all install` in the root directory. This will build the default configuration and install it to the SDK. After building, you should be able to run `fp-emu`. The emulator requires a program to run, passed through the `+ispm=<program>`. For example, to run a basic Fibonnaci example in simulation, run:
+To build the emulator, run `cmake -B build && cd build && make all install` in the root directory. This will build the default configuration and install it to the SDK. After building, try to run `fp-emu --hwconfig`. This should print out the hardware configuration of the emulator. To run a simple test,
 
 ```
 # Step into SDK and build the Fibonnaci program
 cd sdk && cmake -B build && cd build && make clean fib
 
-# Locate its artifacts
-cd tests/c-tests/fib
-
-# Run the program
-fp-emu +ispm=fib.mem
+# Build the generated script, which runs fp-emu under the hood
+./bin/fib
 ```
 
 Which should print out:
@@ -144,7 +149,43 @@ This will build a number of FlexPRET configurations and run the unit tests on al
 
 ## Running on FPGA
 
-Refer to the [FPGA README](./fpga/README.md) for more information on this.
+Refer to the [FPGA README](./fpga/README.md) for more information on how to get FlexPRET running on an FPGA. In order to compile software that runs on FlexPRET on FPGA, you need to set the CMake variable `TARGET` to fpga. See the `CMakeLists.txt` in `flexpret/apps/wb_uart_led/` for an example.
+
+When this variable is set, the generated bash script (still located in `bin/`) will be a bit different. Instead of running `fp-emu` with a `.mem` file, it will serialize the `.mem` file and attempt to transfer it to the FPGA. This assumes the bootloader is running (refer to [FPGA README](./fpga/README.md)). To override the default port used to flash, also set the CMake variable `FP_FLASH_DEVICE` to a path.
+
+The specific commands to build `wb_uart_led` are:
+
+```
+# Go to apps and build wb_uart_led
+cd $FP_PATH/apps
+cmake -B build && cd build && make clean wb_uart_led
+
+# To run the script that transfers the program to FlexPRET FPGA
+cd .. && ./bin/wb_uart_led
+```
+
+Note that compiling this software requires that the bootloader has been built. This is so the program knows how much to offset its instruction addresses by. E.g., by inspecting `$FP_PATH/apps/build/wb_uart_led/wb_uart_led.dump`, you will notice that `_start` begins at an address different from zero. The offset is the size of the bootloader you have built (and possibly have running on your FlexPRET FPGA).
+
+So the steps to get `wb_uart_led` running on FlexPRET FPGA are:
+```
+# Build FlexPRET with default configuration and install it to SDK
+cd $FP_PATH && cmake -B build && cd build && make all install
+
+# Build SDK (including bootloader)
+cd $FP_SDK_PATH && cmake -B build && cd build && make
+
+# Generate bitstream.bit from built FlexPRET and bootloader
+# Will most likely take some time
+cd $FP_PATH && cd build && make fp-bootloader
+
+# Build wb_uart_led app
+cd $FP_PATH/apps && cmake -B build && cd build && make
+
+# Run generated script to transfer app to bootloader
+cd $FP_PATH/apps && ./bin/wb_uart_led
+```
+
+This assumes correct hardware setup (refer to [FPGA README](./fpga/README.md)) and that the `TARGET` and `FP_FLASH_DEVICE` CMake variables are set correctly.
 
 # Troubleshooting
 
@@ -171,6 +212,17 @@ git submodule update --init --recursive
   - `Core/` FlexPRET processor (and baseline processors) in Chisel
   - `uart/` Verilog code for UART
 - `src/test/scala/` Unit tests
+
+# Build system overview
+
+A diagram of the CMake build system is shown in Figure 1. There are three distinct build environments, each with its own background color. The user may select any configuration from the `cmake/configs` folder by passing `-DFP_CONFIG=<config>` to `cmake`. The first step (light blue) generates `FlexPRET.v`, which can either be used to create an emulator or FPGA bitstream. It also generates a number of artifacts about its hardware configuration which must be installed to the software development kit (SDK).
+
+The SDK is an `interface` library, meaning it does not produce a static library. Instead, it specifies a number of source files that are passed onto tests and applications. This means compiling the library in itself is unecessary when running emulated applications. The SDK also contains a number of tests, which can be run individually like an application or using `ctest`. Finally, the SDK includes a bootloader, which is required if the user wants to run FlexPRET on FPGA with a bootloader. How to do this was described in [Running on FPGA](./README.md#running-on-fpga).
+
+Finally, applications can be added outside of this repository. In that case, the SDK is linked in as a `BINARY_DIR` and `fp-app.cmake` to get the necessary functions. 
+
+Figure 1: The CMake build system
+![Build system](./doc/flexpret-cmake-architecture.drawio.png)
 
 # Chisel
 We use Chisel version 3.5.5.
