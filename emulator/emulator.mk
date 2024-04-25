@@ -9,7 +9,7 @@ VERILATOR_MODULE=VerilatorTop
 $(EMULATOR_BIN): $(VERILOG_VERILATOR) $(EMULATOR_DIR)/main.cpp $(EMULATOR_DIR)/printf_fsm.c $(EMULATOR_DIR)/pin_event.cpp
 	# Copy required resources
 	@cp $(VERILOG_VERILATOR) $(EMULATOR_DIR)/$(VERILATOR_MODULE).v
-	@cp $(RESOURCE_DIR)/DualPortBram.v $(EMULATOR_DIR)/
+	@cp $(RESOURCE_DIR)/DualPortBramEmulator.v $(EMULATOR_DIR)/DualPortBram.v
 
 	# Build verilator emulator
 	@(cd $(EMULATOR_DIR) && verilator --cc $(VERILATOR_MODULE).v --exe --trace --trace-structs --trace-underscore --build main.cpp printf_fsm.c pin_event.cpp)

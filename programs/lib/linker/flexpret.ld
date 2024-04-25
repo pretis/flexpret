@@ -37,7 +37,7 @@ MEMORY
 
 OUTPUT_ARCH("riscv")
 
-ENTRY(__stext)
+ENTRY(_start)
 EXTERN(_vectors)
 SECTIONS
 {

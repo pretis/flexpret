@@ -15,6 +15,14 @@
 #include "common.h"
 #include "../../programs/lib/include/flexpret_hwconfig.h"
 
+static pin_event_t long_interrupt[] = {
+    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 0, .high_low = HIGH },
+
+    // Wait a long time before setting low again to test that we don't end in
+    // an infinite interrupt cycle
+    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 1000 * NUM_THREADS, .high_low = LOW  },    
+};
+
 static pin_event_t interrupt[] = {
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 0, .high_low = HIGH },
 
@@ -30,6 +38,12 @@ int main(int argc, char *const* argv)
     int client_fd = setup_socket();
     
     sleep(3);
+    if (send(client_fd, long_interrupt, sizeof(long_interrupt), 0) < 0) {
+        printf("Could not send long interrupt\n");
+    }
+
+    usleep((int) (10e4 * NUM_THREADS));
+
     for (int i = 0; i < 50; i++) {
         if (send(client_fd, interrupt, sizeof(interrupt), 0) < 0) {
             break;

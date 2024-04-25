@@ -12,6 +12,8 @@
 #include "flexpret_assert.h"
 #include "flexpret_time.h"
 #include "flexpret_exceptions.h"
+#include "flexpret_wb.h"
+#include "flexpret_uart.h"
 
 #include <printf/printf.h>
 

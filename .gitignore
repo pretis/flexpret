@@ -15,6 +15,7 @@ firrtl.jar
 
 # Generated files
 **/*.mem
+**/*.mem.serialized
 **/*.out
 **/*.dump
 **/*.vcd
@@ -24,6 +25,7 @@ firrtl.jar
 **/*.dump
 **/*.a
 **/*.elf
+**/callgraph
 
 **/fp-emu
 
@@ -39,4 +41,5 @@ programs/lib/include/flexpret_hwconfig.h
 programs/lib/include/flexpret_swconfig.h
 programs/lib/linker/flexpret_hwconfig.ld
 programs/lib/linker/flexpret_swconfig.ld
+programs/lib/linker/flexpret_bootloader_config.ld
 hwconfig.mk

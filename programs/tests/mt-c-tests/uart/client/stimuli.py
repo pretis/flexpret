@@ -2,8 +2,8 @@ import socket as s
 import struct
 import time
 
-CLOCKFREQ     = int(100e6)
-UART_BAUDRATE = 38400
+CLOCKFREQ     = int(50e6)
+UART_BAUDRATE = 9600
 CLKS_PER_BAUD = int(CLOCKFREQ / UART_BAUDRATE)
 
 def make_uart_float(pin, value):
@@ -62,7 +62,7 @@ with open('data.txt', 'r') as f:
 
 time.sleep(1)
 transmit(UART_PIN_0, data)
-time.sleep(4)
-transmit(UART_PIN_1, data)
-time.sleep(4)
-transmit(UART_PIN_0, data)
+#time.sleep(12)
+#transmit(UART_PIN_1, data)
+#time.sleep(12)
+#transmit(UART_PIN_0, data)

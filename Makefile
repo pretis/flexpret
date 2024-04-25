@@ -19,6 +19,7 @@
 SRC_DIR = src/main/scala
 
 # Directories
+FLEXPRET_ROOT_DIR = .
 FPGA_DIR = fpga
 EMULATOR_DIR = emulator
 SCRIPTS_DIR = scripts
@@ -28,6 +29,10 @@ RESOURCE_DIR = src/main/resources
 
 VERILOG_VERILATOR = $(BUILD_DIR)/VerilatorTop.v
 VERILOG_FPGA = $(BUILD_DIR)/FpgaTop.v
+FPGA_BOOTLOADER_LOCATION := programs/tests/c-tests/bootloader
+FPGA_BOOTLOADER := $(FPGA_BOOTLOADER_LOCATION)/bootloader.mem
+
+FPGA_BOARD ?= zedboard
 
 # Test directory
 TEST_DIR = programs/tests
@@ -46,10 +51,10 @@ THREADS ?= 4
 FLEXPRET ?= false
 
 # ISPM_KBYTES=[]: Size of instruction scratchpad memory (32 bit words)
-ISPM_KBYTES ?= 256
+ISPM_KBYTES ?= 64
 
 # DSPM_KBYTES=[]: Size of data scratchpad memory (32 bit words)
-DSPM_KBYTES ?= 256
+DSPM_KBYTES ?= 64
 
 # MUL=[true/false]: multiplier
 MUL ?= false
@@ -60,6 +65,9 @@ MUL ?= false
 # 	ti: ex+timing instructions
 # 	all: ti+ all exception causes and stats
 SUFFIX ?= all
+
+# In MHz
+CLK_FREQ ?= 100
 
 # Target
 # TARGET=[emulator/fpga]: Select target
@@ -77,10 +85,10 @@ PROG_CONFIG ?= $(TARGET)
 
 # Construct core configuration string (used for directory naming).
 # Note: '?=' not used so string is only constructed once.
-CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d$(if $(findstring true, $(MUL)),-mul)-$(SUFFIX)
+CORE_CONFIG := $(THREADS)t$(if $(findstring true, $(FLEXPRET)),f)@$(CLK_FREQ)MHz-$(ISPM_KBYTES)i-$(DSPM_KBYTES)d$(if $(findstring true, $(MUL)),-mul)-$(SUFFIX)
 
 
-all: emulator
+all: $(TARGET)
 # -----------------------------------------------------------------------------
 #  Verilator Emulator
 # -----------------------------------------------------------------------------
@@ -102,7 +110,10 @@ emulator: $(VERILOG_VERILATOR) $(EMULATOR_BIN) $(CLIENTS)
 $(VERILOG_FPGA):
 	sbt 'run fpga "$(CORE_CONFIG)" --no-dedup --target-dir $(BUILD_DIR)'
 
-fpga: $(VERILOG_FPGA)
+$(FPGA_BOOTLOADER):
+	make -C $(FPGA_BOOTLOADER_LOCATION)
+
+fpga: $(VERILOG_FPGA) $(FPGA_BOOTLOADER)
 
 # -----------------------------------------------------------------------------
 #  Tests
@@ -125,6 +136,7 @@ remulator: clean emulator
 clean:
 	rm -rf $(FPGA_DIR)/generated-src
 	rm -rf $(FPGA_DIR)/build
+	rm -f $(FPGA_DIR)/*/flexpret/DualPortBram.v $(FPGA_DIR)/*/flexpret/flexpret.v $(FPGA_DIR)/*/flexpret/ispm.mem
 	rm -f $(EMULATOR_BIN)
 	rm -rf ./build
 	rm -rf emulator/obj_dir
@@ -139,14 +151,8 @@ clean:
 	echo "" >> ./hwconfig.mk
 	make -C programs/tests clean
 
-
 # Clean for all configurations, targets, and test outputs.
-cleanall:
-	rm -rf $(FPGA_DIR)/generated-src
-	rm -rf $(FPGA_DIR)/build
-	rm -f $(EMULATOR_BIN)
-	rm -rf ./build
-	rm -rf emulator/obj_dir
+cleanall: clean
 	rm -f emulator/$(MODULE).sim.v
 	rm -rf out
 	rm -f firrtl.jar
@@ -155,5 +161,7 @@ cleanall:
 	rm -rf $(CLIENT_BUILD_DIR)
 	rm -rf test_run_dir
 	cd $(TEST_DIR) && $(MAKE) clean
+	
+	make -C fpga clean
 
 .PHONY: run fpga emulator remulator firrtl_raw verilog_raw clean cleanall test unit-test integration-test

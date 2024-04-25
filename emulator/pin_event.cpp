@@ -27,7 +27,7 @@
 
 #define NUM_GPI (4)
 #define MAX_NUM_THREADS (8)
-#define NUM_PINS (MAX_NUM_THREADS + (NUM_GPI * 32))
+#define NUM_PINS (MAX_NUM_THREADS + (NUM_GPI * 32) + 2)
 
 typedef struct {
     uint64_t ncycles;
@@ -45,33 +45,33 @@ static int new_socket = 0;
 
 static inline void set_pin(uint32_t which_pin, VVerilatorTop *top, uint8_t val)
 {
-    if (PIN_IO_GPI_0(0) <= which_pin && which_pin <= PIN_IO_GPI_0(31)) {
+    if (PIN_IO_GPI_0(0) <= which_pin && which_pin < PIN_IO_GPI_0(GPI_PORT_SIZE)) {
         uint32_t mask = (1 << (which_pin - PIN_IO_GPI_0(0)));
         if (val == HIGH) {
-            top->io_gpi_0 |= mask;
+            top->io_gpio_in_0 |= mask;
         } else {
-            top->io_gpi_0 &= ~mask;
+            top->io_gpio_in_0 &= ~mask;
         }
-    } else if (PIN_IO_GPI_1(0) <= which_pin && which_pin <= PIN_IO_GPI_1(31)) {
+    } else if (PIN_IO_GPI_1(0) <= which_pin && which_pin < PIN_IO_GPI_1(GPI_PORT_SIZE)) {
         uint32_t mask = (1 << (which_pin - PIN_IO_GPI_1(0)));
         if (val == HIGH) {
-            top->io_gpi_1 |= mask;
+            top->io_gpio_in_1 |= mask;
         } else {
-            top->io_gpi_1 &= ~mask;
+            top->io_gpio_in_1 &= ~mask;
         }
-    } else if (PIN_IO_GPI_2(0) <= which_pin && which_pin <= PIN_IO_GPI_2(31)) {
+    } else if (PIN_IO_GPI_2(0) <= which_pin && which_pin < PIN_IO_GPI_2(GPI_PORT_SIZE)) {
         uint32_t mask = (1 << (which_pin - PIN_IO_GPI_2(0)));
         if (val == HIGH) {
-            top->io_gpi_2 |= mask;
+            top->io_gpio_in_2 |= mask;
         } else {
-            top->io_gpi_2 &= ~mask;
+            top->io_gpio_in_2 &= ~mask;
         }
-    } else if (PIN_IO_GPI_3(0) <= which_pin && which_pin <= PIN_IO_GPI_3(31)) {
+    } else if (PIN_IO_GPI_3(0) <= which_pin && which_pin < PIN_IO_GPI_3(GPI_PORT_SIZE)) {
         uint32_t mask = (1 << (which_pin - PIN_IO_GPI_3(0)));
         if (val == HIGH) {
-            top->io_gpi_3 |= mask;
+            top->io_gpio_in_3 |= mask;
         } else {
-            top->io_gpi_3 &= ~mask;
+            top->io_gpio_in_3 &= ~mask;
         }
     }
     switch (which_pin)
@@ -100,6 +100,8 @@ static inline void set_pin(uint32_t which_pin, VVerilatorTop *top, uint8_t val)
 #if NUM_THREADS >= 8
     case PIN_IO_INT_EXTS_7: top->io_int_exts_7 = val; break;
 #endif
+
+    case PIN_IO_UART_RX: top->io_uart_rx = val; break;
     default:
         break;
     }

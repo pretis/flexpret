@@ -16,6 +16,7 @@
 
 void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);
+void print_int_fsm(const int tid, const uint32_t reg);
 
 uint64_t timestamp = 0;
 
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
 
   bool trace_enabled = false;
   bool pin_client_enabled = false;
+  bool allow_imem_store = false;
 
   for (int i = 1; i< argc; i++) {
     if (!strcmp(argv[i], "--trace")) {
@@ -82,6 +84,11 @@ int main(int argc, char* argv[]) {
     if (!strcmp(argv[i], "--client")) {
       std::cout << "Pin client enabled" << std::endl;
       pin_client_enabled = true;
+    }
+
+    if (!strcmp(argv[i], "--allow-imem-store")) {
+      std::cout << "IMEM store allowed" << std::endl;
+      allow_imem_store = true;
     }
   }
 
@@ -101,13 +108,15 @@ int main(int argc, char* argv[]) {
     eventlist_accept_clients();
   }
 
+  top->io_uart_rx = 1;
+
   int ncycles = 0;
   
   // Check for abort signals from FlexPRET and propagate the exit code
   // by returning it from the emulator
   bool should_exit = false;
   bool unknown_reason = true;
-  int exit_in_n_cycles = 0;
+  int exit_in_n_cycles = 10;
   while (!Verilated::gotFinish()) {
     // Hold reset high the two first clock cycles.
     if (timestamp <= 2) {
@@ -120,11 +129,11 @@ int main(int argc, char* argv[]) {
     top->eval();
     timestamp++;
 
-    if (top->io_imem_store) {
-      printf("warn: IMEM store\n");
+    // Does not work when emulating bootloader
+    if (top->io_imem_store && !allow_imem_store) {
+      printf("IMEM store when not allowed\n");
       should_exit = true;
       unknown_reason = false;
-      exit_in_n_cycles = 10;
     }
 
     if (trace_enabled) {
@@ -165,6 +174,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < NUM_THREADS; i++) {
       printf_fsm(i, get_to_host(i, top));
+      print_int_fsm(i, get_to_host(i, top));
     }
   }
 

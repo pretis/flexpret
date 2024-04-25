@@ -79,7 +79,10 @@ int main(void) {
     run_simultaneous_tests(nthreads, trigger_wu_same_time, (void **) triggers);
 
     printf("trigger_wu_same_time passed\n");
-
+    
+    do_run(nthreads, test_long_interrupt);
+    do_run(nthreads, test_external_interrupt);
+    do_run(nthreads, test_external_interrupt_disabled);
     do_run(nthreads, test_two_interrupts);
     do_run(nthreads, test_two_interrupts);
     do_run(nthreads, test_disabled_interrupts);

@@ -20,7 +20,7 @@ class DatapathTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Datapath"
 
   val threads = 1
-  val conf = FlexpretConfiguration(threads=threads, flex=false,
+  val conf = FlexpretConfiguration(threads=threads, flex=false, clkFreq=100000000,
     InstMemConfiguration(bypass=false, sizeKB=512),
     dMemKB=512, mul=false, priv=false, features="all")
   def datapath = new Datapath(debug=true)(conf=conf)

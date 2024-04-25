@@ -19,7 +19,13 @@ all: compile
 include $(FLEXPRET_ROOT_DIR)/swconfig.mk
 include $(FLEXPRET_ROOT_DIR)/programs/lib/Makefrag-lib
 
+ifeq ($(TARGET),emulator)
 LINKER_SCRIPT ?= $(FP_LIB_DIR)/linker/flexpret.ld
+else
+LINKER_SCRIPT ?= $(FP_LIB_DIR)/linker/flexpret_app.ld
+endif
+
+
 RISCV_PREFIX = riscv32-unknown-elf-
 CC = $(RISCV_PREFIX)gcc
 AR = $(RISCV_PREFIX)ar
@@ -27,9 +33,12 @@ OBJDUMP := $(RISCV_PREFIX)objdump
 OBJCOPY := $(RISCV_PREFIX)objcopy
 EMU ?= $(FLEXPRET_ROOT_DIR)/emulator/fp-emu # Verilator C++ emulator
 
-CFLAGS += -g -static -O0 -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
+CFLAGS += -g -static -Os -ffunction-sections -fdata-sections -Wl,--gc-sections -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -Werror=stack-usage=$(STACKSIZE) $(APP_DEFS) $(DEFINES)
 INCS += $(LIB_INCS) $(APP_INCS)
 LFLAGS += -T $(LINKER_SCRIPT) -L $(FP_LIB_DIR)/linker -Xlinker -Map=$(NAME).map 
+
+ALL_SOURCES := $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+ALL_OBJECTS := $(patsubst %.c,%.o,$(ALL_SOURCES))
 
 ifeq ($(WANT_DEBUG),true)
 CFLAGS += -fstack-protector-all
@@ -48,8 +57,11 @@ autogen: $(LIB_AUTOGEN)
 # Compiles a C program into a riscv ELF file.
 riscv: $(NAME).riscv
 
-%.riscv: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
-	$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
+%.o: %.c
+	@$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -c $< -o $@
+
+%.riscv: $(ALL_OBJECTS)
+	@$(CC) $(LFLAGS) $(CFLAGS) $(INCS) -o $*.riscv $^
 
 # Generates a dump file for debugging
 dump: $(NAME).dump
@@ -72,7 +84,41 @@ else
 	@$(CLIENT_CMD) &
 	@$(EMU) +ispm=$^ --client
 	@wait
+	@killall $(CLIENT)
 endif
+
+WARNING := \033[0;33mEnsure $(NAME).mem was compiled with TARGET=fpga, otherwise it will immediately crash\e[0m
+
+# Variables used to transfer (flash) a compiled program from the host computer
+# to FlexPRET
+# Only relevant when using FlexPRET on FPGA
+USB_PATH ?= /dev/ttyUSB0
+FPGA_FLASH_BAUDRATE ?= 115200
+
+# Makes flashing programs easy by just typing `make flash` after compiling a program
+# The program is first serialized to make it adhere to the transfer protocol
+flash: $(NAME).mem
+	@echo -e "$(WARNING)"
+	@python3 $(FLEXPRET_ROOT_DIR)/scripts/serialize_app.py $< $<.serialized
+	@python3 $(FLEXPRET_ROOT_DIR)/scripts/send_uart.py $(USB_PATH) $(FPGA_FLASH_BAUDRATE) $<.serialized
+
+# Similar to `make flash`, `make pico` can be used to easily read/write on the
+# UART device
+# --imap lfcrlf fixes and issue with how FlexPRET's output looks
+pico:
+	picocom -b $(FPGA_FLASH_BAUDRATE) $(USB_PATH) --imap lfcrlf
+
+CALLGRAPH_TOP_FUNCTION ?= main
+
+# Generates a callgraph for a given program, with its root in `CALLGRAPH_TOP_FUNCTION`
+# This can be used to better understand the flow in programs
+callgraph: autogen callgraph.svg
+callgraph.svg: $(STARTUP_SOURCES) $(APP_SOURCES) $(LIB_SOURCES)
+	@$(CC) -fdump-rtl-expand $(LFLAGS) $(CFLAGS) $(INCS) -o $(NAME).riscv $^
+	@mkdir -p callgraph && mv *.expand callgraph
+	@egypt callgraph/*.expand > callgraph/expands.txt 
+	@python3 $(FLEXPRET_ROOT_DIR)/scripts/callgraph.py $(CALLGRAPH_TOP_FUNCTION)
+	@cat callgraph/expands.txt.modified | dot -Tsvg -o callgraph/callgraph.svg
 
 # Clean and recompile
 recompile: clean compile
@@ -81,4 +127,5 @@ recompile: clean compile
 # Double colon makes it possible to extend the target
 clean::
 	rm -f *.vcd *.mem *.riscv *.map *.out *.dump *.orig *.a *.app
+	rm -rf callgraph
 	rm -f $(LIB_AUTOGEN)

@@ -51,11 +51,16 @@ typedef struct {
 #define PIN_IO_INT_EXTS_6 6
 #define PIN_IO_INT_EXTS_7 7
 
-// Each GPI_x has 32 pins
-#define PIN_IO_GPI_0(pin) (pin + 8)
-#define PIN_IO_GPI_1(pin) (pin + 40)
-#define PIN_IO_GPI_2(pin) (pin + 72)
-#define PIN_IO_GPI_3(pin) (pin + 104)
+// Each GPI_x has 1 pin (but can and should be expanded in the future)
+#define GPI_PORT_SIZE (1)
+#define PIN_IO_GPI_0(pin) (pin + 7 + (1 * GPI_PORT_SIZE))
+#define PIN_IO_GPI_1(pin) (pin + 7 + (2 * GPI_PORT_SIZE))
+#define PIN_IO_GPI_2(pin) (pin + 7 + (3 * GPI_PORT_SIZE))
+#define PIN_IO_GPI_3(pin) (pin + 7 + (4 * GPI_PORT_SIZE))
+
+#define PIN_UART_START (PIN_IO_GPI_3(GPI_PORT_SIZE))
+#define PIN_IO_UART_RX (PIN_UART_START + 1)
+#define PIN_IO_UART_TX (PIN_UART_START + 2)
 
 
 // Add more here...

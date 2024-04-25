@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "flexpret.h"
+#include <flexpret.h>
 
 uint32_t add(uint32_t a, uint32_t b) {
     return a + b;

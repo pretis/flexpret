@@ -5,6 +5,7 @@
 
 #include <flexpret.h>
 #include <errno.h>
+#include <setjmp.h>
 
 typedef void (*isr_t)(void);
 
@@ -14,17 +15,45 @@ static isr_t ee_int_handler[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(NULL);
 
 struct thread_ctx_t contexts[NUM_THREADS];
 
+/**
+ * These variables are used to implement the `fp_int_on_expire` and 
+ * `fp_exc_on_expire` found in `flexpret_exceptions.h`. The buffer is
+ * used to be able to jump, and the active variables below are used to
+ * determine whether we should jump or not.
+ *
+ */
+jmp_buf __ie_jmp_buf[NUM_THREADS];
+jmp_buf __ee_jmp_buf[NUM_THREADS];
+
+bool    __ie_jmp_buf_active[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+bool    __ee_jmp_buf_active[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+
 // We mark it with attribute noretun because the function will not return
 // to fp_exception_handler, but instead to where the exception occurred.
 void thread_ctx_switch_load(void) __attribute__((noreturn));
 void thread_ctx_switch_store(void);
 
 #ifndef NDEBUG
+/**
+ * `__stack_chk_guard` and `__stack_chk_fail` are part of the `-fstack-protector`
+ * compiler flag. The flag enables checking the stack before and after function
+ * calls to detect errors.
+ * 
+ * `__stack_chk_fail` is called if an error is detected. We override the default
+ * implementation with a custom one that prints out the link register and
+ * stack pointer - which probably are helpful to know in this case.
+ *
+ * The printing of the registers involves a few function calls in itself, and if
+ * the stack is broken this may or may not fail. But it is better to try.
+ *
+ */
 uint32_t __stack_chk_guard = STACK_GUARD_INITVAL;
 
 FP_TEST_OVERRIDE
 void __stack_chk_fail(void) {
-    _fp_abort("Stack check failed");
+    register uint32_t linkreg = rdlinkreg();
+    register uint32_t stack_ptr = rdstackptr();
+    _fp_abort("Stack check failed: link register (%p), stack ptr (%p)\n", linkreg, stack_ptr);
 }
 #endif // NDEBUG
 
@@ -75,10 +104,25 @@ void fp_exception_handler(void) {
     } else {
         fp_assert(false, "Exception not handled: %i, %s\n", cause, exception_to_str(cause));
     }
-    
-    // Call the function to load the thread's context
-    // In ctx_switch.S
-    thread_ctx_switch_load();
+
+    if (__ie_jmp_buf_active[hartid] && cause == EXC_CAUSE_INTERRUPT_EXPIRE) {
+        /**
+        * We get here if an interrupt expire occurred between `fp_int_on_expire`
+        * and `fp_int_on_expire_cancel`. (I.e., the interrupt did expire.)
+        * 
+        * In this case we jump back to the initial `setjmp` call in the 
+        * `fp_int_on_expire`, which ultimately runs `goto cleanup`.
+        *
+        */
+        longjmp(__ie_jmp_buf[hartid], 1);
+    } else if (__ee_jmp_buf_active[hartid] && cause == EXC_CAUSE_EXCEPTION_EXPIRE) {
+        // Same as above, but for exceptions
+        longjmp(__ee_jmp_buf[hartid], 1);
+    } else {
+        // Call the function to load the thread's context
+        // In ctx_switch.S
+        thread_ctx_switch_load();
+    }
 }
 
 void setup_exceptions() {

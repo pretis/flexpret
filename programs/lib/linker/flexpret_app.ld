@@ -1,67 +1,73 @@
 OUTPUT_ARCH("riscv")
 
-INCLUDE flexpret_config.ld
+INCLUDE flexpret_hwconfig.ld
+INCLUDE flexpret_swconfig.ld
+INCLUDE flexpret_bootloader_config.ld
+
+ISPM_BOOTLOADER_END = BOOTLOADER_APP_START_ADDR;
+DSPM_BOOTLOADER_END = DSPM_START;
+
+TOTAL_STACKSIZES = STACKSIZE * NUM_THREADS;
+
 MEMORY
 {
-    ROM (rx)  : ORIGIN = ISPM_APP_START, LENGTH = ISPM_END - ISPM_APP_START
-    RAM (rwx) : ORIGIN = DSPM_APP_START, LENGTH = DSPM_END - DSPM_APP_START
+    ROM (rx)  : ORIGIN = ISPM_BOOTLOADER_END, LENGTH = ISPM_END - ISPM_BOOTLOADER_END
+    RAM (rwx) : ORIGIN = DSPM_BOOTLOADER_END, LENGTH = DSPM_END - DSPM_BOOTLOADER_END
+    STACK (rw) : ORIGIN = DSPM_END - TOTAL_STACKSIZES, LENGTH = TOTAL_STACKSIZES
 }
 
+OUTPUT_ARCH("riscv")
+
+ENTRY(_start)
+EXTERN(_vectors)
 SECTIONS
 {
-    .text :
-    {
+    .text : {
+        __stext = ABSOLUTE(.);
+        *(.vectors)
         *(.isr_vector)
-        *(.text*)
-        *(.eh_frame*)
-
-        /* All text end */
+        *(.text .text.*)
+        *(.eh_frame)
         . = ALIGN(4);
-        __etext = .;
+        __etext = ABSOLUTE(.);
     } > ROM
 
-    .data :
-    {
-        __data_start__ = .;
+    .data : ALIGN(4) {
+        __sdata = ABSOLUTE(.);
         *(.data .data.*)
-        *(.rodata*)
-        *(.gnu.linkonce.d.*)
-    } > RAM AT> ROM
-
-    .sdata :
-    {
-        /* Configure global pointer: https://www.sifive.com/blog/all-aboard-part-3-linker-relaxation-in-riscv-toolchain */
-        . = ALIGN(4);
-        PROVIDE( __global_pointer$ = . + 0x800 );
-
         *(.sdata .sdata.* .sdata2.*)
-        *(.srodata.*)
+        *(.rodata .rodata.* .srodata .srodata.*)
+        *(.gnu.linkonce.d.*)
         *(.gnu.linkonce.s.*)
-
-        /* All data end */
+        CONSTRUCTORS
         . = ALIGN(4);
-        __data_end__ = .;
-        
-    } > RAM AT> ROM
+        __edata = ABSOLUTE(.);
+    } > RAM AT > ROM
 
-    .bss :
-    {
-        __bss_start__ = .;
-        *(.bss)
-        *(.bss.*)
+    PROVIDE(__global_pointer$ = __sdata + ((__edata - __sdata) / 2));
+
+    .bss : ALIGN(4) {
+        __sbss = ABSOLUTE(.);
+        *(.bss .bss.*)
+        *(.sbss .sbss.*)
         *(.gnu.linkonce.b.*)
+        *(.gnu.linkonce.sb.*)
+        *(COMMON)
+        . = ALIGN(32);
+        __ebss = ABSOLUTE(.);
     } > RAM
 
-    .sbss :
-    {
-        *(.sbss)
-        *(.sbss.*)
+    __end = ABSOLUTE(.);
 
-        /* All bss end */
-        . = ALIGN(4);
-        __bss_end__ = .;
+    .heap : ALIGN(4) {
+        __sheap = ABSOLUTE(.);
+        __eheap = ABSOLUTE(DSPM_END - TOTAL_STACKSIZES);
     } > RAM
 
-    end = .;
+    .stack : ALIGN(4) {
+        __estack = ABSOLUTE(.);
+        __sstack =  ABSOLUTE(. + TOTAL_STACKSIZES);
+    } > STACK
+
+    PROVIDE(__stack_start$ = __sstack);
 }
-

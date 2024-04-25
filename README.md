@@ -146,7 +146,7 @@ This will run all single-threaded test cases if the FlexPRET configuration has a
 
 ## Running on FPGA
 
-Magnus: To be written. Will be done on fpga branch.
+Refer to the [FPGA README](./fpga/README.md) for more information on this.
 
 # Troubleshooting
 
@@ -157,8 +157,6 @@ Ensure all git submodules are initialized and up-to-date.
 ```
 git submodule update --init --recursive
 ```
-
-
 
 # Directory Structure
 - `build/` Temporary folder used as part of the build
