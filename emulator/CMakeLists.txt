@@ -2,7 +2,7 @@ add_custom_target(fp-emu ALL DEPENDS
   "${CMAKE_CURRENT_BINARY_DIR}/fp-emu"
 )
 
-# TODO: Emulator clients
+add_subdirectory(clients)
 
 # Run Verilator and copy its final executable to the expected location
 # For some reason, Verilator does not seem to accept all arguments as a single
