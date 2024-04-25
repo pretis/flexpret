@@ -25,10 +25,15 @@ steps:
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objcopy ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objcopy
     # Update submodules
     git submodule update --init --recursive
+
+    # Source environment
+    source env.bash
   displayName: Prereqs
-- script: make unit-test
-  displayName: 'Unit tests'
-- script: make emulator
-  displayName: 'Generate verilog and build emulator'
-- script: (export PATH="$HOME/riscv-embed-gcc/bin:$PATH" && make integration-test)
+- script: sbt 'test'
+  displayName: 'FlexPRET hardware unit tests'
+- script: cd $FP_PATH && cmake -B build && cd build && make all install
+  displayName: 'Generate verilog, emulator and install it to SDK'
+- script: cd $FP_SDK_PATH && cmake -B build && cd build && make && ctest
   displayName: 'Run C tests'
+- script: ./scripts/run_multiple_tests.sh
+  displayName: 'Run C tests for multiple FlexPRET hardware configurations'
