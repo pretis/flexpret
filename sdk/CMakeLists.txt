@@ -67,8 +67,8 @@ add_library(fp-sdk-if INTERFACE)
 
 # Library with source files
 # This is the interface library + source code
-add_library(fp-sdk STATIC EXCLUDE_FROM_ALL)
-target_link_libraries(fp-sdk PUBLIC fp-sdk-if)
+add_library(fp-sdk INTERFACE)
+target_link_libraries(fp-sdk INTERFACE fp-sdk-if)
 
 # Make sdk dependent on these files so it will detect changes to them
 target_sources(fp-sdk-if INTERFACE ${FP_INSTALLED_FILES})

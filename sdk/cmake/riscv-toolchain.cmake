@@ -32,7 +32,7 @@ set(CMAKE_STRIP "${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}strip")
 set(CMAKE_OBJDUMP "${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}objdump")
 set(CMAKE_OBJCOPY "${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}objcopy")
 
-set(RISCV_COMPILER_FLAGS "-g -static -Os -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs")
+set(RISCV_COMPILER_FLAGS "-g -Os -static -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -ffunction-sections -fdata-sections -Wl,--gc-sections")
 set(RISCV_COMPILER_FLAGS_CXX)
 set(RISCV_COMPILER_FLAGS_DEBUG)
 set(RISCV_COMPILER_FLAGS_RELEASE)
