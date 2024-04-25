@@ -144,7 +144,7 @@ This will build a number of FlexPRET configurations and run the unit tests on al
 
 ## Running on FPGA
 
-Magnus: To be written. Will be done on fpga branch.
+Refer to the [FPGA README](./fpga/README.md) for more information on this.
 
 # Troubleshooting
 
@@ -155,8 +155,6 @@ Ensure all git submodules are initialized and up-to-date.
 ```
 git submodule update --init --recursive
 ```
-
-
 
 # Directory Structure
 - `àpps/` Some example applications which exemplify how to build your own application
@@ -173,7 +171,6 @@ git submodule update --init --recursive
   - `Core/` FlexPRET processor (and baseline processors) in Chisel
   - `uart/` Verilog code for UART
 - `src/test/scala/` Unit tests
-
 
 # Chisel
 We use Chisel version 3.5.5.

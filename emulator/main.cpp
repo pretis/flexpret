@@ -14,6 +14,8 @@
 
 #include "pin_event.h"
 
+#include "pin_event.h"
+
 void printf_init(void);
 void printf_fsm(const int tid, const uint32_t reg);
 void print_int_fsm(const int tid, const uint32_t reg);
@@ -129,14 +131,12 @@ int main(int argc, char* argv[]) {
     top->eval();
     timestamp++;
 
-#if 1
     // Does not work when emulating bootloader
     if (top->io_imem_store && !allow_imem_store) {
       printf("IMEM store when not allowed\n");
       should_exit = true;
       unknown_reason = false;
     }
-#endif
 
     if (trace_enabled) {
       trace->dump(10*timestamp);

@@ -1,7 +1,11 @@
 `timescale 1ns / 1ps
 
 module Top(
+<<<<<<< HEAD
   input GCLK,
+=======
+  input INPUT_CLOCK,
+>>>>>>> master
   input RESET,
   output [6:0] LEDS,
   input [1:0] SWS,
@@ -22,7 +26,11 @@ module Top(
       .reset(RESET), 
       .locked(locked),
      // Clock in ports
+<<<<<<< HEAD
       .clk_in1(GCLK)
+=======
+      .clk_in1(INPUT_CLOCK)
+>>>>>>> master
   );
  
   FpgaTop flexpret(

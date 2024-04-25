@@ -4,6 +4,8 @@
 
 #include <errno.h>
 
+#include <errno.h>
+
 /*************************************************
  * FlexPRET's hardware thread scheduling functions
  * These functions assume that a lock is held
@@ -211,14 +213,14 @@ bool volatile           exit_requested[FP_THREADS];
 // currently processing routines.
 // If this is 0, the main thread can
 // safely terminate the execution.
-volatile uint32_t FP_THREADS_busy = 0;
+volatile uint32_t num_threads_busy = 0;
 
 // Keep track of the number of threads
 // currently marked as EXITED.
 // FIXME: Once a worker thread exits,
 // it should have completed executing
 // some pre-registered clean-up handlers.
-volatile uint32_t FP_THREADS_exited = 0;
+volatile uint32_t num_threads_exited = 0;
 
 
 /* Pthreads-like threading library functions */
@@ -244,7 +246,7 @@ static int assign_hartid(
 ) {
     routines[hartid] = (volatile void *(*)(void *))(start_routine);
     args[hartid] = arg;
-    FP_THREADS_busy += 1;
+    num_threads_busy += 1;
 
     // Signal the worker thread to do work.
     in_use[hartid] = true;
@@ -378,7 +380,7 @@ void worker_main() {
     // If so, mark the thread as not in use.
     if (val == 1) {
         fp_hwlock_acquire();
-        FP_THREADS_busy -= 1;
+        num_threads_busy -= 1;
         in_use[hartid] = false;
         fp_hwlock_release();
     }
@@ -404,7 +406,7 @@ void worker_main() {
 
             // Mark the thread as available again.
             fp_hwlock_acquire();
-            FP_THREADS_busy -= 1;
+            num_threads_busy -= 1;
             in_use[hartid] = false;
             fp_hwlock_release();
         }
@@ -414,7 +416,7 @@ void worker_main() {
 
     // Increment the counter of exited threads.
     fp_hwlock_acquire();
-    FP_THREADS_exited += 1;
+    num_threads_exited += 1;
     fp_hwlock_release();
 
     return;

@@ -67,7 +67,6 @@ elif sys.argv[1] == 'third' and bootloader_first_exist and bootloader_exist:
         path_bl_final.unlink()
         exit(1)
     else:
-        print('Generate')
         with open(sdk_folder / 'flexpret' / 'bootloader.cmake', 'w') as f:
             f.write(f'set(BOOTLOADER_SIZE {4*lines_bl_final})')
 else:

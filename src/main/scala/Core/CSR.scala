@@ -390,7 +390,6 @@ class CSR(confHash: UInt, implicit val conf: FlexpretConfiguration) extends Modu
     // can be handled here; for now just the machine exceptions are handled
     when(io.exception) {
       when (reg_compare_du_wu_type(io.rw.thread) === TIMER_WU) {
-
         // If we have exception and mret at the same time, it means the interrupt
         // signal probably stayed on for the duration of the interrupt. In this
         // case we do not update the mepcs; we just run another interrupt with the

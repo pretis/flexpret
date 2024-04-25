@@ -21,7 +21,7 @@
 #include <sys/socket.h>
 
 #include "common.h"
-#include "../../programs/lib/include/flexpret_internal/hwconfig.h"
+#include "../../build/hwconfig.h"
 
 static pin_event_t interrupt[] = {
     { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 10000, .high_low = HIGH },

@@ -1,4 +1,4 @@
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include <errno.h>
 #include <string.h>
 
@@ -342,6 +342,22 @@ void *test_external_interrupt(void *args) {
     fp_interrupt_enable();
     while (ext_int_flag[hartid] == 0);
     fp_interrupt_disable();
+}
+
+void *test_external_interrupt_disabled(void *args) {
+    (void) (args);
+    int hartid = read_hartid();
+
+    uint32_t timeout = 100*TIMEOUT_INIT;
+
+    register_isr(EXC_CAUSE_EXTERNAL_INT, ext_int_isr);
+    
+    // Do not enable interrupts and wait so there is time for an interrupt signal
+    // to come
+    while (ext_int_flag[hartid] == 0 && timeout--);
+
+    fp_assert(ext_int_flag[hartid] == 0, 
+        "External interrupt was triggered when disabled\n");
 }
 
 void *test_du_not_stopped_by_int(void *args) {

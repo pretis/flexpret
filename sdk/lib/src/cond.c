@@ -29,7 +29,7 @@ fp_ret_t fp_cond_timed_wait(fp_cond_t * cond, uint64_t timeout) {
 
 fp_ret_t fp_cond_signal(fp_cond_t * cond) {
     fp_lock_acquire(cond->lock);
-    for (int i = 0; i<FP_THREADS; i++) {
+    for (int i = 0; i < FP_THREADS; i++) {
         if (cond->waiting[i]) {
             cond->waiting[i] = false;
             break;
@@ -41,7 +41,7 @@ fp_ret_t fp_cond_signal(fp_cond_t * cond) {
 
 fp_ret_t fp_cond_broadcast(fp_cond_t * cond) {
     fp_lock_acquire(cond->lock);
-    for (int i = 0; i<FP_THREADS; i++) {
+    for (int i = 0; i < FP_THREADS; i++) {
         cond->waiting[i] = false;
     }
     fp_lock_release(cond->lock);

@@ -1,3 +1,8 @@
+# We do not install printf stuff anyway, so this just removes a warning
+if (NOT DEFINED CMAKE_INSTALL_LIBDIR)
+  set(CMAKE_INSTALL_LIBDIR "")
+endif()
+
 set(BUILD_STATIC_LIBRARY True)
 add_subdirectory(printf EXCLUDE_FROM_ALL)
   

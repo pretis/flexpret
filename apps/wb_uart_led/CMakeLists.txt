@@ -9,6 +9,4 @@ target_link_libraries(wb_uart_led fp-sdk)
 
 # Add sdk as subdirectory
 add_subdirectory($ENV{FP_SDK_PATH} BINARY_DIR)
-
-# Must be below add_subdirectory because .riscv extension messes it
 fp_add_outputs(wb_uart_led)

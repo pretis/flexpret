@@ -13,7 +13,7 @@ object FlexpretConfiguration {
   def defaultCfg(): FlexpretConfiguration = {
     new FlexpretConfiguration(
       1,true,
-      50000000,
+      50,
       InstMemConfiguration(bypass=false, 256),
       24,
       false,

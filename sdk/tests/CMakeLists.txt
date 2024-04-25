@@ -29,5 +29,5 @@ endfunction()
 
 add_subdirectory(c-tests)
 if (${THREADS} GREATER 1)
-  add_subdirectory(mt-tests)
+  add_subdirectory(mt-c-tests)
 endif()

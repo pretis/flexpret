@@ -33,11 +33,10 @@
 #include <stdlib.h>
 
 #include "common.h"
-#include "../../programs/lib/include/flexpret_internal/hwconfig.h"
+#include "../../build/hwconfig.h"
 
-#define CLOCK_FREQUENCY ((uint32_t)(CLOCK_FREQ_MHZ * 1e6))  // MHz
-#define UART_BAUDRATE   (115200)             //  Hz
-#define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / UART_BAUDRATE)
+#define CLOCK_FREQUENCY ((uint32_t)(FP_CLK_FREQ_MHZ * 1e6))  // MHz
+#define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / FP_UART_BAUDRATE)
 
 #define EVENT_INITIALIZER(highlow) (pin_event_t) \
 { .pin = PIN_IO_UART_RX, .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }

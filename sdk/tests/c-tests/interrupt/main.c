@@ -1,4 +1,4 @@
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include "interrupt.h"
 
 #define do_run(test) do { \
@@ -8,6 +8,7 @@
 } while(0)
 
 int main(void) {
+    printf("Init\n");
     do_run(test_long_interrupt);
     do_run(test_two_interrupts);
     do_run(test_two_interrupts);
@@ -16,6 +17,7 @@ int main(void) {
     do_run(test_fp_delay_until);
     do_run(test_fp_wait_until);
     do_run(test_external_interrupt);
+    do_run(test_external_interrupt_disabled);
 
     if (!test_du_not_stopped_by_int(NULL)) {
         printf("delay for not stopped early (as expected)\n");
