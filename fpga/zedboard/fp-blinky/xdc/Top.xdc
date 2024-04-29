@@ -4,8 +4,8 @@
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
 ## Clock signal 100 MHz
-set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports {CLK_100MHZ_FPGA}];  # "GCLK"
-create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports CLK_100MHZ_FPGA]
+set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports {INPUT_CLOCK}];  # "GCLK"
+create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports INPUT_CLOCK]
 
 ## LEDs
 set_property -dict {PACKAGE_PIN T22 IOSTANDARD LVCMOS33} [get_ports {LEDS[0]}];  # "LD0"

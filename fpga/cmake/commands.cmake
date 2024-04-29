@@ -1,3 +1,15 @@
+if (NOT DEFINED TARGET_NAME)
+  message(FATAL_ERROR 
+    "TARGET_NAME must be set and define a target before including ${CMAKE_CURRENT_LIST_FILE}"
+  )
+endif()
+
+if (NOT EXISTS ${ISPM_FILE})
+  message(WARNING
+    "Could not find ${ISPM_FILE}. Targets that rely on this file will fail."
+  )
+endif()
+
 math(EXPR CLK_PERIOD_NS "1000 / ${CLK_FREQ_MHZ}" OUTPUT_FORMAT DECIMAL)
 math(EXPR CLK_HALF_PERIOD_NS "${CLK_PERIOD_NS} / 2" OUTPUT_FORMAT DECIMAL)
 
@@ -30,7 +42,19 @@ set(VIVADO_SOURCES
   "${CMAKE_CURRENT_BINARY_DIR}/rtl/DualPortBram.v"
   "${CMAKE_CURRENT_BINARY_DIR}/rtl/flexpret.v"
   "${CMAKE_CURRENT_BINARY_DIR}/rtl/Top.v"
-  "${CMAKE_CURRENT_BINARY_DIR}/xdc/Top.xdc"
+  "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
+  "${CMAKE_CURRENT_BINARY_DIR}/xdc/clock.xdc"
+)
+
+# Add Vivado sources to clean target
+set_property(
+  TARGET ${TARGET_NAME}
+  APPEND PROPERTY
+  ADDITIONAL_CLEAN_FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/xdc"
+    "${CMAKE_CURRENT_BINARY_DIR}/rtl"
+    "${CMAKE_CURRENT_BINARY_DIR}/tcl"
+    "${CMAKE_CURRENT_BINARY_DIR}/vivado"
 )
 
 add_custom_command(
@@ -56,10 +80,10 @@ add_custom_command(
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
   COMMAND "cp" 
-    "${PROJECT_SOURCE_DIR}/sdk/build/bootloader/bootloader.mem"
+    ${ISPM_FILE}
     "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
   DEPENDS 
-    "${PROJECT_SOURCE_DIR}/sdk/build/bootloader/bootloader.mem"
+    ${ISPM_FILE}
 )
 
 add_custom_command(
@@ -86,28 +110,33 @@ add_custom_command(
 )
 
 add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdc/Top.xdc"
-  COMMAND "cp"
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
+  COMMAND "cat"
+    "${CMAKE_CURRENT_BINARY_DIR}/xdc/clock.xdc"  
     "${CMAKE_CURRENT_SOURCE_DIR}/xdc/Top.xdc"
-    "${CMAKE_CURRENT_BINARY_DIR}/xdc/Top.xdc"
+    ">"
+    "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
 )
 
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
   COMMAND "cat" 
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/tcl/setup.tcl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/tcl/bitstream.tcl" ">"
+    "${FP_FPGA_BOARD_PATH}/tcl/setup.tcl"
+    "${FP_FPGA_BOARD_PATH}/tcl/bitstream.tcl" 
+    ">"
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
   DEPENDS 
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
+    "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
 )
 
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
   COMMAND "cat" 
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/tcl/flash.tcl" ">"
+    "${FP_FPGA_BOARD_PATH}/tcl/flash.tcl" 
+    ">"
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
   DEPENDS 
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"

@@ -10,19 +10,14 @@ puts "Adding design sources"
 #add_files -norecurse ispm.mem
 
 # Add verilog sources
-add_files -norecurse Top.v
+add_files -norecurse rtl/Top.v
 
 # Add constraints file
-add_files -fileset constrs_1 -norecurse zedboard_leds.xdc
+add_files -fileset constrs_1 -norecurse xdc/leds.xdc
 update_compile_order -fileset sources_1
 
-#puts "Creating clocking wizard IP"
-# Create clocking wizard IP to control the frequency of the CPU
-#create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_0
-#set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50} CONFIG.MMCM_CLKOUT0_DIVIDE_F {20.000} CONFIG.CLKOUT1_JITTER {151.636}] [get_ips clk_wiz_0]
-#update_compile_order -fileset sources_1
-
 puts "Running synthesis"
+
 # Synthesis
 reset_run synth_1
 launch_runs synth_1 -jobs 15
@@ -47,7 +42,7 @@ open_hw_target
 # TODO: Fix hard code path
 set thisFile [ dict get [ info frame 0 ] file ]
 set thisFolder [ file dirname thisFile ]
-set_property PROGRAM.FILE {/home/magnus/ntnu/mttk/host2023/project/flexpret/fpga/zedboard/leds/zedboard.bit} [get_hw_devices xc7z020_1]
+set_property PROGRAM.FILE { zedboard.bit } [get_hw_devices xc7z020_1]
 current_hw_device [get_hw_devices xc7z020_1]
 refresh_hw_device -update_hw_probes false [lindex [get_hw_devices xc7z020_1] 0]
 

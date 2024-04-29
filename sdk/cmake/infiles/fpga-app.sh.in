@@ -16,6 +16,7 @@ flashdev=@FP_FLASH_DEVICE@
 baudrate=@UART_BAUDRATE@
 imem_path=@IMEM_LOCATION@/@IMEM_NAME@
 imem_serialized_path=/tmp/@IMEM_NAME@.serialized
+interface_cmd_sourcefile="${FP_SDK_PATH}/cmake/utils/fpga-interface/@FP_INTERFACE_PROGRAM@.source"
 
 echo "Serializing app and placing its result in /tmp"
 python3 ${FP_PATH}/scripts/serialize_app.py ${imem_path} ${imem_serialized_path}
@@ -24,3 +25,34 @@ echo "Flashing serialized app on device ${flashdev} with baudrate ${baudrate}"
 
 # Script takes usb_path, baudrate, and file
 python3 ${FP_PATH}/scripts/send_uart.py ${flashdev} ${baudrate} ${imem_serialized_path}
+
+if [[ -z "${FP_SDK_FPGA_INTERFACE_PROGRAM}" ]]; then
+    exit 0
+fi
+# Source the user selected program to interface with the FPGA, e.g., `picocom.source`
+# This sets the `interface_cmd` variable
+source "$interface_cmd_sourcefile"
+
+# Print out info on how to interface with software
+echo "To interface with the FPGA, run:"
+echo "$interface_cmd"
+
+# Check if `xclip` exists
+if ! command -v xclip > /dev/null 2 >& 1
+then
+    # Let the user know they can install `xclip` to automatically get command
+    # copied to clipboard
+    echo "Install \`xclip\` to automatically copy command to clipboard."
+else
+    # We ask to copy command; do not want to overwrite clipboard if user
+    # has something important there
+    echo "Copy command to clipboard? [Y/n]"
+    read answer
+
+    # Default response is yes
+    if [ ! "$answer" != "${answer#[Nn]}" ] ; then 
+        # Copy command to clipboard
+        echo "$interface_cmd" | xclip -selection clipboard
+        echo "Command copied to clipboard. Use CTRL + V to paste."
+    fi
+fi

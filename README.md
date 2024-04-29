@@ -187,6 +187,16 @@ cd $FP_PATH/apps && ./bin/wb_uart_led
 
 This assumes correct hardware setup (refer to [FPGA README](./fpga/README.md)) and that the `TARGET` and `FP_FLASH_DEVICE` CMake variables are set correctly.
 
+If the environment variable `FP_SDK_FPGA_INTERFACE_PROGRAM` is set, the generated script will automatically tell you what command to run to interface with the uploaded software. E.g., if `FP_SDK_FPGA_INTERFACE_PROGRAM=picocom`, the script will print 
+
+```
+To interface with the FPGA, run:
+picocom -b 115200 /dev/ttyUSB0 --imap lfcrlf
+Copy command to clipboard? [Y/n]
+```
+
+which also lets you copy the command to your clipboard. A selection of interfaces are available in the `./sdk/cmake/utils/fpga-interface` folder. Feel free to add your favorite program.
+
 # Troubleshooting
 
 ## Submodules
@@ -198,7 +208,7 @@ git submodule update --init --recursive
 ```
 
 # Directory Structure
-- `àpps/` Some example applications which exemplify how to build your own application
+- `apps/` Some example applications which exemplify how to build your own application
 - `build/` Contains FlexPRET's build, including emulator and `.tcl` scripts for FPGA
 - `cmake/` Has configuration files, input files, and other utilities for the build system
 - `emulator/` Is the FlexPRET emulator along with some clients

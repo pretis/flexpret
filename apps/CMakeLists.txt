@@ -8,4 +8,8 @@ project(fp-apps
   VERSION 0.0.1
 )
 
+# Add sdk as subdirectory
+add_subdirectory($ENV{FP_SDK_PATH} BINARY_DIR)
+
 add_subdirectory(wb_uart_led)
+add_subdirectory(blinky)

@@ -1,4 +1,4 @@
-set(TARGET_NAME fp-fpga-bootloader)
+set(TARGET_NAME fp-fpga-blinky)
 
 add_custom_target(${TARGET_NAME} DEPENDS
   COMMAND "vivado" 
@@ -11,7 +11,7 @@ add_custom_target(${TARGET_NAME} DEPENDS
     "${CMAKE_CURRENT_BINARY_DIR}/bitstream.bit"
 )
 
-set(ISPM_FILE $ENV{FP_SDK_PATH}/build/bootloader/bootloader.mem)
+set(ISPM_FILE $ENV{FP_PATH}/apps/build/blinky/blinky.mem)
 
 # We want to include these commands because we do not want to type them out
 # for each FPGA project

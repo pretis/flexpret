@@ -36,6 +36,14 @@ function(fp_add_script_output target)
     if (NOT DEFINED FP_FLASH_DEVICE)
       set(FP_FLASH_DEVICE "/dev/ttyUSB0")
     endif()
+
+    if (NOT DEFINED ENV{FP_SDK_FPGA_INTERFACE_PROGRAM})
+      message("Did not find environment variable FP_SDK_FPGA_INTERFACE_PROGRAM, using ")
+      set(FP_INTERFACE_PROGRAM "picocom")
+    else()
+      message("Found environment variable FP_SDK_FPGA_INTERFACE_PROGRAM (=$ENV{FP_SDK_FPGA_INTERFACE_PROGRAM}).")
+      set(FP_INTERFACE_PROGRAM $ENV{FP_SDK_FPGA_INTERFACE_PROGRAM})
+    endif()
     
     # hwconfig.cmake contains UART_BAUDRATE variable
     include($ENV{FP_SDK_PATH}/flexpret/hwconfig.cmake)

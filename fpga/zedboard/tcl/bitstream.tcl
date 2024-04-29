@@ -1,4 +1,5 @@
 puts "Running synthesis"
+
 # Synthesis
 reset_run synth_1
 launch_runs synth_1 -jobs $nCores
