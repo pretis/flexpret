@@ -11,7 +11,7 @@ For more information on the processor architecture:
 # Tools and installation
 
 ## RISC-V Compiler
-We use the Newlib installation of the [rv32i-4.0.0](https://github.com/stnolting/riscv-gcc-prebuilt). Download and extract it to a convenient location on the PATH. Also set the `RISCV_TOOL_PATH_PREFIX` environment variable to the location of `bin/`. 
+We use the Newlib installation of the [rv32i-4.0.0](https://github.com/stnolting/riscv-gcc-prebuilt). Download and extract it to a convenient location on the PATH. Also set the `RISCV_TOOL_PATH_PREFIX` environment variable to the location of `bin/`. E.g., if you extracted the compiler to `/opt/riscv`, then `export RISCV_TOOL_PATH_PREFIX=/opt/riscv` is needed. We recommend adding this to your `~/.bashrc`.
 
 ## Verilator
 We use the `verilator` toolchain for running emulations of the core. Install it and check that the version is greater than 4.038.
@@ -58,7 +58,7 @@ cmake -B build && cd build
 make all install
 ```
 
-The `env.bash` file contains environment variables that must be set to build anything. Feel free to add sourcing it to your `.bashrc`. The install step will install a number of artifacts that describe FlexPRET's hardware configuration to the software development kit (SDK). Next, build the SDK like so
+The `env.bash` file contains environment variables that must be set to build anything. Feel free to add sourcing it to your `~/.bashrc`. The install step will install a number of artifacts that describe FlexPRET's hardware configuration to the software development kit (SDK). Next, build the SDK and run the tests like so:
 
 ```
 cd sdk
@@ -72,9 +72,11 @@ Note that the library is built from source for every test. This takes longer tim
 
 When cmake builds the tests, it also leaves one bash script per test in the `bin/` directory. These can be run directly:
 
-`./bin/add`
+```
+./bin/add
+```
 
-Under the hood, the script runs `fp-emu`, which the FlexPRET's emulator, with a `.mem` file.
+Under the hood, the script runs `fp-emu`, which the FlexPRET's emulator, with a `<program>.mem` file, which is the compiled program.
 
 # Running software
 
@@ -86,7 +88,7 @@ Note that software compiled for the emulator and FPGA are not compatible. Softwa
 
 ### Hardware
 
-All of FlexPRET's hardware configuration options are described in `./cmake/configs/default.cmake`. Other configurations are possible too; feel free to create a new file for your needs in `./cmake/configs`. When building FlexPRET, the `default.cmake` configuration file will be used by default. To specify others, pass `-DCMAKE_CONFIG=<my_config>`, e.g., `-DCMAKE_CONFIG=highmem`. See `./scripts/run_multiple_tests.sh` for more examples. Note that not all configuration combinations are valid.
+All of FlexPRET's hardware configuration options are described in `./cmake/configs/default.cmake`. Other configurations are possible too; feel free to create a new file for your needs in `./cmake/configs`. When building FlexPRET, the `default.cmake` configuration file will be used by default. To specify others, pass `-DFP_CONFIG=<my_config>`, e.g., `-DFP_CONFIG=highmem`. See `./scripts/run_multiple_tests.sh` for more examples. Note that not all configuration combinations are valid.
 
 Building FlexPRET will generate a number of artifacts that are passed onto the SDK. This is necessary to e.g., set the stack pointer upon initialization. Another use case is this:
 
@@ -104,7 +106,7 @@ Which will start all threads for any number of threads available on the built Fl
 
 ### Software
 
-Similar to hardware configuration, software can be configured too. It can be found in `./sdk/cmake/configs`. At the time of writing, there are less options, but the same system is kept.
+Similar to hardware configuration, software can be configured too. It can be found in `./sdk/cmake/configs`. At the time of writing, there are less options, but a similar structure is used there.
 
 ## Running on emulator
 
@@ -125,7 +127,7 @@ Which should print out:
 ```
 [0]: fib(16) is 987
 [0]: fib(20) is 6765
-[0]: <install location>/flexpret/sdk/lib/src/syscalls.c: 50: Finish
+[0]: <...>/flexpret/sdk/lib/src/syscalls.c: 50: Finish
 ```
 
 ### Pin service
@@ -133,7 +135,7 @@ Which should print out:
 To set pins on the FlexPRET (e.g., to emulate external interrupts or communication protocols), refer to the [emulator client README.md](emulator/clients/README.md).
 
 ### Regression Test
-It is typically more helpful to run all tests at once. Assuming the present working directory is `./flexpret/sdk`:
+It is typically helpful to run all tests at once. Assuming the present working directory is `./flexpret/sdk`:
 
 ```
 cmake -B build && cd build && make && ctest
