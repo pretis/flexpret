@@ -23,19 +23,22 @@ steps:
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ld ~/riscv-embed-gcc/bin/riscv32-unknown-elf-ld
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objdump ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objdump
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objcopy ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objcopy
-    
-    # Set env
-    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
 
     # Update submodules
     git submodule update --init --recursive
   displayName: Prereqs
-# temporarily removed to speed up debuggging
+# temporarily removed to speed up debugging
 #- script: sbt 'test'
 #  displayName: 'FlexPRET hardware unit tests'
 - script: source env.bash && cmake -B build && cd build && make all install
   displayName: 'Generate verilog, emulator and install it to SDK'
-- script: source env.bash && cd sdk && cmake -B build && cd build && make && ctest
+- script: |
+    # Set environment to find RISC-V compiler
+    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
+    source env.bash
+
+    # Step into SDK and run tests
+    cd sdk && cmake -B build && cd build && make && ctest
   displayName: 'Run C tests'
   
   # We did not run the two first as part of the script to make it easier to
