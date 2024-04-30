@@ -16,8 +16,7 @@ include_guard(GLOBAL)
 set(CMAKE_SYSTEM_PROCESSOR riscv)
 set(RISCV_HOST_TAG linux)
 
-# TODO: Fix
-set(RISCV_TOOL_PATH "/opt/riscv" CACHE PATH "RISC-V tool path")
+set(RISCV_TOOL_PATH $ENV{RISCV_TOOL_PATH_PREFIX} CACHE PATH "RISC-V tool path")
 
 set(RISCV_TOOLCHAIN_ROOT "${RISCV_TOOL_PATH}/bin" CACHE PATH "RISC-V compiler path")
 set(RISCV_TOOLCHAIN_PREFIX "riscv32-unknown-elf-" CACHE STRING "RISC-V toolchain prefix")

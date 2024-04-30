@@ -11,7 +11,7 @@ For more information on the processor architecture:
 # Tools and installation
 
 ## RISC-V Compiler
-We use the Newlib installation of the [rv32i-4.0.0](https://github.com/stnolting/riscv-gcc-prebuilt). Download and extract it to a convenient location on the PATH. 
+We use the Newlib installation of the [rv32i-4.0.0](https://github.com/stnolting/riscv-gcc-prebuilt). Download and extract it to a convenient location on the PATH. Also set the `RISCV_TOOL_PATH_PREFIX` environment variable to the location of `bin/`. 
 
 ## Verilator
 We use the `verilator` toolchain for running emulations of the core. Install it and check that the version is greater than 4.038.
