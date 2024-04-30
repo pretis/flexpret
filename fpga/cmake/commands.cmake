@@ -6,7 +6,7 @@ endif()
 
 if (NOT EXISTS ${ISPM_FILE})
   message(WARNING
-    "Could not find ${ISPM_FILE}. Targets that rely on this file will fail."
+    "Could not find ${ISPM_FILE}. Targets that rely on this file (fpga targets) will fail."
   )
 endif()
 

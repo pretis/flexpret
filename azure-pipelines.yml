@@ -25,9 +25,6 @@ steps:
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objcopy ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objcopy
     # Update submodules
     git submodule update --init --recursive
-
-    # Source environment
-    source env.bash
   displayName: Prereqs
 - script: sbt 'test'
   displayName: 'FlexPRET hardware unit tests'
