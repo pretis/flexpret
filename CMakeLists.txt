@@ -120,8 +120,6 @@ add_custom_target(emulator ALL DEPENDS fp-emu)
 add_subdirectory(emulator)
 add_subdirectory(fpga)
 
-message("crc32 hash: ${CRC32_HASH}")
-
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/FpgaTop.v"
   COMMAND "sbt" "run fpga h${CRC32_HASH} --no-dedup --target-dir build"
