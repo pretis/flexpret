@@ -26,9 +26,9 @@ function(calculate_crc32)
   file(WRITE ${UNIQUE_CONFIG_FILE} ${UNIQUE_CONFIG_STRING})
 
   execute_process(
-    COMMAND "crc32" "${UNIQUE_CONFIG_FILE}"
+    COMMAND "python3" "-c" "import zlib; f = open(\"${UNIQUE_CONFIG_FILE}\", 'rb'); s = f.read(); print(hex(zlib.crc32(s)).replace('0x', ''))"
     OUTPUT_VARIABLE hashvar
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  set(CRC32_HASH "88888888" PARENT_SCOPE)
+  set(CRC32_HASH "${hashvar}" PARENT_SCOPE)
 endfunction()
