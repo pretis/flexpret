@@ -43,5 +43,11 @@ steps:
   
   # We did not run the two first as part of the script to make it easier to
   # debug issues with the job
-- script: source env.bash && ./scripts/run_multiple_tests.sh
+- script: |
+    # Set environment to find RISC-V compiler
+    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
+    source env.bash
+    
+    # Run multiple tests with script
+    ./scripts/run_multiple_tests.sh
   displayName: 'Run C tests for multiple FlexPRET hardware configurations'
