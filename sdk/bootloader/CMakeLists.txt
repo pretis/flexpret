@@ -17,13 +17,13 @@ that uses the bootloader.
 ]]
 
 add_executable(bootloader-first 
-  loader/loader.c 
-  loader/startup.c
+  loader.c 
+  startup.c
 )
 
 add_executable(bootloader
-  loader/loader.c 
-  loader/startup.c
+  loader.c 
+  startup.c
 )
 
 # 1. Empty location.h

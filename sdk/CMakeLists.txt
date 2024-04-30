@@ -79,7 +79,6 @@ else()
   option(DEBUG "Enable or disable debug such as printf" ON)
 endif()
 
-# TODO: Check if we are missing other options from before
 target_compile_options(fp-sdk-if INTERFACE 
   # Gives build-time error if the developer attempts to allocate variables on the
   # stack bigger than the stacksize
@@ -94,6 +93,8 @@ target_compile_options(fp-sdk-if INTERFACE
 
 
 target_compile_definitions(fp-sdk-if INTERFACE 
+  # This is used to check whether the SDK has the same hardware configuration
+  # as the built FlexPRET
   FP_CONFIGHASH=0x${CRC32_HASH}
   
   # See configderive.cmake
@@ -107,6 +108,7 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(external)
 
+# Only care about bootloader and testing when the SDK is being built
 if (PROJECT_IS_TOP_LEVEL)
   add_subdirectory(bootloader)
   

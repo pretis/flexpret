@@ -12,4 +12,4 @@ The bootloader is required to quickly transfer new software to FlexPRET when run
 
 Note that applications that target the FPGA cannot be compiled until the bootloader first has been built. This is because they need to know the size of the bootloader to know how large their offset should be in the compiled executable.
 
-Upon successful build of the bootloader, it will install `flexpret/bootloader.cmake`.
+Upon successful build of the bootloader, it will create the file `./lib/linker/bootloader/use/bootloader.ld`, which contains the size of the bootloader.

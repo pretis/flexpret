@@ -68,6 +68,8 @@ make && ctest
 
 Note that the library is built from source for every test. This takes longer time but means each test can have its own permutation of the library, e.g., with and without debug flags. 
 
+Some of the tests can take quite a long time; as much as 10 seconds.
+
 ## Running a single software unit test
 
 When cmake builds the tests, it also leaves one bash script per test in the `bin/` directory. These can be run directly:
