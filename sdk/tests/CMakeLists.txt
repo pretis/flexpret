@@ -11,6 +11,7 @@ set(REGEX_PASS_DEFAULT "Finish")
 # Printed when application finishes with non-zero exit code
 set(REGEX_FAIL_DEFAULT "Abort")
 
+# Run the program and search for "Finish"
 function(fp_add_test_runs_to_completion name)
   add_test(
     NAME "${name}_runs_to_completion"
@@ -27,6 +28,9 @@ function(fp_add_test_runs_to_completion name)
   )
 endfunction()
 
+# Run the program in the background (&) with an arbitrary command, which typically
+# is a client that connects to the emulator and sets FlexPRET's external pins
+# (e.g., to generate interrupts or UART signals)
 function(fp_add_test_runs_to_completion_client name client_cmd)
   add_test(
     NAME "${name}_runs_to_completion_client"
@@ -46,6 +50,8 @@ endfunction()
 set(FP_EMULATOR_CLIENTS_GENERIC $ENV{FP_PATH}/build/emulator/clients)
 
 add_subdirectory(c-tests)
+
+# Only add multithreaded tests if the number of hardware threads is greater than 1
 if (${THREADS} GREATER 1)
   add_subdirectory(mt-c-tests)
 endif()

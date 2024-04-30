@@ -119,7 +119,6 @@ int bootloader(void) {
                         | (recv_buffer[2] << 16)
                         | (recv_buffer[1] << 8) 
                         | (recv_buffer[0] << 0);
-                    fp_print_int(len);    
                     app_recv_state = RECV_DATA;
                     idx = 0;
                 }

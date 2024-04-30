@@ -1,8 +1,0 @@
-/**
-* This flexpret core config file is auto-generated, and based on the
-* configuration of the compiled bootloader.
-*
-* Do not edit.
-*
-*/
-BOOTLOADER_SIZE = @BOOTLOADER_SIZE@;

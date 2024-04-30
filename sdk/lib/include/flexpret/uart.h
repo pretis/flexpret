@@ -23,21 +23,22 @@
 /**
  * @brief Write data over UART using with the wishbone interface
  * 
- * @param data 
+ * @param data The data to write
  */
 void uart_send(uint8_t data);
 
 /**
  * @brief Check that there is a connection to the wishbone UART interface
- *        by reading a magic number from it. Will crash on failure due to assert.
- * 
+ *        by reading a magic number from it. 
+ *
+ * @return True if available, false otherwise. 
  */
 bool uart_available(void);
 
 /**
  * @brief Receive a byte over UART using the wishbone interface
  * 
- * @return uint8_t 
+ * @return The byte read
  */
 uint8_t uart_receive(void);
 
