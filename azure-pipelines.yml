@@ -49,4 +49,4 @@ steps:
     
     # Run multiple tests with script
     ./scripts/run_multiple_tests.sh
-  displayName: 'Random name'
+  displayName: 'Multiple C tests'
