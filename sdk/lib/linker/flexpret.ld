@@ -21,7 +21,16 @@
 /* 
  * Taken from https://github.com/apache/nuttx/blob/master/boards/risc-v/c906/smartl-c906/scripts/ld.script
  */
-INCLUDE internal/bootloader.ld
+
+/* 
+ * This either includes 
+ *  `bootloader/use/bootloader.ld` or
+ *  `bootloader/none/bootloader.ld` 
+ * 
+ * based on whether we compile with or without bootloader.
+ *
+ */
+INCLUDE bootloader.ld
 INCLUDE internal/hwconfig.ld
 INCLUDE internal/swconfig.ld
 
@@ -32,9 +41,11 @@ TOTAL_STACKSIZES = STACKSIZE * NUM_THREADS;
 
 ISPM_BOOTLOADER_END = ISPM_START + BOOTLOADER_SIZE;
 
-/* TODO: Do we really need to take this into account? Or can we just overwrite
-         the bootloader's data? I think we can, becasue it gets copied into RAM
-         at the start.s of the bootloader every time. */
+/* 
+ * We do not need to take bootloader's data into consideration because it is
+ * copied over to DSPM in startup.c on boot.
+ * 
+ */
 DSPM_BOOTLOADER_END = DSPM_START;
 
 MEMORY

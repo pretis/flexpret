@@ -12,10 +12,10 @@
 #define HAVE_EMULATOR_CLIENT (0)
 
 static inline bool write_and_readback(const uint32_t val) {
-    printf("Write gpio: 0x%x\n", val);
+    printf("Write gpio: 0x%lx\n", val);
     gpo_write_0(val);
     const uint32_t readback = gpo_read_0();
-    printf("Read  gpio: 0x%x\n", readback);
+    printf("Read  gpio: 0x%lx\n", readback);
     return val == readback;
 }
 
@@ -30,6 +30,7 @@ static inline bool write_and_readback(const uint32_t val) {
     current = expected; \
 } while(0)
 
+#if HAVE_EMULATOR_CLIENT
 static void run_emulator_client_tests(void) {
     // See the client's implementation for the sequence of setting/clearing bits
     // it uses
@@ -48,11 +49,12 @@ static void run_emulator_client_tests(void) {
     AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 3);
     AWAIT_AND_CHECK_BIT(current_gpi, expected_gpi, 0, 0, 5);
 }
+#endif // HAVE_EMULATOR_CLIENT
 
 int main() {
     printf("--- Check initial value is zero\n");
     uint32_t x = gpo_read_0();
-    printf("Read  gpio: 0x%x\n", x);    // Expect 0.
+    printf("Read  gpio: 0x%lx\n", x);    // Expect 0.
     fp_assert(x == 0, "Read incorrect value");
 
     printf("--- Check write and readback\n");
@@ -63,21 +65,21 @@ int main() {
 
     printf("--- Check individual set and clear\n");
     uint32_t set = 0x01;
-    printf("Set   gpio: 0x%x\n", set);
+    printf("Set   gpio: 0x%lx\n", set);
 
     gpo_set_0(set);                     // Set the 1st bit.
     uint32_t read = gpo_read_0();       // Expect 3.
 
-    printf("Read  gpio: 0x%x\n", read);
+    printf("Read  gpio: 0x%lx\n", read);
     fp_assert(read == 0x03, "Read incorrect value");
     
     uint32_t clear = 0x2;
-    printf("Clear gpio: 0x%x\n", clear);
+    printf("Clear gpio: 0x%lx\n", clear);
 
     gpo_clear_0(clear);                 // Clear the 2nd bit.
     read = gpo_read_0();
 
-    printf("Read  gpio: 0x%x\n", read);
+    printf("Read  gpio: 0x%lx\n", read);
     fp_assert(read == 0x01, "Read incorrect value");               // Expect 1.
 
     printf("--- Check set invalid bit\n");

@@ -2,7 +2,7 @@ set(APPNAME blinky)
 
 # To run on FPGA with bootloader, uncomment this line.
 # To run on FPGA without bootloader, keep it commented out.
-# set(TARGET "fpga")
+#set(TARGET "fpga")
 
 add_executable(${APPNAME} ${APPNAME}.c)
 

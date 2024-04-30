@@ -87,6 +87,7 @@ ie_jumpto0:
     fp_assert(now < expire, "Interrupts did not occur in time\n");
     fp_assert(ninterrupts[hartid] >= 3, 
         "Long interrupt did not trigger interrupt handler enough\n");
+    return NULL;
 }
 
 void *test_two_interrupts(void *args) {
@@ -107,7 +108,7 @@ ie_jumpto0:
     fp_interrupt_disable();
 
     now = rdtime();
-    fp_assert(now > expire, "Time is not as expected (condition was %i > %i)\n",
+    fp_assert(now > expire, "Time is not as expected (condition was %li > %li)\n",
         now, expire);
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr1);
@@ -128,6 +129,7 @@ ie_jumpto1:
     // If context switch is not properly implemented, expect crash when returning
     // from this function because the return address (ra) register has not been
     // restored.
+    return NULL;
 }
 
 void *test_disabled_interrupts(void *args) {
@@ -165,6 +167,7 @@ void *test_disabled_interrupts(void *args) {
 
 ie_occurred:
     fp_assert(0, "Interrupt on expire expired\n");
+    return NULL;
 }
 
 void *test_low_timeout(void *args) {
@@ -200,13 +203,11 @@ void *test_low_timeout(void *args) {
 ie_jumpto:
     while (flag0[hartid] == 0);
     fp_interrupt_disable();
+    return NULL;
 }
 
 void *test_interrupt_expire_with_expire(void *args) {
     (void)(args);
-    int hartid = read_hartid();
-
-    uint32_t timeout;
     volatile uint32_t now, expire, while_until;
 
     register_isr(EXC_CAUSE_INTERRUPT_EXPIRE, ie_isr0);
@@ -227,9 +228,6 @@ cleanup:
 
 void *test_exception_expire_with_expire(void *args) {
     (void)(args);
-    int hartid = read_hartid();
-
-    uint32_t timeout;
     volatile uint32_t now, expire, while_until;
 
     register_isr(EXC_CAUSE_EXCEPTION_EXPIRE, ie_isr0);
@@ -286,6 +284,7 @@ ie_jumpto:
     volatile uint32_t after = rdtime();
     fp_assert(now < after && after < (now + (int) (1e3)),
         "Delay until ran at absolute time less than current time took longer time then expected\n");
+    return NULL;
 }
 
 void *test_fp_wait_until(void *args) {
@@ -332,6 +331,7 @@ ie_jumpto:
     volatile uint32_t after = rdtime();
     fp_assert(now < after && after < (now + (int) (1e3)),
         "Wait until ran at absolute time less than current time took longer time then expected\n");
+    return NULL;
 }
 
 void *test_external_interrupt(void *args) {
@@ -342,6 +342,7 @@ void *test_external_interrupt(void *args) {
     fp_interrupt_enable();
     while (ext_int_flag[hartid] == 0);
     fp_interrupt_disable();
+    return NULL;
 }
 
 void *test_external_interrupt_disabled(void *args) {
@@ -358,6 +359,7 @@ void *test_external_interrupt_disabled(void *args) {
 
     fp_assert(ext_int_flag[hartid] == 0, 
         "External interrupt was triggered when disabled\n");
+    return NULL;
 }
 
 void *test_du_not_stopped_by_int(void *args) {

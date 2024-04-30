@@ -1,6 +1,0 @@
-FLEXPRET_ROOT_DIR = ../../../../
-NAME = stack
-APP_SOURCES = *.c
-STACKSIZE = 1024
-TEST_ENVIRONMENT = true
-include $(FLEXPRET_ROOT_DIR)/Makefrag

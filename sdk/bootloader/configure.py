@@ -67,8 +67,19 @@ elif sys.argv[1] == 'third' and bootloader_first_exist and bootloader_exist:
         path_bl_final.unlink()
         exit(1)
     else:
-        with open(sdk_folder / 'flexpret' / 'bootloader.cmake', 'w') as f:
-            f.write(f'set(BOOTLOADER_SIZE {4*lines_bl_final})')
+        btl_path = sdk_folder / 'lib' / 'linker' / 'bootloader' / 'use' / 'bootloader.ld'
+        file = f"""
+/**
+* This flexpret core config file is auto-generated, and based on the
+* configuration of the compiled bootloader.
+*
+* Do not edit.
+*
+*/
+BOOTLOADER_SIZE = {4*lines_bl_final};
+"""
+        with open(btl_path, 'w') as f:
+            f.write(file)
 else:
     print('Invalid run of script')
     exit(1)

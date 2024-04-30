@@ -33,6 +33,7 @@ void *trigger_du_same_time(void *args) {
     volatile uint32_t now = rdtime();
     fp_assert(trigger_time < now, 
         "delay until triggered at same time instant as another thread failed\n");
+    return NULL;
 }
 
 void *trigger_wu_same_time(void *args) {
@@ -49,6 +50,7 @@ void *trigger_wu_same_time(void *args) {
     volatile uint32_t now = rdtime();
     fp_assert(trigger_time < now, 
         "delay until triggered at same time instant as another thread failed\n");
+    return NULL;
 }
 
 #define do_run(nthreads, test) do { \

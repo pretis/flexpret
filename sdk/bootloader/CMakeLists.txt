@@ -36,13 +36,14 @@ target_link_libraries(bootloader-first location-empty)
 # 3. Actual location.h
 add_library(location INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/actual/location.h)
 target_include_directories(location INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/actual)
+add_dependencies(location bootloader-first)
 
 # 4. Compile bootloader with location.h
 target_link_libraries(bootloader location)
 
 # 5. Verify size and produce bootloader.cmake
 add_custom_target(bootloader-verify ALL 
-  DEPENDS "$ENV{FP_SDK_PATH}/flexpret/bootloader.cmake"
+  DEPENDS "$ENV{FP_SDK_PATH}/lib/linker/bootloader/use/bootloader.ld"
 )
 
 target_compile_definitions(bootloader-first PRIVATE NDEBUG)
@@ -71,9 +72,9 @@ add_custom_command(
 # Bootloader.cmake shall be installed in the SDK
 # Software using the bootloader requires this installation
 add_custom_command(
-  OUTPUT "$ENV{FP_SDK_PATH}/flexpret/bootloader.cmake"
+  OUTPUT "$ENV{FP_SDK_PATH}/lib/linker/bootloader/use/bootloader.ld"
   COMMAND "python3" "${CMAKE_CURRENT_SOURCE_DIR}/configure.py" "third"
-  COMMENT "Verifying size of first bootloader vs. actual bootloader. Generates $ENV{FP_SDK_PATH}/flexpret/bootloader.cmake on success."
+  COMMENT "Verifying size of first bootloader vs. actual bootloader. Generates $ENV{FP_SDK_PATH}/lib/linker/bootloader/use/bootloader.ld on success."
   VERBATIM
 )
 
@@ -81,7 +82,7 @@ set_property(
   TARGET bootloader APPEND
   PROPERTY ADDITIONAL_CLEAN_FILES
     "${CMAKE_CURRENT_BINARY_DIR}/actual/location.h"
-    "$ENV{FP_SDK_PATH}/flexpret/bootloader.cmake"
+    "$ENV{FP_SDK_PATH}/flexpret/lib/linker/bootloader/use/bootloader.ld"
 )
 
 include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)

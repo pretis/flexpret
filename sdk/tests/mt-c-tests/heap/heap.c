@@ -26,7 +26,7 @@ void __malloc_unlock(struct _reent *r) {}
 #endif
 
 void *task_heap_user(void *arg) {
-    int hartid = read_hartid();
+    uint32_t hartid = read_hartid();
     int iterations = (int) arg;
     for (int i = 0; i < iterations; i++) {
         uint32_t *data = malloc(sizeof(uint32_t));
@@ -35,6 +35,7 @@ void *task_heap_user(void *arg) {
         fp_assert(*data == (42 * hartid), "Data was changed by another thread\n");
         free(data);
     }
+    return NULL;
 }
 
 int main() {

@@ -2,29 +2,6 @@ if (NOT DEFINED TARGET)
   set(TARGET "emulator")
 endif()
 
-# When running on FPGA, we need to offset for the size of the bootloader
-# in the linker scripts
-if (${TARGET} STREQUAL "fpga")
-  set(BOOTLOADER_SIZE_PATH "$ENV{FP_SDK_PATH}/flexpret/bootloader.cmake")
-  
-  if (NOT EXISTS ${BOOTLOADER_SIZE_PATH})
-    message(FATAL_ERROR
-      "Could not find ${BOOTLOADER_SIZE_PATH}, which is required to build software \
-      for FlexPRET on FPGA using the bootloader."
-  )
-  endif()
-  
-  # Sets BOOTLOADER_SIZE
-  include(${BOOTLOADER_SIZE_PATH})
-else()
-  set(BOOTLOADER_SIZE 0)
-endif()
-
-configure_file(
-  "$ENV{FP_SDK_PATH}/cmake/infiles/bootloader.ld.in"
-  "$ENV{FP_SDK_PATH}/lib/linker/internal/bootloader.ld"
-)
-
 function(fp_add_script_output target)
   set(IMEM_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
   set(IMEM_NAME ${target}.mem)
@@ -33,13 +10,19 @@ function(fp_add_script_output target)
     set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/emu-app.sh.in)
   else()
     set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/fpga-app.sh.in)
-    if (NOT DEFINED FP_FLASH_DEVICE)
-      set(FP_FLASH_DEVICE "/dev/ttyUSB0")
+    
+    # Configure flash device
+    set(FP_FLASH_DEVICE_DEFAULT "/dev/ttyUSB0")
+    if (NOT DEFINED ENV{FP_SDK_FPGA_FLASH_DEVICE})
+      message("Did not find environment variable FP_SDK_FPGA_FLASH_DEVICE, using default ${FP_FLASH_DEVICE_DEFAULT}")
+      set(FP_FLASH_DEVICE ${FP_FLASH_DEVICE_DEFAULT})
+    else()
+      set(FP_FLASH_DEVICE $ENV{FP_SDK_FPGA_FLASH_DEVICE})
     endif()
-
+    
+    # Configure interface program
     if (NOT DEFINED ENV{FP_SDK_FPGA_INTERFACE_PROGRAM})
-      message("Did not find environment variable FP_SDK_FPGA_INTERFACE_PROGRAM, using ")
-      set(FP_INTERFACE_PROGRAM "picocom")
+      message("Did not find environment variable FP_SDK_FPGA_INTERFACE_PROGRAM, using none")
     else()
       message("Found environment variable FP_SDK_FPGA_INTERFACE_PROGRAM (=$ENV{FP_SDK_FPGA_INTERFACE_PROGRAM}).")
       set(FP_INTERFACE_PROGRAM $ENV{FP_SDK_FPGA_INTERFACE_PROGRAM})
@@ -97,8 +80,16 @@ function(fp_add_mem_output target)
   )
 endfunction()
 
-function(fp_add_outputs target)
-  fp_add_dump_output(${target})
-  fp_add_mem_output(${target})
-  fp_add_script_output(${target})
+function(fp_add_outputs executable)
+  fp_add_dump_output(${executable})
+  fp_add_mem_output(${executable})
+  fp_add_script_output(${executable})
+
+  if (${TARGET} STREQUAL "fpga")
+    set(LINKER_INCLUDE "$ENV{FP_SDK_PATH}/lib/linker/bootloader/use")
+  else()
+    set(LINKER_INCLUDE "$ENV{FP_SDK_PATH}/lib/linker/bootloader/none")
+  endif()
+
+  target_link_options(${executable} PRIVATE "-Wl,-L" ${LINKER_INCLUDE})
 endfunction()

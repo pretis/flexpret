@@ -28,7 +28,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 
 // Defined in makefile
 #ifndef NINTERRUPTS

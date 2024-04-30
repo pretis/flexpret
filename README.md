@@ -151,7 +151,7 @@ This will build a number of FlexPRET configurations and run the unit tests on al
 
 Refer to the [FPGA README](./fpga/README.md) for more information on how to get FlexPRET running on an FPGA. In order to compile software that runs on FlexPRET on FPGA, you need to set the CMake variable `TARGET` to fpga. See the `CMakeLists.txt` in `flexpret/apps/wb_uart_led/` for an example.
 
-When this variable is set, the generated bash script (still located in `bin/`) will be a bit different. Instead of running `fp-emu` with a `.mem` file, it will serialize the `.mem` file and attempt to transfer it to the FPGA. This assumes the bootloader is running (refer to [FPGA README](./fpga/README.md)). To override the default port used to flash, also set the CMake variable `FP_FLASH_DEVICE` to a path.
+When this variable is set, the generated bash script (still located in `bin/`) will be a bit different. Instead of running `fp-emu` with a `.mem` file, it will serialize the `.mem` file and attempt to transfer it to the FPGA. This assumes the bootloader is running (refer to [FPGA README](./fpga/README.md)). To override the default port used to flash, set the environment variable `FP_SDK_FPGA_FLASH_DEVICE` to a path.
 
 The specific commands to build `wb_uart_led` are:
 
@@ -185,7 +185,7 @@ cd $FP_PATH/apps && cmake -B build && cd build && make
 cd $FP_PATH/apps && ./bin/wb_uart_led
 ```
 
-This assumes correct hardware setup (refer to [FPGA README](./fpga/README.md)) and that the `TARGET` and `FP_FLASH_DEVICE` CMake variables are set correctly.
+This assumes correct hardware setup (refer to [FPGA README](./fpga/README.md)) and that the `TARGET` is set to fpga. To override which port is used to upload programs to the bootloader, set the environment variable `FP_SDK_FPGA_FLASH_DEVICE`. E.g., `export FP_SDK_FPGA_FLASH_DEVICE=/dev/ttyUSB1`.
 
 If the environment variable `FP_SDK_FPGA_INTERFACE_PROGRAM` is set, the generated script will automatically tell you what command to run to interface with the uploaded software. E.g., if `FP_SDK_FPGA_INTERFACE_PROGRAM=picocom`, the script will print 
 
@@ -196,6 +196,8 @@ Copy command to clipboard? [Y/n]
 ```
 
 which also lets you copy the command to your clipboard. A selection of interfaces are available in the `./sdk/cmake/utils/fpga-interface` folder. Feel free to add your favorite program.
+
+The baudrate cannot be overriden by the user because it is part of FlexPRET's hardware configuration.
 
 # Troubleshooting
 

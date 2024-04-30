@@ -1,16 +1,20 @@
-#include <flexpret.h>
+#include <flexpret/flexpret.h>
 #include <stdlib.h>
 
-#include "file.txt.h"
+uint8_t file_txt[] = {
+    #include "file.txt.h"
+};
+uint32_t file_txt_len = sizeof(file_txt);
 
 int main(void) {
+    printf("wb_uart test init\n");
     fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
     char *file = malloc(file_txt_len);
     if (!file) {
         printf("File too big to malloc; cannot print it after test\n");
     }
-    for (int i = 0; i < file_txt_len; i++) {
+    for (uint32_t i = 0; i < file_txt_len; i++) {
         uint8_t byte = uart_receive();
         fp_assert(file_txt[i] == byte, "Bytes not as expected\n");
         if (file) file[i] = byte;
@@ -18,14 +22,14 @@ int main(void) {
 
     fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
-    int j = 0;
+    uint32_t j = 0;
     do {
-        printf("File[%i]:\n%s\n", j, &file[512*j]);
+        printf("File[%li]:\n%s\n", j, &file[512*j]);
     } while (j++ < (file_txt_len / 512));
 
     fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
-    for (int i = 0; i < file_txt_len; i++) {
+    for (uint32_t i = 0; i < file_txt_len; i++) {
         uart_send(file_txt[i]);
     }
 
@@ -41,4 +45,5 @@ int main(void) {
     //}
 
     printf("Done\n");
+    return 0;
 }
