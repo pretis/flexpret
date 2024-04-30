@@ -23,7 +23,7 @@ with open(args.input, "r") as fr:
     DBG_PRINT(f"Got {len(lines)} lines")
     length = len(lines) * 4
     lengthField = length.to_bytes(4, "little")
-    print(f"lengthField={lengthField}")
+    DBG_PRINT(f"lengthField={lengthField}")
 
     with open(args.output, "wb") as fw:
         syncField = SYNC_ID.to_bytes(2, "little")
