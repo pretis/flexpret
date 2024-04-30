@@ -27,9 +27,8 @@ steps:
     # Update submodules
     git submodule update --init --recursive
   displayName: Prereqs
-# temporarily removed to speed up debugging
-#- script: sbt 'test'
-#  displayName: 'FlexPRET hardware unit tests'
+- script: sbt 'test'
+  displayName: 'FlexPRET hardware unit tests'
 - script: source env.bash && cmake -B build && cd build && make all install
   displayName: 'Generate verilog, emulator and install it to SDK'
 - script: |
