@@ -6,7 +6,7 @@ add_subdirectory(lockowner)
 add_subdirectory(printf)
 add_subdirectory(swlock)
 add_subdirectory(syscall)
-#add_subdirectory(threadcancel)
+add_subdirectory(threadcancel)
 add_subdirectory(threadprint)
 
 # FIXME: The UART test is not yet functional
