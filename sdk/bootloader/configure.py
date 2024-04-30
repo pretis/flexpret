@@ -34,7 +34,7 @@ if (bootloader_build / 'bootloader-first.mem').is_file():
 else:
     bootloader_first_exist = False
 
-if (bootloader_build / 'bootloader.mem').is_file():
+if (bootloader_build / 'bootloader-second.mem').is_file():
     bootloader_exist = True
 else:
     bootloader_exist = False
@@ -57,7 +57,7 @@ elif sys.argv[1] == 'second' and bootloader_first_exist and not bootloader_exist
 elif sys.argv[1] == 'third' and bootloader_first_exist and bootloader_exist:
     # Third run: Verify
     path_bl_first = bootloader_build / 'bootloader-first.mem'
-    path_bl_final = bootloader_build / 'bootloader.mem'
+    path_bl_final = bootloader_build / 'bootloader-second.mem'
 
     lines_bl_first = sum(1 for _ in open(path_bl_first))
     lines_bl_final = sum(1 for _ in open(path_bl_final))

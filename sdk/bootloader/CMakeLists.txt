@@ -10,9 +10,9 @@ There are seveal steps requires to produce the bootloader:
   2. Compile bootloader-first
   3. Generate location.h with size of bootloader-first
   4. Compile bootloader with location.h
-  5. Verify size of bootloaders equal and generate bootloader.cmake
+  5. Verify size of bootloaders equal and generate bootloader.ld
 
-bootloader.cmake must be installed to the SDK. This file is required by software
+bootloader.ld must be installed to the SDK. This file is required by software
 that uses the bootloader.
 ]]
 
@@ -21,7 +21,7 @@ add_executable(bootloader-first
   startup.c
 )
 
-add_executable(bootloader
+add_executable(bootloader-second
   loader.c 
   startup.c
 )
@@ -39,15 +39,38 @@ target_include_directories(location INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/actual
 add_dependencies(location bootloader-first)
 
 # 4. Compile bootloader with location.h
-target_link_libraries(bootloader location)
+target_link_libraries(bootloader-second location)
 
-# 5. Verify size and produce bootloader.cmake
-add_custom_target(bootloader-verify ALL 
+# 5. Verify size and produce bootloader.ld
+# Note: Need to call this target `bootloader` so this target (and its dependencies)
+#       get run if the user writes `make bootloader`. If e.g., `bootloader-second`
+#       was named `bootloader`, then `make bootloader` would not produce 
+#       `bootloader.ld`.
+add_custom_target(bootloader ALL 
   DEPENDS "$ENV{FP_SDK_PATH}/lib/linker/bootloader/use/bootloader.ld"
 )
 
+# Rename everything from bootloader-second.* to bootloader.*
+add_custom_command(
+  TARGET bootloader POST_BUILD
+  COMMAND "mv"
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader-second.dump
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.dump
+  COMMAND "mv"
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader-second.mem
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.mem
+  COMMAND "mv"
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader-second.mem.orig
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.mem.orig
+  COMMAND "mv"
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader-second
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader
+)
+
+add_dependencies(bootloader bootloader-second)
+
 target_compile_definitions(bootloader-first PRIVATE NDEBUG)
-target_compile_definitions(bootloader PRIVATE NDEBUG)
+target_compile_definitions(bootloader-second PRIVATE NDEBUG)
 
 # First run of script will generate an empty location.h header file
 add_custom_command(
@@ -68,8 +91,8 @@ add_custom_command(
 )
 
 # Third run verifies the size of the bootloaders are equal and produces 
-# bootloader.cmake on success
-# Bootloader.cmake shall be installed in the SDK
+# bootloader.ld on success
+# Bootloader.ld shall be installed in the SDK
 # Software using the bootloader requires this installation
 add_custom_command(
   OUTPUT "$ENV{FP_SDK_PATH}/lib/linker/bootloader/use/bootloader.ld"
@@ -88,10 +111,10 @@ set_property(
 include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
 
 target_include_directories(bootloader-first PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(bootloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(bootloader-second PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(bootloader-first fp-sdk)
-target_link_libraries(bootloader fp-sdk)
+target_link_libraries(bootloader-second fp-sdk)
 
 fp_add_outputs(bootloader-first)
-fp_add_outputs(bootloader)
+fp_add_outputs(bootloader-second)
