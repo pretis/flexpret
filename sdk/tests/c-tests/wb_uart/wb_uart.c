@@ -7,7 +7,6 @@ uint8_t file_txt[] = {
 uint32_t file_txt_len = sizeof(file_txt);
 
 int main(void) {
-    printf("wb_uart test init\n");
     fp_assert(uart_available(), "Uart is not available when expected to be\n");
 
     char *file = malloc(file_txt_len);
@@ -33,17 +32,5 @@ int main(void) {
         uart_send(file_txt[i]);
     }
 
-    //int i = 0;
-    //while (i < UART_NBYTES) {
-    //    uint8_t uart_status = wb_read(UART_CSR);
-    //    printf("uart_status: 0x%.2x\n", uart_status);
-    //    if (uart_status & 0x02) {
-    //        busy_poll();
-    //    } else {
-    //        uart_send(0x55*i++);
-    //    }
-    //}
-
-    printf("Done\n");
     return 0;
 }

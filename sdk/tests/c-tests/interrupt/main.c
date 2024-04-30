@@ -8,7 +8,6 @@
 } while(0)
 
 int main(void) {
-    printf("Init\n");
     do_run(test_long_interrupt);
     do_run(test_two_interrupts);
     do_run(test_two_interrupts);
