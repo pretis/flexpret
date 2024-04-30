@@ -14,7 +14,7 @@ run_test() {
 
 # These configurations correspond with the files inside `./flexpret/cmake/configs`
 configs=(
-    highmem
+    highmem 8threads
 )
 
 # Run test on each config
