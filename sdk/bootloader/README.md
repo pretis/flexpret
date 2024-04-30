@@ -21,4 +21,6 @@ Furthermore, a system-wide reset should be connected to a button. The system-wid
 
 ## Once built
 
-Once the bootloader is built, the build system will automatically install a `bootloader.cmake` file to the `../flexpret/` directory. Applications that target FlexPRET on FPGA refuse to build unless this file exists. The reason for this is that the linker script needs to know the application's offset in the instruction memory before it can be linked.
+Once the bootloader is built, the build system will automatically install a `bootloader.ld` file to the `./lib/linker/bootloader/use` directory. Applications that target FlexPRET on FPGA refuse to build unless this file exists. The reason for this is that the linker script needs to know the application's offset in the instruction memory before it can be linked.
+
+Applications that do not use the bootloader will include `./lib/linker/bootloader/none/bootloder.ld` in its linker script. When using the bootloader the `./lib/linker/bootloader/use/bootloder.ld` file is included instead. (Note the difference in `use` vs. `none` in the paths.)
