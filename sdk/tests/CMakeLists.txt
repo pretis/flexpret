@@ -26,6 +26,10 @@ function(fp_add_test_runs_to_completion name)
     TEST "${name}_runs_to_completion" 
     PROPERTY FAIL_REGULAR_EXPRESSION ${REGEX_FAIL_DEFAULT}
   )
+  set_property(
+    TEST "${name}_runs_to_completion"
+    PROPERTY TIMEOUT 60
+  )
 endfunction()
 
 # Run the program in the background (&) with an arbitrary command, which typically
