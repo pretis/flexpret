@@ -49,6 +49,10 @@ function(fp_add_test_runs_to_completion_client name client_cmd)
     TEST "${name}_runs_to_completion_client" 
     PROPERTY FAIL_REGULAR_EXPRESSION ${REGEX_FAIL_DEFAULT}
   )
+  set_property(
+    TEST "${name}_runs_to_completion"
+    PROPERTY TIMEOUT 60
+  )
 endfunction()
 
 set(FP_EMULATOR_CLIENTS_GENERIC $ENV{FP_PATH}/build/emulator/clients)
