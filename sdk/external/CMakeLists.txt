@@ -4,6 +4,15 @@ if (NOT DEFINED CMAKE_INSTALL_LIBDIR)
 endif()
 
 set(BUILD_STATIC_LIBRARY True)
+
+# Configure library to be as small as possible
+set(SUPPORT_DECIMAL_SPECIFIERS false)
+set(SUPPORT_EXPONENTIAL_SPECIFIERS false)
+set(SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS false)
+set(SUPPORT_WRITEBACK_SPECIFIER false)
+set(SUPPORT_LONG_LONG false)
+set(CHECK_FOR_NUL_IN_FORMAT_SPECIFIER false)
+
 add_subdirectory(printf EXCLUDE_FROM_ALL)
   
 target_compile_definitions(printf PUBLIC 

@@ -83,10 +83,24 @@ function(fp_add_mem_output target)
   )
 endfunction()
 
+function(fp_add_map_output target)
+  target_link_options(${target} PRIVATE
+    "-Xlinker" "-Map=${target}.map"
+  )
+endfunction()
+
+function(fp_print_memory_usage target)
+  target_link_options(${target} PRIVATE
+    "-Wl,--print-memory-usage"
+  )
+endfunction()
+
 function(fp_add_outputs executable)
+  fp_add_script_output(${executable})
   fp_add_dump_output(${executable})
   fp_add_mem_output(${executable})
-  fp_add_script_output(${executable})
+  fp_add_map_output(${executable})
+  fp_print_memory_usage(${executable})
 
   if (${TARGET} STREQUAL "fpga")
     set(LINKER_INCLUDE "$ENV{FP_SDK_PATH}/lib/linker/bootloader/use")

@@ -96,9 +96,6 @@ target_compile_definitions(fp-sdk-if INTERFACE
   # This is used to check whether the SDK has the same hardware configuration
   # as the built FlexPRET
   FP_CONFIGHASH=0x${CRC32_HASH}
-  
-  # See configderive.cmake
-  ${NEWLIB_REENTRANCY_METHOD}
 )
 
 if (NOT ${DEBUG})
