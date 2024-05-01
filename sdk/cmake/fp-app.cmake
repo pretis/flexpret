@@ -13,9 +13,12 @@ function(fp_add_script_output target)
     
     # Configure flash device
     set(FP_FLASH_DEVICE_DEFAULT "/dev/ttyUSB0")
+    
     if (NOT DEFINED ENV{FP_SDK_FPGA_FLASH_DEVICE})
-      message("Did not find environment variable FP_SDK_FPGA_FLASH_DEVICE, using default ${FP_FLASH_DEVICE_DEFAULT}")
-      set(FP_FLASH_DEVICE ${FP_FLASH_DEVICE_DEFAULT})
+      if (NOT DEFINED FP_FLASH_DEVICE)
+        message("Did not find environment variable FP_SDK_FPGA_FLASH_DEVICE nor was FP_FLASH_DEVICE set, using default ${FP_FLASH_DEVICE_DEFAULT}")
+        set(FP_FLASH_DEVICE ${FP_FLASH_DEVICE_DEFAULT})
+      endif()
     else()
       set(FP_FLASH_DEVICE $ENV{FP_SDK_FPGA_FLASH_DEVICE})
     endif()

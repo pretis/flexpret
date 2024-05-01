@@ -50,7 +50,7 @@ function(fp_add_test_runs_to_completion_client name client_cmd)
     PROPERTY FAIL_REGULAR_EXPRESSION ${REGEX_FAIL_DEFAULT}
   )
   set_property(
-    TEST "${name}_runs_to_completion"
+    TEST "${name}_runs_to_completion_client"
     PROPERTY TIMEOUT 60
   )
 endfunction()
