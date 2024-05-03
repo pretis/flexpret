@@ -4,7 +4,6 @@ add_executable(${TESTNAME} ${TESTNAME}.c)
 include(${CMAKE_SOURCE_DIR}/cmake/fp-app.cmake)
 
 target_link_libraries(${TESTNAME} fp-sdk)
-target_compile_definitions(${TESTNAME} PRIVATE NINTERRUPTS=${NINTERRUPTS})
 
 # Change this if you want to try a different file
 set(TESTFILE "${CMAKE_CURRENT_SOURCE_DIR}/testfile.txt")

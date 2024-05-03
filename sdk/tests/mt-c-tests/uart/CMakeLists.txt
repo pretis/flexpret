@@ -5,8 +5,26 @@ include(${CMAKE_SOURCE_DIR}/cmake/fp-app.cmake)
 
 target_link_libraries(${TESTNAME} fp-sdk)
 
+set(DEBUG true)
+
+# Change this if you want to try a different file
+set(TESTFILE "${CMAKE_CURRENT_SOURCE_DIR}/data.txt")
+
+# Generate a header file that contains the initial file in a byte array using
+# `xxd`
+execute_process(
+  COMMAND "xxd" "-i"
+  INPUT_FILE "${TESTFILE}"
+  OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/data.txt.h"
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 fp_add_outputs(${TESTNAME} fp-sdk)
+
+# This client command will transfer the file over UART
+# The test then compares the received data with the generated header file from
+# earlier
 fp_add_test_runs_to_completion_client(
-  ${TESTNAME}
-  "python3 ${CMAKE_CURRENT_SOURCE_DIR}/client/stimuli.py"
+    ${TESTNAME}
+    "${FP_EMULATOR_CLIENTS_GENERIC}/uart --file ${TESTFILE}"
 )

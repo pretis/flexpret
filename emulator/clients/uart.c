@@ -39,7 +39,7 @@
 #define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / FP_UART_BAUDRATE)
 
 #define EVENT_INITIALIZER(highlow) (pin_event_t) \
-{ .pin = PIN_IO_UART_RX, .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }
+{ .pin = PIN_IO_GPI_0(0), .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }
 
 static void set_pinevent_uart(char c, pin_event_t *events)
 {
@@ -85,9 +85,16 @@ int main(int argc, char const* argv[])
         exit(1);
     }
 
+    // Give FlexPRET some time to initialize
+    usleep(500000);
+
     // Start by setting the pin high
     pin_event_t set_high = EVENT_INITIALIZER(HIGH);
+    set_high.in_n_cycles = 0;
     send(client_fd, &set_high, sizeof(set_high), 0);
+
+    // Keep pin high for some time
+    usleep(100000);
 
     // 10 = 1 start bit + 8 data bits + 1 stop bit
     static pin_event_t events[10];
@@ -97,9 +104,12 @@ int main(int argc, char const* argv[])
         uint8_t byte = 0;
         int bytes_read = 0;
         while ((bytes_read = read(fd, &byte, sizeof(byte))) == 1) {
+            // Send byte
             set_pinevent_uart(byte, events);
             send(client_fd, events, sizeof(events), 0);
-            usleep(100000);
+            
+            // Send high bit to allow some sync
+            send(client_fd, &set_high, sizeof(set_high), 0);
         }
 
         // Handle potential errors

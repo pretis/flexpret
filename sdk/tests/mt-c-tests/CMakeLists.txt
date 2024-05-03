@@ -18,4 +18,4 @@ add_subdirectory(threadprint)
 # The reason being that it requires accurate timing which the client
 # cannot provide
 # Should implement another "client" which is tightly coupled with the emulator
-#add_subdirectory(uart)
+add_subdirectory(uart)

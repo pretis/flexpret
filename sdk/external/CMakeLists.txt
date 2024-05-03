@@ -6,7 +6,7 @@ endif()
 set(BUILD_STATIC_LIBRARY True)
 
 # Configure library to be as small as possible
-set(SUPPORT_DECIMAL_SPECIFIERS false)
+set(SUPPORT_DECIMAL_SPECIFIERS true)
 set(SUPPORT_EXPONENTIAL_SPECIFIERS false)
 set(SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS false)
 set(SUPPORT_WRITEBACK_SPECIFIER false)

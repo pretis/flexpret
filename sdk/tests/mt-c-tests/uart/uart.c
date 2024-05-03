@@ -11,13 +11,11 @@
 #include <string.h>
 #include <flexpret/flexpret.h>
 
-#define CLOCKFREQ     ((int)(50e6)) // 100 MHz
-#define NS_PER_CLK    (10)
-#define UART_BAUDRATE (9600)
-#define CLKS_PER_BAUD ((int) ((CLOCKFREQ) / (UART_BAUDRATE)))
+#define FP_CLK_FREQ_HZ     ((int)(FP_CLK_FREQ_MHZ * 1e6))
+#define NS_PER_CLK    (10) // FIXME: Depend on clk freq
+#define CLKS_PER_BAUD ((int) ((FP_CLK_FREQ_HZ) / (FP_UART_BAUDRATE)))
 #define NS_PER_BAUD   ((CLKS_PER_BAUD) * (NS_PER_CLK))
 
-// TODO: Only one state...
 enum State {
     STATE_STARTBIT,
     STATE_DATABITS,
@@ -25,8 +23,9 @@ enum State {
 };
 
 struct RingBuffer {
-    uint32_t wrpos;
-    uint32_t rdpos;
+    // TODO: Strictly speaking should have a mutex
+    volatile uint32_t wrpos;
+    volatile uint32_t rdpos;
     uint8_t buf[64];
 };
 
@@ -90,9 +89,19 @@ static float buf_take_float(struct RingBuffer *rbuf) {
     return value;
 }
 
-static inline bool get_bit(uint8_t bitpos) {
+static inline bool get_pin(uint8_t bitpos) {
     // At the time of writing this code, each port only has one bit
     return gpi_read(0);
+}
+
+static inline bool set_pin(uint8_t bitpos, bool val) {
+    // At the time of writing this code, each port only has one bit
+    gpo_write(0, val);
+}
+
+static volatile uart_rx_startbit_detected = false;
+void uart_rx_isr(void) {
+    uart_rx_startbit_detected = true;
 }
 
 void* uart_rx(void *arg) {
@@ -101,20 +110,23 @@ void* uart_rx(void *arg) {
     int nbits_rx = 0;
     uint8_t byte_rx = 0;
     uint64_t delay = 0;
-    
+
+    // TODO: Find a way to disable and enable
     while (config->enabled) {
-        bool bit = get_bit(config->pin);
+        bool bit = get_pin(config->pin);
         
         switch (config->state)
         {
         case STATE_STARTBIT:
 
             // Poll on the uart line until it goes low
+            // TODO: Should be an interrupt on the pin, but currently FlexPRET
+            //       does not support that
             if (bit) {
                 continue;
             }
 
-            // Capture the time and delay until we are 1 1/2 periods into the data
+            // Capture the time and delay until we are 1/2 periods into the data
             delay = rdtime64() + 3 * (NS_PER_BAUD / 2);
             config->state = STATE_DATABITS;
             
@@ -127,7 +139,7 @@ void* uart_rx(void *arg) {
 
             // Shift bit into byte and check if byte is done
             byte_rx |= (bit << nbits_rx);
-            if (++nbits_rx == 8) {
+            if (nbits_rx++ == 7) {
                 config->state = STATE_STOPBIT;
             }
             delay += NS_PER_BAUD;
@@ -142,11 +154,11 @@ void* uart_rx(void *arg) {
                 buf_give(&config->rbuf, byte_rx);
             }
             config->state = STATE_STARTBIT;
-            delay += NS_PER_BAUD;
+            delay += 0;
             break;
 
         default:
-            fp_assert(0, "Default case reached\n");
+            fp_assert(0, "Invalid case reached\n");
             break;
 
         }
@@ -157,39 +169,113 @@ void* uart_rx(void *arg) {
     return NULL;
 }
 
-static const float expected_stimuli[] = {
-    #include "data.txt"
+void *uart_tx(void *arg) {
+    struct UARTConfig *config = arg;
+
+    int nbits_tx = 0;
+    uint8_t byte_tx = 0;
+    uint64_t delay = 0;
+
+    // Default state of pin is high
+    set_pin(config->pin, 1);
+
+    while(config->enabled) {
+        switch (config->state)
+        {
+        case STATE_STARTBIT:
+            if (buf_nbytes_available(&config->rbuf) > 0) {
+                config->state = STATE_DATABITS;
+                byte_tx = buf_take(&config->rbuf);
+
+                // Set pin to low (startbit)
+                set_pin(config->pin, 0);
+                delay = rdtime64() + NS_PER_BAUD;
+            } else {
+                delay = 0;
+            }
+            break;
+
+        case STATE_DATABITS:
+            bool bit = (byte_tx & (1 << nbits_tx)) != 0;
+            set_pin(config->pin, bit);
+
+            if (nbits_tx++ == 7) {
+                config->state = STATE_STOPBIT;
+                nbits_tx = 0;
+            }
+
+            delay += NS_PER_BAUD;
+
+            break;
+        case STATE_STOPBIT:
+            // Set pin to high (stopbit)
+            set_pin(config->pin, 1);
+            config->state = STATE_STARTBIT;
+
+            delay += NS_PER_BAUD;
+
+            break;
+        default:
+            fp_assert(0, "Invalid case reached\n");
+            break;
+        }
+
+        fp_delay_until(delay);
+    }
+}
+
+static const uint8_t expected_stimuli[] = {
+    #include "data.txt.h"
 };
 
 void test_expected_stimuli(struct RingBuffer *rbuf) {
     for (int i = 0; i < sizeof(expected_stimuli) / sizeof(expected_stimuli[0]); i++) {
-    while (buf_nbytes_available(rbuf) < 4) {
-        fp_delay_for((int) (1e5));
-    }
-
-    float value = buf_take_float(rbuf);
-    fp_assert(value == expected_stimuli[i],
-        "Incorrect data. Expected: %f, got %f\n",
-        expected_stimuli[i], value);
+        while (buf_nbytes_available(rbuf) <= 0);
+        
+        uint8_t value = buf_take(rbuf);
+        fp_assert(value == expected_stimuli[i],
+            "Did not get expected data; got %i, expected %i\n",
+            value, expected_stimuli[i]);
     }
 }
 
 int main(void) {
+    printf("init\n");
     // Poll until the uart line is initialized to high
-    while (get_bit(0) == 0);
-    while (get_bit(1) == 0);
+    while (get_pin(0) == 0);
 
-    fp_thread_t uart_tid;
-    struct UARTConfig config = uartconfig_get_default(0);
+    printf("Got high\n");
+
+    fp_thread_t uart_rx_tid;
+    fp_thread_t uart_tx_tid;
+    struct UARTConfig config_rx = uartconfig_get_default(0);
+    struct UARTConfig config_tx = uartconfig_get_default(0);
 
     fp_assert(
-        fp_thread_create(HRTT, &uart_tid, uart_rx, &config) == 0,
+        fp_thread_create(HRTT, &uart_rx_tid, uart_rx, &config_rx) == 0,
+        "Could not spawn thread\n"
+    );
+
+    // Should not do anything until we give it data to transmit
+    fp_assert(
+        fp_thread_create(HRTT, &uart_tx_tid, uart_tx, &config_tx) == 0,
         "Could not spawn thread\n"
     );
     
-    test_expected_stimuli(&config.rbuf);
+    buf_give(&config_tx.rbuf, 0x55);
+    buf_give(&config_tx.rbuf, 0xAA);
+    buf_give(&config_tx.rbuf, 0x00);
+    buf_give(&config_tx.rbuf, 0xFF);
+    buf_give(&config_tx.rbuf, 0x5A);
+    buf_give(&config_tx.rbuf, 0xA5);
 
-    printf("1st test success: Float values sent from client to uart were interpreted correctly\n");
+    // Wait until buffer is fully drained
+    while(buf_nbytes_available(&config_tx.rbuf) != 0);
+
+    test_expected_stimuli(&config_rx.rbuf);
+
+    printf("1st test success: Data received on SDD UART was correctly interpreted\n");
+
 
 /**
  * Does not work, due to lack of synchronization between emulator and client
