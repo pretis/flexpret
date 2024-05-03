@@ -25,7 +25,7 @@ endif()
 message(STATUS "Got config ${FP_CONFIG}")
 
 # Make it possible to override which configuration file to use from command line
-# Like so: cmake -DFP_CONFIG=my_config --build .
+# Like so: cmake -DFP_CONFIG=my_config -B build
 set(CONFIGFILE "${CMAKE_SOURCE_DIR}/cmake/configs/${FP_CONFIG}.cmake" CACHE PATH "Which configuration file to select")
 
 # Sets lots of variables that are used
