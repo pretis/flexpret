@@ -38,22 +38,40 @@
 #define CLOCK_FREQUENCY ((uint32_t)(FP_CLK_FREQ_MHZ * 1e6))  // MHz
 #define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / FP_UART_BAUDRATE)
 
-#define EVENT_INITIALIZER(highlow) (pin_event_t) \
-{ .pin = PIN_IO_UART_RX, .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }
+#define EVENT_INITIALIZER_PORT0(highlow) (pin_event_t) \
+{ .pin = PIN_IO_GPI_0(0), .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }
 
-static void set_pinevent_uart(char c, pin_event_t *events)
+#define EVENT_INITIALIZER_PORT1(highlow) (pin_event_t) \
+{ .pin = PIN_IO_GPI_1(0), .in_n_cycles = (CLOCKS_PER_BAUD * 2), .high_low = highlow }
+
+static void set_pinevent_uart_port0(char c, pin_event_t *events)
 {
     // Pull low to initialize communication
-    events[0] = EVENT_INITIALIZER(LOW);
+    events[0] = EVENT_INITIALIZER_PORT0(LOW);
 
     // Set all data bits
     for (int i = 0; i < 8; i++) {
-        events[i+1] = EVENT_INITIALIZER((bool) (c & 0x01));
+        events[i+1] = EVENT_INITIALIZER_PORT0((bool) (c & 0x01));
         c = (c >> 1);
     }
 
     // Set high to send stop bit
-    events[9] = EVENT_INITIALIZER(HIGH);
+    events[9] = EVENT_INITIALIZER_PORT0(HIGH);
+}
+
+static void set_pinevent_uart_port1(char c, pin_event_t *events)
+{
+    // Pull low to initialize communication
+    events[0] = EVENT_INITIALIZER_PORT1(LOW);
+
+    // Set all data bits
+    for (int i = 0; i < 8; i++) {
+        events[i+1] = EVENT_INITIALIZER_PORT1((bool) (c & 0x01));
+        c = (c >> 1);
+    }
+
+    // Set high to send stop bit
+    events[9] = EVENT_INITIALIZER_PORT1(HIGH);
 }
 
 int main(int argc, char const* argv[]) 
@@ -85,9 +103,20 @@ int main(int argc, char const* argv[])
         exit(1);
     }
 
+    // Give FlexPRET some time to initialize
+    usleep(500000);
+
     // Start by setting the pin high
-    pin_event_t set_high = EVENT_INITIALIZER(HIGH);
-    send(client_fd, &set_high, sizeof(set_high), 0);
+    pin_event_t set_high_port0 = EVENT_INITIALIZER_PORT0(HIGH);
+    set_high_port0.in_n_cycles = 0;
+    send(client_fd, &set_high_port0, sizeof(set_high_port0), 0);
+    
+    //pin_event_t set_high_port1 = EVENT_INITIALIZER_PORT1(HIGH);
+    //set_high_port1.in_n_cycles = 0;
+    //send(client_fd, &set_high_port1, sizeof(set_high_port1), 0);
+
+    // Keep pin high for some time
+    usleep(300000);
 
     // 10 = 1 start bit + 8 data bits + 1 stop bit
     static pin_event_t events[10];
@@ -97,8 +126,18 @@ int main(int argc, char const* argv[])
         uint8_t byte = 0;
         int bytes_read = 0;
         while ((bytes_read = read(fd, &byte, sizeof(byte))) == 1) {
-            set_pinevent_uart(byte, events);
+            // Send byte
+            set_pinevent_uart_port0(byte, events);
             send(client_fd, events, sizeof(events), 0);
+
+            // Send byte
+            //set_pinevent_uart_port1(byte % 13, events);
+            //send(client_fd, events, sizeof(events), 0);
+            
+            // Send high bit to allow some sync
+            // TODO: Remove?
+            send(client_fd, &set_high_port0, sizeof(set_high_port0), 0);
+            //send(client_fd, &set_high_port1, sizeof(set_high_port1), 0);
             usleep(100000);
         }
 
@@ -116,7 +155,7 @@ int main(int argc, char const* argv[])
     } else {
         while (1) {
             char input = getchar();
-            set_pinevent_uart(input, events);
+            set_pinevent_uart_port0(input, events);
             send(client_fd, events, sizeof(events), 0);
         }
     }

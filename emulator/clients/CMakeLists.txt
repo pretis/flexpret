@@ -14,3 +14,6 @@ clients_add_executable(interrupter interrupter.c)
 clients_add_executable(uart uart.c)
 clients_add_executable(stimuli stimuli.c)
 clients_add_executable(stimuli-mt stimuli-mt.c)
+
+add_executable(test_sdd_uart tests/test_sdd_uart.c)
+target_link_libraries(test_sdd_uart PRIVATE clients-common)

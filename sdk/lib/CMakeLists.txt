@@ -7,6 +7,7 @@ set(SOURCES
   lock.c
   pbuf.c
   printf_putchar.c
+  sdd_uart.c
   startup.c
   syscalls.c
   thread.c

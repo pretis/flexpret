@@ -5,8 +5,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/fp-app.cmake)
 
 target_link_libraries(${TESTNAME} fp-sdk)
 
-set(DEBUG true)
-
 # Change this if you want to try a different file
 set(TESTFILE "${CMAKE_CURRENT_SOURCE_DIR}/data.txt")
 
@@ -26,5 +24,5 @@ fp_add_outputs(${TESTNAME} fp-sdk)
 # earlier
 fp_add_test_runs_to_completion_client(
     ${TESTNAME}
-    "${FP_EMULATOR_CLIENTS_GENERIC}/uart --file ${TESTFILE}"
+    "${FP_EMULATOR_CLIENTS_GENERIC}/test_sdd_uart --file ${TESTFILE}"
 )
