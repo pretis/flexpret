@@ -54,6 +54,9 @@ add_custom_target(bootloader ALL
 add_custom_command(
   TARGET bootloader POST_BUILD
   COMMAND "mv"
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader-second.map
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.map
+  COMMAND "mv"
     ${CMAKE_CURRENT_BINARY_DIR}/bootloader-second.dump
     ${CMAKE_CURRENT_BINARY_DIR}/bootloader.dump
   COMMAND "mv"
@@ -117,4 +120,38 @@ target_link_libraries(bootloader-first fp-sdk)
 target_link_libraries(bootloader-second fp-sdk)
 
 fp_add_outputs(bootloader-first)
-fp_add_outputs(bootloader-second)
+#fp_add_outputs(bootloader-second)
+
+# We renamed `bootloader-second` to `bootloader`, so `fp_add_outputs` won't work. 
+# Instead we just do everything that function does manually
+
+# Generate .dump file
+fp_add_dump_output(bootloader-second)
+fp_add_mem_output(bootloader-second)
+fp_add_map_output(bootloader-second)
+fp_print_memory_usage(bootloader-second)
+
+# Create bash script
+set(IMEM_LOCATION ${CMAKE_CURRENT_BINARY_DIR})
+set(IMEM_NAME bootloader.mem)
+set(INFILE $ENV{FP_SDK_PATH}/cmake/infiles/emu-app.sh.in)
+configure_file(
+  ${INFILE}
+  ${CMAKE_SOURCE_DIR}/bin/bootloader
+  FILE_PERMISSIONS 
+    OWNER_EXECUTE # Need execute, the others are normal permissions
+    OWNER_READ 
+    OWNER_WRITE 
+    GROUP_READ 
+    WORLD_READ
+  @ONLY
+)
+set_property(
+  TARGET ${target} APPEND PROPERTY
+  ADDITIONAL_CLEAN_FILES
+    ${CMAKE_SOURCE_DIR}/bin
+)
+
+set(LINKER_INCLUDE "$ENV{FP_SDK_PATH}/lib/linker/bootloader/none")
+
+target_link_options(bootloader-second PRIVATE "-Wl,-L" ${LINKER_INCLUDE})
