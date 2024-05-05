@@ -114,6 +114,11 @@ function(fp_add_map_output target)
   target_link_options(${target} PRIVATE
     "-Xlinker" "-Map=${target}.map"
   )
+  set_property(
+    TARGET ${target} APPEND PROPERTY
+    ADDITIONAL_CLEAN_FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/${target}.map"
+  )
 endfunction()
 
 # Print how much memory used at end of compilation
