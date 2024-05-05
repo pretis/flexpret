@@ -52,6 +52,25 @@ set_property(
 )
 
 add_custom_command(
+  OUTPUT 
+    "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
+    "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
+  COMMAND bash
+    "$ENV{FP_PATH}/cmake/utils/bash/gather_fpga_resources.sh"
+    "${CRC32_HASH}"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${ISPM_FILE}"
+  WORKING_DIRECTORY
+    ${PROJECT_SOURCE_DIR}
+  BYPRODUCTS
+    "${CMAKE_CURRENT_BINARY_DIR}/DualPortBram.v"
+  DEPENDS
+    ${SCALA_SOURCES}
+  VERBATIM
+)
+
+add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/bitstream.bit"
   COMMAND "vivado" 
     "-mode"    "batch" 
@@ -64,85 +83,85 @@ add_custom_command(
 )
 
 # Run sbt, which generates Verilog code for the FlexPRET processor
-add_custom_command(
-  OUTPUT "${PROJECT_BINARY_DIR}/FpgaTop.v"
-  COMMAND "sbt" "run fpga h${CRC32_HASH} --no-dedup --target-dir build"
-  DEPENDS ${SCALA_SOURCES}
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
-  COMMAND "cp" 
-    ${ISPM_FILE}
-    "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
-  DEPENDS 
-    ${ISPM_FILE}
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/DualPortBram.v"
-  COMMAND "cp"
-    "${PROJECT_SOURCE_DIR}/src/main/resources/DualPortBramFPGA.v"
-    "${CMAKE_CURRENT_BINARY_DIR}/rtl/DualPortBram.v"
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/flexpret.v"
-  COMMAND "cp"
-    "${PROJECT_BINARY_DIR}/FpgaTop.v"
-    "${CMAKE_CURRENT_BINARY_DIR}/rtl/flexpret.v"
-  DEPENDS 
-    "${PROJECT_BINARY_DIR}/FpgaTop.v"
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/Top.v"
-  COMMAND "cp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/rtl/Top.v"
-    "${CMAKE_CURRENT_BINARY_DIR}/rtl/Top.v"
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
-  COMMAND "cat"
-    "${CMAKE_CURRENT_BINARY_DIR}/xdc/clock.xdc"  
-    "${CMAKE_CURRENT_SOURCE_DIR}/xdc/Top.xdc"
-    ">"
-    "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
-  COMMAND "cat" 
-    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
-    "${FP_FPGA_BOARD_PATH}/tcl/setup.tcl"
-    "${FP_FPGA_BOARD_PATH}/tcl/bitstream.tcl" 
-    ">"
-    "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
-  DEPENDS 
-    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
-    "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
-)
-
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
-  COMMAND "cat" 
-    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
-    "${FP_FPGA_BOARD_PATH}/tcl/flash.tcl" 
-    ">"
-    "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
-  DEPENDS 
-    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
-)
+#add_custom_command(
+#  OUTPUT "${PROJECT_BINARY_DIR}/FpgaTop.v"
+#  COMMAND "sbt" "run fpga h${CRC32_HASH} --no-dedup --target-dir build"
+#  DEPENDS ${SCALA_SOURCES}
+#  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
+#  COMMAND "cp" 
+#    ${ISPM_FILE}
+#    "${CMAKE_CURRENT_BINARY_DIR}/rtl/ispm.mem"
+#  DEPENDS 
+#    ${ISPM_FILE}
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/DualPortBram.v"
+#  COMMAND "cp"
+#    "${PROJECT_SOURCE_DIR}/src/main/resources/DualPortBramFPGA.v"
+#    "${CMAKE_CURRENT_BINARY_DIR}/rtl/DualPortBram.v"
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/flexpret.v"
+#  COMMAND "cp"
+#    "${PROJECT_BINARY_DIR}/FpgaTop.v"
+#    "${CMAKE_CURRENT_BINARY_DIR}/rtl/flexpret.v"
+#  DEPENDS 
+#    "${PROJECT_BINARY_DIR}/FpgaTop.v"
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rtl/Top.v"
+#  COMMAND "cp"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/rtl/Top.v"
+#    "${CMAKE_CURRENT_BINARY_DIR}/rtl/Top.v"
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
+#  COMMAND "cat"
+#    "${CMAKE_CURRENT_BINARY_DIR}/xdc/clock.xdc"  
+#    "${CMAKE_CURRENT_SOURCE_DIR}/xdc/Top.xdc"
+#    ">"
+#    "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
+#  COMMAND "cat" 
+#    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
+#    "${FP_FPGA_BOARD_PATH}/tcl/setup.tcl"
+#    "${FP_FPGA_BOARD_PATH}/tcl/bitstream.tcl" 
+#    ">"
+#    "${CMAKE_CURRENT_BINARY_DIR}/tcl/bitstream_runnable.tcl"
+#  DEPENDS 
+#    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
+#    "${CMAKE_CURRENT_BINARY_DIR}/xdc/constraints.xdc"
+#)
+#
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
+#  COMMAND "cat" 
+#    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
+#    "${FP_FPGA_BOARD_PATH}/tcl/flash.tcl" 
+#    ">"
+#    "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
+#  DEPENDS 
+#    "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
+#)
 
 # Check whether the `.ispm` file exists or not
 # If it does not - let the user know they need to compile it
-add_custom_command(
-  OUTPUT ${ISPM_FILE}
-  COMMAND bash 
-    $ENV{FP_SDK_PATH}/cmake/utils/check_file_exist.sh 
-      ${ISPM_FILE} 
-      "CMake error: Cannot find ${ISPM_FILE} which is required for target"
-  VERBATIM
-)
+#add_custom_command(
+#  OUTPUT ${ISPM_FILE}
+#  COMMAND bash 
+#    $ENV{FP_SDK_PATH}/cmake/utils/check_file_exist.sh 
+#      ${ISPM_FILE} 
+#      "CMake error: Cannot find ${ISPM_FILE} which is required for target"
+#  VERBATIM
+#)

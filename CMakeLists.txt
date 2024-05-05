@@ -115,31 +115,17 @@ set(SCALA_SOURCES
 list(TRANSFORM SCALA_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/main/scala/")
 list(TRANSFORM SCALA_SOURCES APPEND ".scala")
 
-add_custom_target(emulator ALL DEPENDS fp-emu)
-
 add_subdirectory(emulator)
 add_subdirectory(fpga)
 
-add_custom_command(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/FpgaTop.v"
-  COMMAND "sbt" "run fpga h${CRC32_HASH} --no-dedup --target-dir build"
-  DEPENDS ${SCALA_SOURCES}
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
-
+# TODO: This happens at CMake build time, not at make time
 # Always delete previously installed configuration if it exists
-add_custom_command(
-  TARGET emulator
-  COMMAND "rm" "-rf"
-    "$ENV{FP_SDK_PATH}/flexpret"
-    "$ENV{FP_SDK_PATH}/lib/include/flexpret/internal/hwconfig.h"
-    "$ENV{FP_SDK_PATH}/lib/linker/internal/hwconfig.ld"
-)
 
-set_property(
-  TARGET emulator APPEND
-  PROPERTY ADDITIONAL_CLEAN_FILES ${UNIQUE_CONFIG_FILE}
-)
+
+#set_property(
+#  TARGET emulator APPEND
+#  PROPERTY ADDITIONAL_CLEAN_FILES ${UNIQUE_CONFIG_FILE}
+#)
 
 file(WRITE "${CMAKE_BINARY_DIR}/hwconfighash.txt" ${CRC32_HASH})
 
