@@ -11,7 +11,7 @@
 #include <string.h>
 #include <flexpret/flexpret.h>
 
-#define CLOCKFREQ     ((int)(50e6)) // 100 MHz
+#define CLOCKFREQ     ((FP_CLK_FREQ_MHZ * 1000000)) // 100 MHz
 #define NS_PER_CLK    (10)
 #define UART_BAUDRATE (9600)
 #define CLKS_PER_BAUD ((int) ((CLOCKFREQ) / (UART_BAUDRATE)))
