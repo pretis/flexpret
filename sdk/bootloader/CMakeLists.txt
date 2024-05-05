@@ -70,6 +70,16 @@ add_custom_command(
     ${CMAKE_CURRENT_BINARY_DIR}/bootloader
 )
 
+# Add the renamed files to clean target
+set_property(TARGET bootloader APPEND PROPERTY
+  ADDITIONAL_CLEAN_FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.map
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.dump
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.mem
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader.mem.orig
+    ${CMAKE_CURRENT_BINARY_DIR}/bootloader
+)
+
 add_dependencies(bootloader bootloader-second)
 
 target_compile_definitions(bootloader-first PRIVATE NDEBUG)
@@ -120,7 +130,6 @@ target_link_libraries(bootloader-first fp-sdk)
 target_link_libraries(bootloader-second fp-sdk)
 
 fp_add_outputs(bootloader-first)
-#fp_add_outputs(bootloader-second)
 
 # We renamed `bootloader-second` to `bootloader`, so `fp_add_outputs` won't work. 
 # Instead we just do everything that function does manually

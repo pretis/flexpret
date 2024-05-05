@@ -4,12 +4,6 @@ if (NOT DEFINED TARGET_NAME)
   )
 endif()
 
-if (NOT EXISTS ${ISPM_FILE})
-  message(WARNING
-    "Could not find ${ISPM_FILE}. Targets that rely on this file (fpga targets) will fail."
-  )
-endif()
-
 math(EXPR CLK_PERIOD_NS "1000 / ${CLK_FREQ_MHZ}" OUTPUT_FORMAT DECIMAL)
 math(EXPR CLK_HALF_PERIOD_NS "${CLK_PERIOD_NS} / 2" OUTPUT_FORMAT DECIMAL)
 
@@ -140,4 +134,15 @@ add_custom_command(
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/flash_runnable.tcl"
   DEPENDS 
     "${CMAKE_CURRENT_BINARY_DIR}/tcl/variables.tcl"
+)
+
+# Check whether the `.ispm` file exists or not
+# If it does not - let the user know they need to compile it
+add_custom_command(
+  OUTPUT ${ISPM_FILE}
+  COMMAND bash 
+    $ENV{FP_SDK_PATH}/cmake/utils/check_file_exist.sh 
+      ${ISPM_FILE} 
+      "CMake error: Cannot find ${ISPM_FILE} which is required for target"
+  VERBATIM
 )
