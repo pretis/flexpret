@@ -62,16 +62,12 @@ configure_file(
   "$ENV{FP_SDK_PATH}/lib/linker/internal/swconfig.ld"
 )
 
-# Interface library
-add_library(fp-sdk-if INTERFACE)
-
 # Library with source files
 # This is the interface library + source code
-add_library(fp-sdk INTERFACE)
-target_link_libraries(fp-sdk INTERFACE fp-sdk-if)
+add_library(fp-sdk)
 
 # Make sdk dependent on these files so it will detect changes to them
-target_sources(fp-sdk-if INTERFACE ${FP_INSTALLED_FILES})
+target_sources(fp-sdk PRIVATE ${FP_INSTALLED_FILES})
 
 if (${TARGET} STREQUAL "fpga")
   option(DEBUG "Enable or disable debug such as printf" OFF)
@@ -79,7 +75,7 @@ else()
   option(DEBUG "Enable or disable debug such as printf" ON)
 endif()
 
-target_compile_options(fp-sdk-if INTERFACE 
+target_compile_options(fp-sdk PUBLIC 
   # Gives build-time error if the developer attempts to allocate variables on the
   # stack bigger than the stacksize
   "-Werror=stack-usage=${STACKSIZE}"
@@ -92,14 +88,14 @@ target_compile_options(fp-sdk-if INTERFACE
 )
 
 
-target_compile_definitions(fp-sdk-if INTERFACE 
+target_compile_definitions(fp-sdk PUBLIC
   # This is used to check whether the SDK has the same hardware configuration
   # as the built FlexPRET
   FP_CONFIGHASH=0x${CRC32_HASH}
 )
 
 if (NOT ${DEBUG})
-  target_compile_definitions(fp-sdk-if INTERFACE NDEBUG)
+  target_compile_definitions(fp-sdk PUBLIC NDEBUG)
 endif()
 
 add_subdirectory(lib)
@@ -115,7 +111,7 @@ if (PROJECT_IS_TOP_LEVEL)
 endif()
 
 set_property(
-  TARGET fp-sdk-if APPEND PROPERTY
+  TARGET fp-sdk APPEND PROPERTY
   ADDITIONAL_CLEAN_FILES
     "$ENV{FP_SDK_PATH}/lib/include/flexpret/internal/swconfig.h"
     "$ENV{FP_SDK_PATH}/lib/linker/internal/swconfig.ld"

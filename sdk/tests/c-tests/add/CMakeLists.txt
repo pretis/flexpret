@@ -1,8 +1,7 @@
 set(TESTNAME add)
 
 add_executable(${TESTNAME} ${TESTNAME}.c)
-include(${CMAKE_SOURCE_DIR}/cmake/fp-app.cmake)
-
+include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
 target_link_libraries(${TESTNAME} fp-sdk)
 
 fp_add_outputs(${TESTNAME})
