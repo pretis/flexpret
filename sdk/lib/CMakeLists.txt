@@ -6,7 +6,6 @@ set(SOURCES
   io.c
   lock.c
   pbuf.c
-  printf_putchar.c
   startup.c
   syscalls.c
   thread.c
@@ -16,25 +15,26 @@ set(SOURCES
 
 list(TRANSFORM SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
-target_sources(fp-sdk PUBLIC ${SOURCES})
+target_sources(fp-sdk PRIVATE ${SOURCES})
+target_sources(fp-sdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/printf_putchar.c)
 
 if (${TARGET} STREQUAL "fpga")
-  target_compile_definitions(fp-sdk-if INTERFACE __FPGA__)
+  target_compile_definitions(fp-sdk PUBLIC __FPGA__)
 else()
-  target_compile_definitions(fp-sdk-if INTERFACE __EMULATOR__)
+  target_compile_definitions(fp-sdk PUBLIC __EMULATOR__)
 endif()
 
-target_compile_definitions(fp-sdk-if INTERFACE 
+target_compile_definitions(fp-sdk PUBLIC 
   _REENT_SMALL 
   ${NEWLIB_REENTRANCY_METHOD} # Set in configderive.cmake
 )
 
-target_include_directories(fp-sdk-if INTERFACE
+target_include_directories(fp-sdk PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_options(fp-sdk-if INTERFACE
+target_link_options(fp-sdk PUBLIC
   "-L" "${CMAKE_CURRENT_SOURCE_DIR}/linker" "-T" "flexpret.ld"
 )

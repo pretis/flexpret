@@ -40,6 +40,6 @@ target_compile_definitions(printf PUBLIC
   vprintf_=vprintf
 )
 
-target_compile_definitions(fp-sdk-if INTERFACE HAVE_PRINTF)
-target_include_directories(fp-sdk-if INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/printf/src)
-target_link_libraries(fp-sdk INTERFACE printf)
+target_compile_definitions(fp-sdk PUBLIC HAVE_PRINTF)
+target_include_directories(fp-sdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/printf/src)
+target_link_libraries(fp-sdk PUBLIC printf)

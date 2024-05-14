@@ -31,7 +31,7 @@ add_library(location-empty INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/empty/location.
 target_include_directories(location-empty INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/empty)
 
 # 2. bootloader-first depends on location-empty
-target_link_libraries(bootloader-first location-empty)
+target_link_libraries(bootloader-first PRIVATE location-empty)
 
 # 3. Actual location.h
 add_library(location INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/actual/location.h)
@@ -39,7 +39,7 @@ target_include_directories(location INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/actual
 add_dependencies(location bootloader-first)
 
 # 4. Compile bootloader with location.h
-target_link_libraries(bootloader-second location)
+target_link_libraries(bootloader-second PRIVATE location)
 
 # 5. Verify size and produce bootloader.ld
 # Note: Need to call this target `bootloader` so this target (and its dependencies)
@@ -126,8 +126,8 @@ include($ENV{FP_SDK_PATH}/cmake/fp-app.cmake)
 target_include_directories(bootloader-first PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(bootloader-second PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(bootloader-first fp-sdk)
-target_link_libraries(bootloader-second fp-sdk)
+target_link_libraries(bootloader-first PUBLIC fp-sdk)
+target_link_libraries(bootloader-second PUBLIC fp-sdk)
 
 fp_add_outputs(bootloader-first)
 
