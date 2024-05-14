@@ -16,8 +16,6 @@ def DBG_PRINT(str):
 
 SYNC_ID = 0xC0DE
 
-print("Running serialize_app.py")
-
 with open(args.input, "r") as fr:
     lines = fr.readlines()
     DBG_PRINT(f"Got {len(lines)} lines")
@@ -41,6 +39,3 @@ with open(args.input, "r") as fr:
             assert(len(bs) == 4)
             fw.write(bs)
         fw.write(syncField)
-        
-
-print("serialize_app.py Done")
