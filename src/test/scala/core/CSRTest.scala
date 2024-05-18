@@ -63,8 +63,13 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
     InstMemConfiguration(bypass=false, sizeKB=512),
     dMemKB=512, mul=false, priv=true, features="all")
 
+  val confDebug = FlexpretConfiguration(threads=threads, flex=false, clkFreqMHz=100,
+    InstMemConfiguration(bypass=false, sizeKB=512),
+    dMemKB=512, mul=false, priv=true, features="all", debug=true)
+
   def csrNoPriv = new CSR("h00000000".asUInt(32.W), confNoPriv)
   def csrPriv   = new CSR("h00000000".asUInt(32.W), confPriv)
+  def csrDebug  = new CSR("h00000000".asUInt(32.W), confDebug)
 
   implicit def csrToHelper(c: CSR) = new CSRTestHelper(c)
 
@@ -193,6 +198,144 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
         c.writeCSRtype(CSRs.evec, "haab7_7781".U, CSR_W)
         c.clock.step()
         c.io.priv_fault.expect(0.U)
+      }
+    }
+  }
+
+  it should "check that a short delay until works as expected" in {
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      timescope {
+        // Should trigger in two clock cycles, since each clock cycle increments
+        // timer by 10 ns
+        c.writeCSR(CSRs.compare_du_wu, "h00000014".U)
+        c.clock.step()
+
+        // Should now be false for tid = 0
+        c.io.timer_expire_du_wu(0).expect(false.B)
+        for (tid <- 1 until threads) {
+          // Default value is triggered; i.e. not in use
+          c.io.timer_expire_du_wu(tid).expect(true.B)
+        }
+
+        c.clock.step()
+        // Should now be true
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        for (tid <- 1 until threads) {
+          // Default value is triggered; i.e. not in use
+          c.io.timer_expire_du_wu(tid).expect(true.B)
+        }
+      }
+    }
+  }
+
+  it should "check that multiple delays work as expected" in {
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>
+      timescope {
+        // Write as tid = 2
+        c.io.rw.thread.poke(2.U)
+        c.writeCSR(CSRs.compare_du_wu, "h0000001E".U) // 3 clock cycles
+        
+        // Step clock to write
+        c.clock.step()
+
+        // Check it is active
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(false.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
+
+        // Write as tid = 3
+        c.io.rw.thread.poke(3.U)
+        c.writeCSR(CSRs.compare_du_wu, "h00000028".U) // 4 clock cycles (from start)
+        c.clock.step()
+
+        // Check both tid = 2 and tid = 4 are active
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(false.B)
+        c.io.timer_expire_du_wu(3).expect(false.B)
+
+        c.clock.step()
+
+        // tid = 2 should trigger now
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(false.B)
+        
+        c.clock.step()
+
+        // tid = 3 should trigger now
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
+      }
+    }
+  }
+
+  it should "check that delay less than current time has same effect as nop" in {
+    test(csrPriv).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c => 
+      timescope {
+        // Advance clock a little
+        c.clock.step()
+        c.clock.step()
+
+        c.writeCSR(CSRs.compare_du_wu, "h0000000A".U) // 1 clock cycle; already expired
+        
+        // Should have no effect
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
+        c.clock.step()
+
+        // And no effect after another clock cycle
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
+      }
+    }
+  }
+
+  it should "check a long delay" in {
+    test(csrDebug).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c => 
+      timescope {
+        // Set no timeout on clock
+        c.clock.setTimeout(0)
+        
+        val targetTimeNs = 100000
+        val delayTimeNs = 1000
+
+        // Advance clock by a lot; don't use actual clock but instead just
+        // poke the `reg_time` register. This saves a lot of simulation time,
+        // but waveform will be a bit weird
+        c.writeCSR(CSRs.time, targetTimeNs.asUInt)
+
+        c.writeCSR(CSRs.compare_du_wu, (targetTimeNs + delayTimeNs).asUInt)
+
+        // Check initial signals
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
+
+        // Delay half time and check signals
+        c.clock.step((delayTimeNs / 2) / 10)
+
+        c.io.timer_expire_du_wu(0).expect(false.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
+
+        // Delay rest and check signals
+        c.clock.step((delayTimeNs / 2) / 10)
+
+        c.io.timer_expire_du_wu(0).expect(true.B)
+        c.io.timer_expire_du_wu(1).expect(true.B)
+        c.io.timer_expire_du_wu(2).expect(true.B)
+        c.io.timer_expire_du_wu(3).expect(true.B)
       }
     }
   }
