@@ -65,7 +65,7 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
 
   val confDebug = FlexpretConfiguration(threads=threads, flex=false, clkFreqMHz=100,
     InstMemConfiguration(bypass=false, sizeKB=512),
-    dMemKB=512, mul=false, priv=true, features="all", debug=true)
+    dMemKB=512, mul=false, priv=true, features="all")
 
   def csrNoPriv = new CSR("h00000000".asUInt(32.W), confNoPriv)
   def csrPriv   = new CSR("h00000000".asUInt(32.W), confPriv)
