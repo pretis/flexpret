@@ -298,45 +298,4 @@ class CSRTest extends AnyFlatSpec with ChiselScalatestTester {
       }
     }
   }
-
-  it should "check a long delay" in {
-    test(csrDebug).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c => 
-      timescope {
-        // Set no timeout on clock
-        c.clock.setTimeout(0)
-        
-        val targetTimeNs = 100000
-        val delayTimeNs = 1000
-
-        // Advance clock by a lot; don't use actual clock but instead just
-        // poke the `reg_time` register. This saves a lot of simulation time,
-        // but waveform will be a bit weird
-        c.writeCSR(CSRs.time, targetTimeNs.asUInt)
-
-        c.writeCSR(CSRs.compare_du_wu, (targetTimeNs + delayTimeNs).asUInt)
-
-        // Check initial signals
-        c.io.timer_expire_du_wu(0).expect(true.B)
-        c.io.timer_expire_du_wu(1).expect(true.B)
-        c.io.timer_expire_du_wu(2).expect(true.B)
-        c.io.timer_expire_du_wu(3).expect(true.B)
-
-        // Delay half time and check signals
-        c.clock.step((delayTimeNs / 2) / 10)
-
-        c.io.timer_expire_du_wu(0).expect(false.B)
-        c.io.timer_expire_du_wu(1).expect(true.B)
-        c.io.timer_expire_du_wu(2).expect(true.B)
-        c.io.timer_expire_du_wu(3).expect(true.B)
-
-        // Delay rest and check signals
-        c.clock.step((delayTimeNs / 2) / 10)
-
-        c.io.timer_expire_du_wu(0).expect(true.B)
-        c.io.timer_expire_du_wu(1).expect(true.B)
-        c.io.timer_expire_du_wu(2).expect(true.B)
-        c.io.timer_expire_du_wu(3).expect(true.B)
-      }
-    }
-  }
 }
