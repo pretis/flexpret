@@ -33,11 +33,10 @@
 #include <stdlib.h>
 
 #include "common.h"
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+#include "../../build/hwconfig.h"
 
-#define CLOCK_FREQUENCY ((uint32_t)(CLOCK_FREQ_MHZ * 1e6))  // MHz
-#define UART_BAUDRATE   (115200)             //  Hz
-#define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / UART_BAUDRATE)
+#define CLOCK_FREQUENCY ((uint32_t)(FP_CLK_FREQ_MHZ * 1e6))  // MHz
+#define CLOCKS_PER_BAUD (CLOCK_FREQUENCY / FP_UART_BAUDRATE)
 
 #define EVENT_INITIALIZER(highlow) (pin_event_t) \
 { .pin = PIN_IO_UART_RX, .in_n_cycles = CLOCKS_PER_BAUD, .high_low = highlow }
@@ -60,7 +59,7 @@ static void set_pinevent_uart(char c, pin_event_t *events)
 int main(int argc, char const* argv[]) 
 {
     bool use_file = false;
-    char filename[64];
+    char filename[256];
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--file")) {
             i++;
@@ -113,7 +112,7 @@ int main(int argc, char const* argv[])
         } else {
             printf("Reached end of file\n");
         }
-        while(1);
+        sleep(1);
     } else {
         while (1) {
             char input = getchar();

@@ -21,23 +21,16 @@
 #include <sys/socket.h>
 
 #include "common.h"
-#include "../../programs/lib/include/flexpret_hwconfig.h"
-
-static pin_event_t interrupt[] = {
-    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = 10000, .high_low = HIGH },
-
-    // Wait NUM_THREADS cycles before setting low again so the HW thread gets
-    // enough time to react
-    { .pin = PIN_IO_INT_EXTS_0, .in_n_cycles = NUM_THREADS, .high_low = LOW  },
-};
+#include "../../build/hwconfig.h"
 
 static void usage(int argc, char *const* argv, char *err)
 {
     printf("Error: %s\n", err);
-    printf("Usage: %s [-a <-n <number of interrupts> -d <delay time (ms)>>]\n" \
+    printf("Usage: %s [-a <-n <number of interrupts> -d <delay time (ms)>>] [-p <pin>]\n" \
            "    where -a denotes 'automatic' mode\n" \
            "          -n is the number of interrupts to send\n" \
-           "          -d is the delay between each interrupt in milliseconds\n", \
+           "          -d is the delay between each interrupt in milliseconds\n" \
+           "          -p is which pin to trigger interrupts on (0-7)\n", \
             argv[0]
     );
 
@@ -59,9 +52,10 @@ int main(int argc, char *const* argv)
     int ninterrupts = 0;
     int delay_ms = 0;
 
+    int pin = 0;
     int opt = 0;
     
-    while((opt = getopt(argc, argv, ":an:d:")) != -1) {
+    while((opt = getopt(argc, argv, ":an:d:p:")) != -1) {
         switch (opt)
         {
         case 'a':
@@ -77,6 +71,13 @@ int main(int argc, char *const* argv)
             delay_ms = atoi(optarg);
             break;
         
+        case 'p':
+            pin = atoi(optarg);
+            if (pin < 0 || pin > 7) {
+                usage(argc, argv, "-p <pin> must be between 0-7");
+            }
+            break;
+        
         case '?':
         default:
             printf("%s", optarg);
@@ -84,6 +85,15 @@ int main(int argc, char *const* argv)
             break;
         }
     }
+    
+    pin_event_t interrupt[] = {
+        { .pin = pin, .in_n_cycles = 10000, .high_low = HIGH },
+
+        // Wait FP_THREADS cycles before setting low again so the HW thread gets
+        // enough time to react
+        { .pin = pin, .in_n_cycles = FP_THREADS, .high_low = LOW  },
+    };
+
 
     if (!manual) {
         if (ninterrupts <= 0) {

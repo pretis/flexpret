@@ -1,3 +1,6 @@
 [submodule "programs/lib/printf"]
-	path = programs/lib/printf
+	path = sdk/lib/printf
+	url = https://github.com/pretis/printf.git
+[submodule "sdk/external/printf"]
+	path = sdk/external/printf
 	url = https://github.com/pretis/printf.git

@@ -3,11 +3,11 @@
 #include <cstdarg>
 #include <cstring>
 
-// For NUM_THREADS macro
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+// For FP_THREADS macro
+#include "../build/hwconfig.h"
 
 // For THREAD_ARRAY_INTIALIZER macro
-#include "../../programs/lib/include/flexpret_types.h"
+#include "../sdk/lib/include/flexpret/types.h"
 
 /**
  * The finite state machine (fsm) is designed with three states: EXPECT_DELIM, 
@@ -43,16 +43,15 @@ enum state {
     EXPECT_DATA,
 };
 
-static enum state state[NUM_THREADS];
-static enum state next_state[NUM_THREADS];
+static enum state state[FP_THREADS];
+static enum state next_state[FP_THREADS];
 
-static int fd[NUM_THREADS];
-static int nbytes_received[NUM_THREADS];
-
-static char buffer[NUM_THREADS][128];
+static int fd[FP_THREADS];
+static int nbytes_received[FP_THREADS];
+static char buffer[FP_THREADS][512];
 
 void printf_init(void) {
-    for (int i = 0; i < NUM_THREADS; i++) {
+    for (int i = 0; i < FP_THREADS; i++) {
         state[i] = EXPECT_DELIM;
         next_state[i] = EXPECT_FD;
         fd[i] = 0;
@@ -101,12 +100,12 @@ void printf_fsm(const int tid, const uint32_t reg) {
                 );
                 nbytes_received[tid] = 0;
                 next_state[tid] = EXPECT_FD;
-#if NUM_THREADS > 1
+#if FP_THREADS > 1
                 printf("[%i]: %s", tid, buffer[tid]);
 #else
                 // Thread id just becomes noise in this case
                 printf("%s", buffer[tid]);
-#endif // NUM_THREADS > 1
+#endif // FP_THREADS > 1
             } else {
                 memcpy(
                     &buffer[tid][nbytes_received[tid]],
@@ -124,16 +123,16 @@ void printf_fsm(const int tid, const uint32_t reg) {
 }
 
 void print_int_fsm(const int tid, const uint32_t reg) {
-    static bool got_delim[NUM_THREADS] = THREAD_ARRAY_INITIALIZER(false);
+    static bool got_delim[FP_THREADS] = THREAD_ARRAY_INITIALIZER(false);
     
     if (got_delim[tid] && reg != 0xbaaabaaa) {
         got_delim[tid] = false;
-#if NUM_THREADS > 1
+#if FP_THREADS > 1
         printf("[%i]: %i\n", tid, reg);
 #else
         // Thread id just becomes noise in this case
         printf("%i\n", reg);
-#endif // NUM_THREADS > 1
+#endif // FP_THREADS > 1
 
     } else if (reg == 0xbaaabaaa) {
         got_delim[tid] = true;

@@ -11,7 +11,8 @@ lazy val flexpret = (project in file("."))
     libraryDependencies ++= Seq(
       "edu.berkeley.cs" %% "chisel3" % chiselVersion,
       "edu.berkeley.cs" %% "chiseltest" % "0.5.6" % "test",
-      "io.github.t-crest" % "soc-comm" % "0.1.5"
+      "io.github.t-crest" % "soc-comm" % "0.1.5",
+      "com.github.pureconfig" %% "pureconfig" % "0.17.6"
     ),
     scalacOptions ++= Seq(
       "-language:reflectiveCalls",

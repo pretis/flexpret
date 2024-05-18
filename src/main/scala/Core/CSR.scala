@@ -14,7 +14,7 @@ import Core.Causes
 import Core.CSRs
 import Core.FlexpretConstants._
 
-class CSR(implicit val conf: FlexpretConfiguration) extends Module {
+class CSR(confHash: UInt, implicit val conf: FlexpretConfiguration) extends Module {
   val io = IO(new Bundle {
     val rw = new Bundle {
       val addr = Input(UInt(12.W))
@@ -334,6 +334,10 @@ class CSR(implicit val conf: FlexpretConfiguration) extends Module {
 
   when(compare_addr(CSRs.core_id)) {
     data_out := conf.coreId.U
+  }
+
+  when(compare_addr(CSRs.confHash)) {
+    data_out := confHash
   }
 
   // ************************************************************

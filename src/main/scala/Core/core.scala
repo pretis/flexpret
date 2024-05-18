@@ -82,13 +82,13 @@ class CoreIO(implicit val conf: FlexpretConfiguration) extends Bundle {
   val imem_store = Output(Bool())
 }
 
-class Core(confIn: FlexpretConfiguration) extends Module {
+class Core(confIn: FlexpretConfiguration, cfgHash: UInt) extends Module {
   implicit val conf = confIn
 
   val io = IO(new CoreIO)
 
   val control = Module(new Control())
-  val datapath = Module(new Datapath())
+  val datapath = Module(new Datapath(cfgHash))
   val imem = if (conf.imemConfig.bypass) None else Some(Module(new ISpm()))
   val dmem = Module(new DSpm())
   //val dmem = Module(new DSpm_BRAM())

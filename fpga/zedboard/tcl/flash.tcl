@@ -1,4 +1,5 @@
 puts "Programming Zedboard"
+
 # Programming attached Zedboard
 open_hw_manager
 connect_hw_server -allow_non_jtag

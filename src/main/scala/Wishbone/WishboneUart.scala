@@ -30,8 +30,8 @@ class WishboneUartIO extends Bundle {
 class WishboneUart(implicit cfg: FlexpretConfiguration) extends WishboneDevice(4) {
   val ioUart = IO(new WishboneUartIO())
 
-  val rx = Module(new Rx(cfg.clkFreq, 115000)).io
-  val tx = Module(new Tx(cfg.clkFreq, 115000)).io
+  val rx = Module(new Rx(cfg.clkFreqHz, cfg.uartBaudrate)).io
+  val tx = Module(new Tx(cfg.clkFreqHz, cfg.uartBaudrate)).io
 
   ioUart.tx := tx.txd
   rx.rxd := ioUart.rx

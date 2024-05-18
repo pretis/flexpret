@@ -6,6 +6,7 @@ License: See LICENSE.txt
 ******************************************************************************/
 package flexpret.core.test
 
+import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -18,10 +19,10 @@ class BasicJumpsTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Basic jumps"
 
   val threads = 1
-  val conf = FlexpretConfiguration(threads=threads, flex=false, clkFreq=100000000,
+  val conf = FlexpretConfiguration(threads=threads, flex=false, clkFreqMHz=100,
     InstMemConfiguration(bypass=true, sizeKB=4),
     dMemKB=256, mul=false, priv=false, features="all")
-  def core = new Core(conf)
+  def core = new Core(conf, "h00000000".asUInt(32.W))
 
   it should "jal" in {
     test(core).withAnnotations(Seq(treadle.WriteVcdAnnotation)) { c =>

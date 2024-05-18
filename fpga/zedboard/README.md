@@ -41,16 +41,6 @@ If attempting to reset several times still does not work, we recommend flashing 
 
 ## Software
 
-When compiling software intended to run on the FPGA using the bootloader, the software must be compiled with the `make` variable `TARGET=fpga`. This is because the bootloader is placed in the instruction memory at address zero to `APP_LOCATION`. An application uploaded using the bootloader will be placed from `APP_LOCATION` in instruction memory. Compilation needs to take this into consideration to offset all variables, functions, labels and so on by that amount.
+When compiling software intended to run on the FPGA using the bootloader, the software must be compiled with the CMake variable `TARGET` to fpga. This is because the bootloader is placed in the instruction memory at address zero to `APP_LOCATION`. An application uploaded using the bootloader will be placed from `APP_LOCATION` in instruction memory. Compilation needs to take this into consideration to offset all variables, functions, labels and so on by that amount.
 
-The `make` system has two targets designed specifically for FPGA. `make flash` will automatically upload an application to the FPGA. `make pico` will open `picocom` with the correct configuration - except for which USB the USB-UART dongle is connected to.
-
-The workflow when running software on FPGA FlexPRET looks something like this:
-```bash
-cd <FlexPRET>/programs/lib/c-tests/wb_uart_led
-make clean all flash pico TARGET=fpga
-```
-
-The second line will recompile the application (with `TARGET=fpga`), flash it to the FPGA and open `picocom` afterwards.
-
-It is generally recommended to use the `wb_uart_led` application for verifying that FlexPRET on FPGA works. This application awaits data on the UART (which can be transmitted with `make pico` and typing in the terminal) and echoes it back to the user. It also sets the LEDs to whatever data was received.
+When the `TARGET` variable is set to fpga, the build system will generate a script to flash the application's `.mem` file to the FPGA (instead of running it on the emulator).

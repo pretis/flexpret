@@ -43,14 +43,14 @@ class Lock(implicit val conf: FlexpretConfiguration) extends Module {
         io.grant := false.B
       }
     }.otherwise {
-      assert(regLocked, "thread %d tried to release unlocked lock", io.tid)
+      assert(regLocked, cf"thread ${io.tid} tried to release unlocked lock")
       when (io.tid === regOwner) {
         regLocked := false.B
         regOwner := 0.U
         io.grant := true.B
       }.otherwise {
         io.grant := false.B
-        assert(false.B, "thread-%d tried to release locked owned by %d", io.tid, regOwner)
+        assert(false.B, cf"thread-${io.tid} tried to release locked owned by thread-${regOwner}")
       }
     }
 

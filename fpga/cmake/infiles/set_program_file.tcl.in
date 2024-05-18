@@ -1,0 +1,1 @@
+set_property PROGRAM.FILE {${CMAKE_CURRENT_BINARY_DIR}/bitstream.bit} [get_hw_devices @PART_SHORT@_1]

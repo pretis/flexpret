@@ -23,11 +23,11 @@
 #include "VVerilatorTop.h"
 #include "pin_event.h"
 
-#include "../../programs/lib/include/flexpret_hwconfig.h"
+#include "../build/hwconfig.h"
 
 #define NUM_GPI (4)
-#define MAX_NUM_THREADS (8)
-#define NUM_PINS (MAX_NUM_THREADS + (NUM_GPI * 32) + 2)
+#define FP_MAX_THREADS (8)
+#define NUM_PINS (FP_MAX_THREADS + (NUM_GPI * 32) + 2)
 
 typedef struct {
     uint64_t ncycles;
@@ -76,28 +76,28 @@ static inline void set_pin(uint32_t which_pin, VVerilatorTop *top, uint8_t val)
     }
     switch (which_pin)
     {
-#if NUM_THREADS >= 1
+#if FP_THREADS >= 1
     case PIN_IO_INT_EXTS_0: top->io_int_exts_0 = val; break;
 #endif
-#if NUM_THREADS >= 2
+#if FP_THREADS >= 2
     case PIN_IO_INT_EXTS_1: top->io_int_exts_1 = val; break;
 #endif
-#if NUM_THREADS >= 3
+#if FP_THREADS >= 3
     case PIN_IO_INT_EXTS_2: top->io_int_exts_2 = val; break;
 #endif
-#if NUM_THREADS >= 4
+#if FP_THREADS >= 4
     case PIN_IO_INT_EXTS_3: top->io_int_exts_3 = val; break;
 #endif
-#if NUM_THREADS >= 5
+#if FP_THREADS >= 5
     case PIN_IO_INT_EXTS_4: top->io_int_exts_4 = val; break;
 #endif
-#if NUM_THREADS >= 6
+#if FP_THREADS >= 6
     case PIN_IO_INT_EXTS_5: top->io_int_exts_5 = val; break;
 #endif
-#if NUM_THREADS >= 7
+#if FP_THREADS >= 7
     case PIN_IO_INT_EXTS_6: top->io_int_exts_6 = val; break;
 #endif
-#if NUM_THREADS >= 8
+#if FP_THREADS >= 8
     case PIN_IO_INT_EXTS_7: top->io_int_exts_7 = val; break;
 #endif
 

@@ -1,0 +1,21 @@
+/**
+* This FlexPRET configuration file is auto-generated, and based on the
+* configuration used during build.
+*
+* Do not edit.
+*
+*/
+
+#ifndef FP_AUTOGEN_CONFIG_H
+#define FP_AUTOGEN_CONFIG_H
+
+#define FP_THREADS @THREADS@
+#define FP_FLEX @FLEX@
+#define FP_ISPM_KBYTES @ISPM_KBYTES@
+#define FP_DSPM_KBYTES @DSPM_KBYTES@
+#define FP_MULTIPLIER @MULTIPLIER@
+#define FP_SUFFIX @SUFFIX@
+#define FP_CLK_FREQ_MHZ @CLK_FREQ_MHZ@
+#define FP_UART_BAUDRATE @UART_BAUDRATE@
+
+#endif // FP_AUTOGEN_CONFIG_H

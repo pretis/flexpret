@@ -4,36 +4,15 @@ import chisel3.util.MixedVec
 import chisel3.util.experimental.loadMemoryFromFileInline // Load the contents of ISPM from file
 import flexpret.{WishboneBus, WishboneMaster, WishboneUart}
 
-abstract class AbstractTop(cfg: FlexpretConfiguration) extends Module {
-
-    /** 
-     * Write the configuration to various files so software has access to it.
-     * 
-     * flexpret_hwconfig.h  contains hardware configuration of the built CPU in
-     *                      the form of C macros
-     * flexpret_hwconfig.ld contains much of the same information, just in the
-     *                      linker script language
-     * hwconfig.mk          again contains the same information, but in the Makefile
-     *                      language
-     * 
-     * The reason for generating the same information in all these languages is
-     * so the software developer has readily access to it where ever it may be
-     * useful.
-     */
-    cfg.writeHeaderConfigToFile("./programs/lib/include/flexpret_hwconfig.h")
-    cfg.writeLinkerConfigToFile("./programs/lib/linker/flexpret_hwconfig.ld")
-    cfg.writeMakeConfigToFile("./hwconfig.mk")
-
-    val core = Module(new Core(cfg))
+abstract class AbstractTop(cfg: FlexpretConfiguration, cfgHash: UInt) extends Module {
+    val core = Module(new Core(cfg, cfgHash))
 
     val wbMaster = Module(new WishboneMaster(cfg.busAddrBits)(cfg))
     val wbUart   = Module(new WishboneUart()(cfg))
     val wbBus    = Module(new WishboneBus(cfg.busAddrBits, Seq(4)))
 
     // Connect WB bus to FlexPRET bus
-    //core.io.bus.driveDefaults()
     wbMaster.busIO <> core.io.bus
-    //core.io.bus.addr := 
 
     // Connect WB bus to WB master
     wbBus.io.wbMaster <> wbMaster.wbIO
@@ -53,7 +32,7 @@ class VerilatorTopIO(cfg: FlexpretConfiguration) extends Bundle {
     val imem_store = Output(Bool())
 }
 
-class VerilatorTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
+class VerilatorTop(cfg: FlexpretConfiguration, cfgHash: UInt) extends AbstractTop(cfg, cfgHash) {
     val io = IO(new VerilatorTopIO(cfg))
     val regPrintNext = RegInit(VecInit(Seq.fill(cfg.threads) {false.B} ))
 
@@ -86,7 +65,7 @@ class FpgaTopIO(cfg: FlexpretConfiguration) extends Bundle {
     val int_exts = Input(Vec(cfg.threads, Bool()))
 }
 
-class FpgaTop(cfg: FlexpretConfiguration) extends AbstractTop(cfg) {
+class FpgaTop(cfg: FlexpretConfiguration, cfgHash: UInt) extends AbstractTop(cfg, cfgHash) {
     val io = IO(new FpgaTopIO(cfg))
     
     io.gpio <> core.io.gpio

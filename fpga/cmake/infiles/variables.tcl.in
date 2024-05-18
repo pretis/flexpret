@@ -1,0 +1,6 @@
+set outputDir ./vivado
+set projectName @TARGET_NAME@
+set boardName @BOARD_NAME@
+set partShort @PART_SHORT@
+set part @PART@
+set nCores @NCORES@

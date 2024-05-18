@@ -1,0 +1,11 @@
+threads = @THREADS@
+flex = @FLEX@
+clk-freq-m-hz = @CLK_FREQ_MHZ@
+imem-config = {
+    bypass = false, size-kb = @ISPM_KBYTES@
+},
+d-mem-kb = @DSPM_KBYTES@
+mul = @MULTIPLIER@
+priv = false
+features = "@SUFFIX@"
+uart-baudrate = @UART_BAUDRATE@

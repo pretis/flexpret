@@ -20,10 +20,10 @@ class DatapathTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Datapath"
 
   val threads = 1
-  val conf = FlexpretConfiguration(threads=threads, flex=false, clkFreq=100000000,
+  val conf = FlexpretConfiguration(threads=threads, flex=false, clkFreqMHz=100,
     InstMemConfiguration(bypass=false, sizeKB=512),
     dMemKB=512, mul=false, priv=false, features="all")
-  def datapath = new Datapath(debug=true)(conf=conf)
+  def datapath = new Datapath("h00000000".asUInt(32.W), debug=true)(conf=conf)
 
   it should "read from the regfile correctly" in {
     // This test confirms that the datapath expects a 1-cycle latency regfile

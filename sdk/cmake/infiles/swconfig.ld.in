@@ -1,0 +1,10 @@
+/**
+* This FlexPRET configuration file is auto-generated, and based on the
+* configuration used during build.
+*
+* Do not edit.
+*
+*/
+
+STACKSIZE_BITS = @STACKSIZE_BITS@ ;
+STACKSIZE = (1 << STACKSIZE_BITS) ;

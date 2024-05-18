@@ -1,0 +1,3 @@
+## @CLK_FREQ_MHZ@ MHz clock
+set_property -dict {PACKAGE_PIN Y9 IOSTANDARD LVCMOS33} [get_ports {INPUT_CLOCK}];  # "GCLK"
+create_clock -period @CLK_PERIOD_NS@.000 -name sys_clk_pin -waveform {0.000 @CLK_HALF_PERIOD_NS@.000} -add [get_ports INPUT_CLOCK]
