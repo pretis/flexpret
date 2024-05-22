@@ -49,14 +49,6 @@ function(fp_add_script_output target)
       set(FP_FLASH_DEVICE $ENV{FP_SDK_FPGA_FLASH_DEVICE})
     endif()
     
-    # Configure interface program
-    if (NOT DEFINED ENV{FP_SDK_FPGA_INTERFACE_PROGRAM})
-      message("Did not find environment variable FP_SDK_FPGA_INTERFACE_PROGRAM, using none")
-    else()
-      message("Found environment variable FP_SDK_FPGA_INTERFACE_PROGRAM (=$ENV{FP_SDK_FPGA_INTERFACE_PROGRAM}).")
-      set(FP_INTERFACE_PROGRAM $ENV{FP_SDK_FPGA_INTERFACE_PROGRAM})
-    endif()
-    
     # hwconfig.cmake contains UART_BAUDRATE variable
     include($ENV{FP_SDK_PATH}/flexpret/hwconfig.cmake)
   endif()

@@ -191,16 +191,6 @@ cd $FP_PATH/apps && ./bin/wb_uart_led
 
 This assumes correct hardware setup (refer to [FPGA README](./fpga/README.md)) and that the `TARGET` is set to fpga. To override which port is used to upload programs to the bootloader, set the environment variable `FP_SDK_FPGA_FLASH_DEVICE`. E.g., `export FP_SDK_FPGA_FLASH_DEVICE=/dev/ttyUSB1`.
 
-If the environment variable `FP_SDK_FPGA_INTERFACE_PROGRAM` is set, the generated script will automatically tell you what command to run to interface with the uploaded software. E.g., if `FP_SDK_FPGA_INTERFACE_PROGRAM=picocom`, the script will print 
-
-```
-To interface with the FPGA, run:
-picocom -b 115200 /dev/ttyUSB0 --imap lfcrlf
-Copy command to clipboard? [Y/n]
-```
-
-which also lets you copy the command to your clipboard. A selection of interfaces are available in the `./sdk/cmake/utils/fpga-interface` folder. Feel free to add your favorite program.
-
 The baudrate cannot be overriden by the user because it is part of FlexPRET's hardware configuration.
 
 # Troubleshooting
