@@ -29,7 +29,7 @@ steps:
   displayName: 'Generate verilog, emulator and install it to SDK'
 - script: |
     # Set environment to find RISC-V compiler
-    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
+    export RISCV_TOOL_PATH_PREFIX=/usr
     source env.bash
 
     # Step into SDK and run tests
@@ -40,7 +40,7 @@ steps:
   # debug issues with the job
 - script: |
     # Set environment to find RISC-V compiler
-    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
+    export RISCV_TOOL_PATH_PREFIX=/usr
     source env.bash
     
     # Run multiple tests with script
