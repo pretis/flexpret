@@ -18,6 +18,7 @@ steps:
     ## Install RISC-V GCC
     sudo apt update
     sudo apt install gcc-riscv64-unknown-elf
+    which riscv64-unknown-elf-gcc
 
     # Update submodules
     git submodule update --init --recursive
