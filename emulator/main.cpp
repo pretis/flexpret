@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (trace_enabled) {
-      trace->dump(10*timestamp);
+      trace->dump(static_cast<vluint64_t>(10*timestamp));
     }
 
     if (pin_client_enabled) {
