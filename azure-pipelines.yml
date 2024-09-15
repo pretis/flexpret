@@ -15,13 +15,19 @@ steps:
     # so we do not use 'sudo apt-get install -y -qq verilator' here.
     wget -q https://github.com/sifive/verilator/releases/download/4.036-0sifive2/verilator_4.036-0sifive2_amd64.deb -O verilator.deb
     sudo dpkg -i verilator.deb
-    ## Install RISC-V GCC from source
-    sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev libslirp-dev
-    git clone https://github.com/riscv/riscv-gnu-toolchain
-    cd riscv-gnu-toolchain
-    ./configure --prefix=/opt/riscv
-    make
-    which riscv64-unknown-elf-gcc
+    ## Install RISC-V GCC
+    wget -q https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.3.0-2.3/xpack-riscv-none-embed-gcc-8.3.0-2.3-linux-x64.tar.gz -O riscv.tgz
+    tar zxf riscv.tgz
+    mv xpack-riscv-none-embed-gcc-8.3.0-2.3 ~/riscv-embed-gcc
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-as ~/riscv-embed-gcc/bin/riscv64-unknown-elf-as
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ar ~/riscv-embed-gcc/bin/riscv64-unknown-elf-ar
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-gcc ~/riscv-embed-gcc/bin/riscv64-unknown-elf-gcc
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ld ~/riscv-embed-gcc/bin/riscv64-unknown-elf-ld
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objdump ~/riscv-embed-gcc/bin/riscv64-unknown-elf-objdump
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objcopy ~/riscv-embed-gcc/bin/riscv64-unknown-elf-objcopy
+
+    # Update submodules
+    git submodule update --init --recursive
   displayName: Prereqs
 - script: sbt 'test'
   displayName: 'FlexPRET hardware unit tests'
@@ -29,7 +35,7 @@ steps:
   displayName: 'Generate verilog, emulator and install it to SDK'
 - script: |
     # Set environment to find RISC-V compiler
-    export RISCV_TOOL_PATH_PREFIX=/opt/riscv
+    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
     source env.bash
 
     # Step into SDK and run tests
@@ -40,7 +46,7 @@ steps:
   # debug issues with the job
 - script: |
     # Set environment to find RISC-V compiler
-    export RISCV_TOOL_PATH_PREFIX=/opt/riscv
+    export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
     source env.bash
     
     # Run multiple tests with script
