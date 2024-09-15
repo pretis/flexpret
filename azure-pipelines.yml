@@ -18,7 +18,7 @@ steps:
     ## Install RISC-V GCC
     wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O riscv.tgz
     tar zxf riscv.tgz
-    ls xpack-riscv-none-elf-gcc-14.2.0-2
+    ls xpack-riscv-none-elf-gcc-14.2.0-2/bin
     mv xpack-riscv-none-elf-gcc-14.2.0-2 ~/riscv-embed-gcc
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-as ~/riscv-embed-gcc/bin/riscv64-unknown-elf-as
     ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ar ~/riscv-embed-gcc/bin/riscv64-unknown-elf-ar
