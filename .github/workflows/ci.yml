@@ -1,0 +1,38 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.8
+      - name: Cache Scala
+        uses: coursier/cache-action@v5
+      - name: Install dependencies
+        run: |
+          sudo apt install verilator cmake -y
+          wget -q --show-progress https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O gcc.tar.gz
+          tar xvf gcc.tar.gz --directory=/opt
+          echo "RISCV_TOOL_PATH_PREFIX=/opt/xpack-riscv-none-elf-gcc-14.2.0-2" >> $GITHUB_ENV
+      - name: Run Chisel unit tests
+        run: sbt 'test'
+      - name: Build emulator and SDK
+        run: source env.bash && cmake -Bbuild && cd build && make all install
+      - name: Run C tests
+        run: |
+          source env.bash
+          cd sdk && cmake -B build && cd build && make && ctest
+      - name: Run multithreaded C tests
+        run: |
+          source env.bash
+          # Run multiple tests with script
+          ./scripts/run_multiple_tests.sh
