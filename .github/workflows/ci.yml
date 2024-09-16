@@ -21,9 +21,9 @@ jobs:
         run: |
           sudo apt install verilator cmake -y
           wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O riscv-none-elf-gcc.tar.gz
-          sudo mkdir /opt/riscv-none-elf-gcc
+          sudo mkdir -p /opt/riscv-none-elf-gcc
           tar xf riscv-none-elf-gcc.tar.gz --directory=/opt/riscv-none-elf-gcc
-          echo "PATH=$PATH:/opt/riscv-none-elf-gcc/bin" >> $GITHUB_ENV
+          echo "RISCV_TOOL_PATH_PREFIX=/opt/riscv-none-elf-gcc" >> $GITHUB_ENV
       - name: Run Chisel unit tests
         run: sbt 'test'
       - name: Build emulator and SDK
