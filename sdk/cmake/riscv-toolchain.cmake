@@ -13,13 +13,14 @@ cmake_minimum_required(VERSION 3.13)
 # because they are appended to already existing flags
 include_guard(GLOBAL)
 
-set(CMAKE_SYSTEM_PROCESSOR riscv)
+set(CMAKE_SYSTEM_NAME Generic)  # Explicitly set for cross-compilation
+set(CMAKE_SYSTEM_PROCESSOR riscv64)
 set(RISCV_HOST_TAG linux)
 
 set(RISCV_TOOL_PATH $ENV{RISCV_TOOL_PATH_PREFIX} CACHE PATH "RISC-V tool path" FORCE)
 
 set(RISCV_TOOLCHAIN_ROOT "${RISCV_TOOL_PATH}/bin" CACHE PATH "RISC-V compiler path")
-set(RISCV_TOOLCHAIN_PREFIX "riscv32-unknown-elf-" CACHE STRING "RISC-V toolchain prefix")
+set(RISCV_TOOLCHAIN_PREFIX "riscv64-unknown-elf-" CACHE STRING "RISC-V toolchain prefix")
 set(CMAKE_FIND_ROOT_PATH ${RISCV_TOOLCHAIN_ROOT})
 list(APPEND CMAKE_PREFIX_PATH "${RISCV_TOOLCHAIN_ROOT}")
 
@@ -29,14 +30,19 @@ set(CMAKE_STRIP "${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}strip")
 set(CMAKE_OBJDUMP "${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}objdump")
 set(CMAKE_OBJCOPY "${RISCV_TOOLCHAIN_ROOT}/${RISCV_TOOLCHAIN_PREFIX}objcopy")
 
-set(RISCV_COMPILER_FLAGS "-g -Os -static -march=rv32i -mabi=ilp32 -nostartfiles --specs=nosys.specs -ffunction-sections -fdata-sections -Wl,--gc-sections")
+set(RISCV_COMPILER_FLAGS "-g -Os -static -march=rv32i_zicsr -mabi=ilp32 -nostartfiles --specs=nosys.specs -ffunction-sections -fdata-sections -Wl,--gc-sections")
 set(RISCV_COMPILER_FLAGS_CXX)
 set(RISCV_COMPILER_FLAGS_DEBUG)
 set(RISCV_COMPILER_FLAGS_RELEASE)
 set(RISCV_LINKER_FLAGS)
 set(RISCV_LINKER_FLAGS_EXE "" CACHE STRING "Linker flags for RISCV executables")
 
-set(CMAKE_SYSTEM_PROCESSOR riscv32)
+# Check if the current OS is macOS
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
+  # Override macOS-specific settings
+  set(CMAKE_OSX_ARCHITECTURES "")
+  set(CMAKE_OSX_SYSROOT "")
+endif()
 
 set(CMAKE_C_FLAGS             "${RISCV_COMPILER_FLAGS} ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS           "${RISCV_COMPILER_FLAGS} ${RISCV_COMPILER_FLAGS_CXX} ${CMAKE_CXX_FLAGS}")

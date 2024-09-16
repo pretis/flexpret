@@ -10,19 +10,22 @@ steps:
 # We work around it by running the tests twice (!!!)
 # flexpret.test.compileClasspath java.util.NoSuchElementException: key not found: https://oss.sonatype.org/content/repositories/releases/com/lihaoyi/utest_2.12/maven-metadata.xml
 - script: |
+    ## Install Verilator
     # Ubuntu 20.04 only has Verilator 4.028 but we neeed a more modern version
     # so we do not use 'sudo apt-get install -y -qq verilator' here.
     wget -q https://github.com/sifive/verilator/releases/download/4.036-0sifive2/verilator_4.036-0sifive2_amd64.deb -O verilator.deb
     sudo dpkg -i verilator.deb
-    wget -q https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.3.0-2.3/xpack-riscv-none-embed-gcc-8.3.0-2.3-linux-x64.tar.gz -O riscv.tgz
+    ## Install RISC-V GCC
+    wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O riscv.tgz
     tar zxf riscv.tgz
-    mv xpack-riscv-none-embed-gcc-8.3.0-2.3 ~/riscv-embed-gcc
-    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-as ~/riscv-embed-gcc/bin/riscv32-unknown-elf-as
-    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ar ~/riscv-embed-gcc/bin/riscv32-unknown-elf-ar
-    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-gcc ~/riscv-embed-gcc/bin/riscv32-unknown-elf-gcc
-    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-ld ~/riscv-embed-gcc/bin/riscv32-unknown-elf-ld
-    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objdump ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objdump
-    ln -s ~/riscv-embed-gcc/bin/riscv-none-embed-objcopy ~/riscv-embed-gcc/bin/riscv32-unknown-elf-objcopy
+    ls xpack-riscv-none-elf-gcc-14.2.0-2/bin
+    mv xpack-riscv-none-elf-gcc-14.2.0-2 ~/riscv-embed-gcc
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-elf-as ~/riscv-embed-gcc/bin/riscv64-unknown-elf-as
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-elf-ar ~/riscv-embed-gcc/bin/riscv64-unknown-elf-ar
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-elf-gcc ~/riscv-embed-gcc/bin/riscv64-unknown-elf-gcc
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-elf-ld ~/riscv-embed-gcc/bin/riscv64-unknown-elf-ld
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-elf-objdump ~/riscv-embed-gcc/bin/riscv64-unknown-elf-objdump
+    ln -s ~/riscv-embed-gcc/bin/riscv-none-elf-objcopy ~/riscv-embed-gcc/bin/riscv64-unknown-elf-objcopy
 
     # Update submodules
     git submodule update --init --recursive
