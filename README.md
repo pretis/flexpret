@@ -11,16 +11,7 @@ For more information on the processor architecture:
 # Tools and installation
 
 ## RISC-V Compiler
-We use the `riscv-none-elf-gcc` compiler provided by xPack project. To install this toolchain to `/opt/xpack-riscv-none-elf-gcc-14.2.0-2` perform the following steps.
-
-```
-  wget -q --show-progress https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O gcc.tar.gz
-  tar xvf gcc.tar.gz --directory=/opt
-```
-
-Then add `export RISCV_TOOL_PATH_PREFIX=/opt/xpack-riscv-none-elf-gcc-14.2.0-2` to your `~/.bashrc`
-
-There are also versions for macOS and Windows. Refer to the [documentation](https://xpack-dev-tools.github.io/riscv-none-elf-gcc-xpack/) for more information.
+We use the Newlib installation of the [rv32i-4.0.0](https://github.com/stnolting/riscv-gcc-prebuilt). Download and extract it to a convenient location on the PATH. Also set the `RISCV_TOOL_PATH_PREFIX` environment variable to the location of `bin/`. E.g., if you extracted the compiler to `/opt/riscv`, then `export RISCV_TOOL_PATH_PREFIX=/opt/riscv` is needed. We recommend adding this to your `~/.bashrc`.
 
 ## Verilator
 We use the `verilator` toolchain for running emulations of the core. Install it and check that the version is greater than 4.038.
