@@ -25,17 +25,10 @@ jobs:
         run: source env.bash && cmake -Bbuild && cd build && make all install
       - name: Run C tests
         run: |
-          # Set environment to find RISC-V compiler
-          export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
           source env.bash
-
-          # Step into SDK and run tests
           cd sdk && cmake -B build && cd build && make && ctest
       - name: Run multithreaded C tests
         run: |
-          # Set environment to find RISC-V compiler
-          export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
           source env.bash
-          
           # Run multiple tests with script
           ./scripts/run_multiple_tests.sh
