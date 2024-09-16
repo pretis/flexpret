@@ -1,17 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-include($ENV{FP_SDK_PATH}/cmake/riscv-toolchain.cmake)
-
-project(fp-sdk
-  DESCRIPTION "Software development kit (SDK) for FlexPRET"
-  LANGUAGES C ASM
-  VERSION 0.0.1
-)
-
-if (NOT DEFINED TARGET)
-  set(TARGET "emulator" CACHE STRING "Whether to compile SDK to target FlexPRET on emulator or FPGA" FORCE)
-endif()
-
+# Check environment variables are set before anything else
 set(ENVS
   FP_PATH
   FP_SDK_PATH
@@ -23,6 +12,18 @@ foreach(env ${ENVS})
     step into the top-level directory and `source env.bash` or `source env.fish`.")
   endif()
 endforeach()
+
+include($ENV{FP_SDK_PATH}/cmake/riscv-toolchain.cmake)
+
+project(fp-sdk
+  DESCRIPTION "Software development kit (SDK) for FlexPRET"
+  LANGUAGES C ASM
+  VERSION 0.0.1
+)
+
+if (NOT DEFINED TARGET)
+  set(TARGET "emulator" CACHE STRING "Whether to compile SDK to target FlexPRET on emulator or FPGA" FORCE)
+endif()
 
 set(FP_INSTALLED_FILES
   "flexpret/fp-emu"
