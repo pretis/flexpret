@@ -11,10 +11,17 @@ For more information on the processor architecture:
 # Tools and installation
 
 ## RISC-V Compiler
-We use the Newlib version of RISC-V GCC which can be installed on Ubuntu with
+We use the `riscv-none-elf-gcc` compiler provided by xPack project. To install this toolchain to `/opt/xpack-riscv-none-elf-gcc-14.2.0-2` perform the following steps.
+
 ```
-sudo apt install gcc-riscv64-unknown-elf
+  wget -q --show-progress https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O gcc.tar.gz
+  tar xvf gcc.tar.gz --directory=/opt
 ```
+
+Then add `export RISCV_TOOL_PATH_PREFIX=/opt/xpack-riscv-none-elf-gcc-14.2.0-2` to your `~/.bashrc`
+
+There are also versions for macOS and Windows. Refer to the [documentation](https://xpack-dev-tools.github.io/riscv-none-elf-gcc-xpack/) for more information.
+
 ## Verilator
 We use the `verilator` toolchain for running emulations of the core. Install it and check that the version is greater than 4.038.
 
