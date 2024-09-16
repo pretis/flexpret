@@ -18,7 +18,11 @@ jobs:
       - name: Cache Scala
         uses: coursier/cache-action@v5
       - name: Install dependencies
-        run: sudo apt install verilator gcc-riscv64-unknown-elf cmake -y
+        run: |
+          sudo apt install verilator cmake -y
+          wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-2/xpack-riscv-none-elf-gcc-14.2.0-2-linux-x64.tar.gz -O riscv-none-elf-gcc.tar.gz
+          tar xf riscv-none-elf-gcc.tar.gz --directory=~/opt/riscv-none-elf-gcc
+          echo "PATH=$PATH:/opt/riscv-none-elf-gcc/bin" >> $GITHUB_ENV
       - name: Run Chisel unit tests
         run: sbt 'test'
       - name: Build emulator and SDK
