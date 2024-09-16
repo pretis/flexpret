@@ -1,0 +1,41 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Setup Scala
+        uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.8
+      - name: Cache Scala
+        uses: coursier/cache-action@v5
+      - name: Install dependencies
+        run: sudo apt install verilator gcc-riscv64-unknown-elf cmake -y
+      - name: Run Chisel unit tests
+        run: sbt 'test'
+      - name: Build emulator and SDK
+        run: source env.bash && cmake -Bbuild && cd build && make all install
+      - name: Run C tests
+        run: |
+          # Set environment to find RISC-V compiler
+          export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
+          source env.bash
+
+          # Step into SDK and run tests
+          cd sdk && cmake -B build && cd build && make && ctest
+      - name: Run multithreaded C tests
+        run: |
+          # Set environment to find RISC-V compiler
+          export RISCV_TOOL_PATH_PREFIX=~/riscv-embed-gcc
+          source env.bash
+          
+          # Run multiple tests with script
+          ./scripts/run_multiple_tests.sh
