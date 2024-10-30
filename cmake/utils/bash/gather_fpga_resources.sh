@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 # Gather the resources needed to build FPGA with Vivado
 #
 # Arguments:

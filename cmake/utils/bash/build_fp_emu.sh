@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 # Build FlexPRET emulator
 #
 # Arguments:
